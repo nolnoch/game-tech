@@ -56,7 +56,8 @@ PROGRAMS = $(bin_PROGRAMS)
 am_OgreApp_OBJECTS = OgreApp-MinimalOgre.$(OBJEXT)
 OgreApp_OBJECTS = $(am_OgreApp_OBJECTS)
 am__DEPENDENCIES_1 =
-OgreApp_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+OgreApp_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 OgreApp_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(OgreApp_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -100,6 +101,8 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BULLET_CFLAGS = @BULLET_CFLAGS@
+BULLET_LIBS = @BULLET_LIBS@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -185,6 +188,8 @@ build_cpu = @build_cpu@
 build_os = @build_os@
 build_vendor = @build_vendor@
 builddir = @builddir@
+bullet_CFLAGS = @bullet_CFLAGS@
+bullet_LIBS = @bullet_LIBS@
 datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
@@ -219,11 +224,11 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
-noinst_HEADERS = MinimalOgre.h
+noinst_HEADERS = MinimalOgre.h Ball.h OgreMotionState.h Simulator.h
 OgreApp_CPPFLAGS = -I$(top_srcdir)
 OgreApp_SOURCES = MinimalOgre.cpp
-OgreApp_CXXFLAGS = $(OGRE_CFLAGS) $(OIS_CFLAGS)
-OgreApp_LDADD = $(OGRE_LIBS) $(OIS_LIBS)
+OgreApp_CXXFLAGS = $(OGRE_CFLAGS) $(OIS_CFLAGS) $(bullet_CFLAGS)
+OgreApp_LDADD = $(OGRE_LIBS) $(OIS_LIBS) $(bullet_LIBS)
 EXTRA_DIST = buildit makeit
 AUTOMAKE_OPTIONS = foreign
 all: config.h

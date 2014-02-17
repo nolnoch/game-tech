@@ -33,6 +33,7 @@ This source file is part of the
 
 #include <SdkTrays.h>
 #include <SdkCameraMan.h>
+#include "Simulator.h"
 
 class MinimalOgre : public Ogre::FrameListener, public Ogre::WindowEventListener, public OIS::KeyListener, public OIS::MouseListener, OgreBites::SdkTrayListener
 {
@@ -55,11 +56,12 @@ protected:
     Ogre::AnimationState *mState;
     Ogre::SceneNode* headNode;
 
-    Ogre::Vector3 mDirection;
-    Ogre::Real mSpeed;
-
-    Ogre::Sphere ballBound;
+    //Ogre::Vector3 mDirection;
+    //Ogre::Real mSpeed;
+    //Ogre::Sphere ballBound;
     Ogre::PlaneBoundedVolume boxBound;
+    Simulator* sim;
+    Ball* ball;
 
     Ogre::Plane wallUp;
     Ogre::Plane wallDown;

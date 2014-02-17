@@ -39,8 +39,6 @@ MinimalOgre::MinimalOgre(void)
     mKeyboard(0),
     mState(0),
     headNode(0),
-    mSpeed(0),
-    mDirection(Ogre::Vector3::ZERO),
     vZero(Ogre::Vector3::ZERO)
 {
 	mTimer = OGRE_NEW Ogre::Timer();
@@ -162,15 +160,8 @@ bool MinimalOgre::go(void)
 //-------------------------------------------------------------------------------------
     // Create the scene
 
-    // Create the visible mesh ball with initial velocity.
-    Ogre::Entity* ballMesh = mSceneMgr->createEntity("Ball", "sphere.mesh");
-    ballMesh->setMaterialName("Examples/SphereMappedRustySteel");
-    ballMesh->setCastShadows(true);
-    mDirection = Ogre::Vector3(-0.3, 0.6, -0.9);
-    mSpeed = 300.0f;
-
     // Create the bounding geometry, used only in collision testing.
-    ballBound = Ogre::Sphere(vZero, 200);
+    //ballBound = Ogre::Sphere(vZero, 200);
     boxBound = Ogre::PlaneBoundedVolume(Ogre::Plane::NEGATIVE_SIDE);
     boxBound.planes.push_back(wallBack = Ogre::Plane(Ogre::Vector3::UNIT_Z, -800));
     boxBound.planes.push_back(wallFront = Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_Z, -800));
@@ -228,9 +219,27 @@ bool MinimalOgre::go(void)
     entRight->setMaterialName("Examples/Rockwall");
     entRight->setCastShadows(false);
 
+    // Create the visible mesh ball.
+    Ogre::Entity* ballMesh = mSceneMgr->createEntity("Ball", "sphere.mesh");
+    ballMesh->setMaterialName("Examples/SphereMappedRustySteel");
+    ballMesh->setCastShadows(true);
+
+    Ogre::Entity* ballMesh2 = mSceneMgr->createEntity("Ball2", "sphere.mesh");
+    ballMesh2->setMaterialName("Examples/SphereMappedRustySteel");
+    ballMesh2->setCastShadows(true);
+
     // Attach the node.
     headNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
     headNode->attachObject(ballMesh);
+
+    sim = new Simulator(mSceneMgr);
+    ball = new Ball(headNode, 40, 0, 20, 100);
+    sim->addBall(ball);
+
+    Ogre::SceneNode* node2 = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+    node2->attachObject(ballMesh2);
+    Ball* ball2 = new Ball(node2, 0, 300, 0, 100);
+    sim->addBall(ball2);
 
     // Set ambient light
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.05, 0.05, 0.05));
@@ -305,15 +314,18 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
     if(mShutDown)
         return false;
 
+    sim->simulateStep();
+
     /********************************************************************
      * Animation
      */
 
-    Ogre::Vector3 point = headNode->getPosition();
-    Ogre::Real adjust = 0.0;
-    bool found = false;
+    //Ogre::Vector3 point = headNode->getPosition();
+    //Ogre::Real adjust = 0.0;
+    //bool found = false;
 
     // Given a bounding box, we can easily test each plane in the PlaneList.
+    /*
     for (int i = 0; i < 6 && !found; i++) {
       Ogre::Real dist = boxBound.planes[i].getDistance(ballBound.getCenter());
       if (dist < 100.01) {
@@ -321,12 +333,12 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
         adjust = 100.5 - dist;
         found = true;
       }
-    }
+    } */
 
     // Add distance traveled plus collision adjustment, and update position.
-    point = point + (((evt.timeSinceLastFrame * mSpeed) + adjust) * mDirection);
-    ballBound.setCenter(point);
-    headNode->setPosition(point);
+    //point = point + (((evt.timeSinceLastFrame * mSpeed) + adjust) * mDirection);
+    //ballBound.setCenter(point);
+    //headNode->setPosition(point);
 
     /*******************************************************************/
 
