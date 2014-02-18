@@ -30,6 +30,8 @@ class Ball
         collisionShape->calculateLocalInertia(mass, sphereInertia);
         btRigidBody::btRigidBodyConstructionInfo ballCI(mass, motionState, collisionShape, sphereInertia);
         rigidBody = new btRigidBody(ballCI);
+
+        rigidBody->setRestitution(0.3);
     }
 
     void addToWorld(btDynamicsWorld* world)
@@ -40,5 +42,6 @@ class Ball
     void removeGravity()
     {
         rigidBody->setGravity(btVector3(0, 0, 0));
+        rigidBody->setRestitution(0.95);
     }
 };

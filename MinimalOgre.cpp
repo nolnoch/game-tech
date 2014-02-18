@@ -131,6 +131,7 @@ bool MinimalOgre::go(void)
     // create camera
     // Create the camera
     mCamera = mSceneMgr->createCamera("PlayerCam");
+    mCamera->setFOVy(Ogre::Radian(1.50));
 
     // Position it at 500 in Z direction
     mCamera->setPosition(Ogre::Vector3(0,0,2000));
@@ -357,7 +358,7 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
     mMouse->capture();
 
     mTrayMgr->frameRenderingQueued(evt);
-
+    
     if (!mTrayMgr->isDialogVisible())
     {
         mCameraMan->frameRenderingQueued(evt);   // if dialog isn't up, then update the camera
