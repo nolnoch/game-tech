@@ -858,7 +858,7 @@ OgreApp-MinimalOgre.o: MinimalOgre.cpp MinimalOgre.h \
  /usr/local/include/bullet/BulletDynamics/Vehicle/btWheelInfo.h \
  /usr/local/include/bullet/BulletDynamics/Dynamics/btActionInterface.h \
  /usr/local/include/bullet/BulletDynamics/Dynamics/btRigidBody.h Ball.h \
- OgreMotionState.h
+ OgreMotionState.h CameraMan.h
 
 MinimalOgre.h:
 
@@ -2867,3 +2867,5 @@ Simulator.h:
 Ball.h:
 
 OgreMotionState.h:
+
+CameraMan.h:

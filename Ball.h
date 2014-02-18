@@ -36,4 +36,9 @@ class Ball
     {
         world->addRigidBody(rigidBody);
     }
+
+    void removeGravity()
+    {
+        rigidBody->setGravity(btVector3(0, 0, 0));
+    }
 };

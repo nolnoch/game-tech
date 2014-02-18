@@ -1,5 +1,5 @@
 ACLOCAL_AMFLAGS= -I m4
-noinst_HEADERS= MinimalOgre.h Ball.h OgreMotionState.h Simulator.h
+noinst_HEADERS= MinimalOgre.h Ball.h OgreMotionState.h Simulator.h CameraMan.h
 
 bin_PROGRAMS= OgreApp
 OgreApp_CPPFLAGS= -I$(top_srcdir)

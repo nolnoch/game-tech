@@ -24,6 +24,7 @@ class Simulator
         btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1, 0)));
         btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(0, groundMotionState, groundShape, btVector3(0, 0, 0));
         btRigidBody* groundRigidBody = new btRigidBody(groundRigidBodyCI);
+        groundRigidBody->setRestitution(1.0);
         dynamicsWorld->addRigidBody(groundRigidBody);
     }
 

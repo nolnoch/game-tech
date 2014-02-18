@@ -138,7 +138,7 @@ bool MinimalOgre::go(void)
     mCamera->lookAt(vZero);
     mCamera->setNearClipDistance(5);
 
-    mCameraMan = new OgreBites::SdkCameraMan(mCamera);   // create a default camera controller
+    mCameraMan = new CameraMan(mCamera);   // create a default camera controller
 //-------------------------------------------------------------------------------------
     // create viewports
     // Create one viewport, entire window
@@ -228,6 +228,10 @@ bool MinimalOgre::go(void)
     ballMesh2->setMaterialName("Examples/SphereMappedRustySteel");
     ballMesh2->setCastShadows(true);
 
+    Ogre::Entity* ballMesh3 = mSceneMgr->createEntity("Ball3", "sphere.mesh");
+    ballMesh3->setMaterialName("Examples/SphereMappedRustySteel");
+    ballMesh3->setCastShadows(true);
+
     // Attach the node.
     headNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
     headNode->attachObject(ballMesh);
@@ -235,11 +239,17 @@ bool MinimalOgre::go(void)
     sim = new Simulator(mSceneMgr);
     ball = new Ball(headNode, 40, 0, 20, 100);
     sim->addBall(ball);
+    ball->removeGravity();
 
     Ogre::SceneNode* node2 = mSceneMgr->getRootSceneNode()->createChildSceneNode();
     node2->attachObject(ballMesh2);
     Ball* ball2 = new Ball(node2, 0, 300, 0, 100);
     sim->addBall(ball2);
+
+    Ogre::SceneNode* node3 = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+    node3->attachObject(ballMesh3);
+    Ball* ball3 = new Ball(node3, -80, 600, 30, 100);
+    sim->addBall(ball3);
 
     // Set ambient light
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.05, 0.05, 0.05));

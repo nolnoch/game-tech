@@ -34,6 +34,7 @@ This source file is part of the
 #include <SdkTrays.h>
 #include <SdkCameraMan.h>
 #include "Simulator.h"
+#include "CameraMan.h"
 
 class MinimalOgre : public Ogre::FrameListener, public Ogre::WindowEventListener, public OIS::KeyListener, public OIS::MouseListener, OgreBites::SdkTrayListener
 {
@@ -74,7 +75,7 @@ protected:
 
     // OgreBites
     OgreBites::SdkTrayManager* mTrayMgr;
-    OgreBites::SdkCameraMan* mCameraMan;      // basic camera controller
+    CameraMan* mCameraMan;      // basic camera controller
     OgreBites::ParamsPanel* mDetailsPanel;    // sample details panel
     bool mCursorWasVisible;                   // was cursor visible before dialog appeared
     bool mShutDown;
