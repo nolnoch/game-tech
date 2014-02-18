@@ -51,4 +51,10 @@ class Ball
         rigidBody->setMassProps(0, btVector3(0, 0, 0));
         motionState->setWorldTransform(btTransform(btQuaternion(0, 0, 0, 1), btVector3(x, y, z)));
     }
+
+    void applyForce(double dx, double dy, double dz)
+    {
+        rigidBody->activate(true);
+        rigidBody->applyCentralImpulse(btVector3(dx, dy, dz));
+    }
 };

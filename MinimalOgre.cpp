@@ -495,6 +495,9 @@ bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
         int z = mCamera->getPosition().z;
         Ball* ballpc = new Ball(nodepc, x, y, z, 100);
         sim->addBall(ballpc);
+        double force = 4000.0;
+        Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
+        ballpc->applyForce(force * direction.x, force * direction.y, force * direction.z);
         newballcount += 1;
     }
 
