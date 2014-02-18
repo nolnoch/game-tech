@@ -54,8 +54,8 @@ class Simulator
         balls.push_back(ball);
     }
 
-    void simulateStep()
+    void simulateStep(double delay)
     {
-        dynamicsWorld->stepSimulation(1/60.f, 10);
+        dynamicsWorld->stepSimulation((1/60.f) - delay, 10);
     }
 };

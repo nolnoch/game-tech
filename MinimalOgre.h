@@ -73,6 +73,9 @@ protected:
 
     Ogre::Vector3 vZero;
 
+    bool paused;
+    double slowdownval;
+
     // OgreBites
     OgreBites::SdkTrayManager* mTrayMgr;
     CameraMan* mCameraMan;      // basic camera controller

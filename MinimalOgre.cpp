@@ -224,18 +224,11 @@ bool MinimalOgre::go(void)
     sim = new Simulator(mSceneMgr);
 
     // Create the visible mesh ball.
-    /*
+    
     Ogre::Entity* ballMesh = mSceneMgr->createEntity("Ball", "sphere.mesh");
     ballMesh->setMaterialName("Examples/SphereMappedRustySteel");
     ballMesh->setCastShadows(true);
 
-    Ogre::Entity* ballMesh2 = mSceneMgr->createEntity("Ball2", "sphere.mesh");
-    ballMesh2->setMaterialName("Examples/SphereMappedRustySteel");
-    ballMesh2->setCastShadows(true);
-
-    Ogre::Entity* ballMesh3 = mSceneMgr->createEntity("Ball3", "sphere.mesh");
-    ballMesh3->setMaterialName("Examples/SphereMappedRustySteel");
-    ballMesh3->setCastShadows(true);
 
 
     // Attach the node.
@@ -246,17 +239,7 @@ bool MinimalOgre::go(void)
     sim->addBall(ball);
     ball->removeGravity();
 
-    Ogre::SceneNode* node2 = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    node2->attachObject(ballMesh2);
-    Ball* ball2 = new Ball(node2, 0, 300, 0, 100);
-    sim->addBall(ball2);
-
-    Ogre::SceneNode* node3 = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    node3->attachObject(ballMesh3);
-    Ball* ball3 = new Ball(node3, -80, 600, 30, 100);
-    sim->addBall(ball3); */
-
-    int newballcount = 4;
+    newballcount = 0;
 
     // Set ambient light
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.05, 0.05, 0.05));
@@ -321,7 +304,9 @@ bool MinimalOgre::go(void)
 
     scorePanel = mTrayMgr->createParamsPanel(OgreBites::TL_TOPLEFT, "ScorePanel", 200, scorelist);
 
-    
+    paused = false;
+    slowdownval = 0.0;
+
 
     mRoot->addFrameListener(this);
 //-------------------------------------------------------------------------------------
@@ -338,7 +323,10 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
     if(mShutDown)
         return false;
 
-    sim->simulateStep();
+    if(paused)
+        slowdownval += 1/1800.f;
+    if(slowdownval <= 1/60.f)
+        sim->simulateStep(slowdownval);
 
     /********************************************************************
      * Animation
@@ -499,6 +487,11 @@ bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
         Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
         ballpc->applyForce(force * direction.x, force * direction.y, force * direction.z);
         newballcount += 1;
+    }
+    else if (arg.key == OIS::KC_P)
+    {
+        paused = !paused;
+        slowdownval = 0.0;
     }
 
     mCameraMan->injectKeyDown(arg);

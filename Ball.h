@@ -42,7 +42,8 @@ class Ball
     void removeGravity()
     {
         rigidBody->setGravity(btVector3(0, 0, 0));
-        rigidBody->setRestitution(0.95);
+        rigidBody->setRestitution(0.9);
+        rigidBody->applyDamping(1);
     }
 
     void setPosition(int x, int y, int z)
