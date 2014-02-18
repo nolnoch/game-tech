@@ -26,6 +26,6 @@ class OgreMotionState : public btMotionState
           ogreObject->setOrientation(rot.w(), rot.x(), rot.y(), rot.z());
           btVector3 pos = worldTrans.getOrigin();
           ogreObject->setPosition(pos.x(), pos.y(), pos.z());
-          
+          position = worldTrans;
       }
 };

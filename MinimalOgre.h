@@ -62,7 +62,7 @@ protected:
     //Ogre::Sphere ballBound;
     Ogre::PlaneBoundedVolume boxBound;
     Simulator* sim;
-    Ball* ball;
+    int newballcount;
 
     Ogre::Plane wallUp;
     Ogre::Plane wallDown;
@@ -77,6 +77,7 @@ protected:
     OgreBites::SdkTrayManager* mTrayMgr;
     CameraMan* mCameraMan;      // basic camera controller
     OgreBites::ParamsPanel* mDetailsPanel;    // sample details panel
+    OgreBites::ParamsPanel* scorePanel;
     bool mCursorWasVisible;                   // was cursor visible before dialog appeared
     bool mShutDown;
 

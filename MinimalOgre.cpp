@@ -32,6 +32,7 @@ MinimalOgre::MinimalOgre(void)
     mTrayMgr(0),
     mCameraMan(0),
     mDetailsPanel(0),
+    scorePanel(0),
     mCursorWasVisible(false),
     mShutDown(false),
     mInputManager(0),
@@ -220,7 +221,10 @@ bool MinimalOgre::go(void)
     entRight->setMaterialName("Examples/Rockwall");
     entRight->setCastShadows(false);
 
+    sim = new Simulator(mSceneMgr);
+
     // Create the visible mesh ball.
+    /*
     Ogre::Entity* ballMesh = mSceneMgr->createEntity("Ball", "sphere.mesh");
     ballMesh->setMaterialName("Examples/SphereMappedRustySteel");
     ballMesh->setCastShadows(true);
@@ -233,12 +237,12 @@ bool MinimalOgre::go(void)
     ballMesh3->setMaterialName("Examples/SphereMappedRustySteel");
     ballMesh3->setCastShadows(true);
 
+
     // Attach the node.
     headNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
     headNode->attachObject(ballMesh);
 
-    sim = new Simulator(mSceneMgr);
-    ball = new Ball(headNode, 40, 0, 20, 100);
+    Ball* ball = new Ball(headNode, 40, 0, 20, 100);
     sim->addBall(ball);
     ball->removeGravity();
 
@@ -250,7 +254,9 @@ bool MinimalOgre::go(void)
     Ogre::SceneNode* node3 = mSceneMgr->getRootSceneNode()->createChildSceneNode();
     node3->attachObject(ballMesh3);
     Ball* ball3 = new Ball(node3, -80, 600, 30, 100);
-    sim->addBall(ball3);
+    sim->addBall(ball3); */
+
+    int newballcount = 4;
 
     // Set ambient light
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.05, 0.05, 0.05));
@@ -309,6 +315,13 @@ bool MinimalOgre::go(void)
     mDetailsPanel->setParamValue(9, "Bilinear");
     mDetailsPanel->setParamValue(10, "Solid");
     mDetailsPanel->hide();
+
+    Ogre::StringVector scorelist;
+    scorelist.push_back("Score");
+
+    scorePanel = mTrayMgr->createParamsPanel(OgreBites::TL_TOPLEFT, "ScorePanel", 200, scorelist);
+
+    
 
     mRoot->addFrameListener(this);
 //-------------------------------------------------------------------------------------
@@ -372,6 +385,7 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
             mDetailsPanel->setParamValue(6, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().y));
             mDetailsPanel->setParamValue(7, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().z));
         }
+        scorePanel->setParamValue(0, Ogre::StringConverter::toString(newballcount));
     }
 
     return true;
@@ -467,6 +481,21 @@ bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
     else if (arg.key == OIS::KC_ESCAPE)
     {
         mShutDown = true;
+    }
+    else if (arg.key == OIS::KC_SPACE)
+    {
+        Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
+        //ballMeshpc->setMaterialName("Examples/SphereMappedRustySteel");
+        ballMeshpc->setCastShadows(true);
+
+        Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+        nodepc->attachObject(ballMeshpc);
+        int x = mCamera->getPosition().x;
+        int y = mCamera->getPosition().y;
+        int z = mCamera->getPosition().z;
+        Ball* ballpc = new Ball(nodepc, x, y, z, 100);
+        sim->addBall(ballpc);
+        newballcount += 1;
     }
 
     mCameraMan->injectKeyDown(arg);

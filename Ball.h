@@ -44,4 +44,11 @@ class Ball
         rigidBody->setGravity(btVector3(0, 0, 0));
         rigidBody->setRestitution(0.95);
     }
+
+    void setPosition(int x, int y, int z)
+    {
+        node->setPosition(x, y, z);
+        rigidBody->setMassProps(0, btVector3(0, 0, 0));
+        motionState->setWorldTransform(btTransform(btQuaternion(0, 0, 0, 1), btVector3(x, y, z)));
+    }
 };
