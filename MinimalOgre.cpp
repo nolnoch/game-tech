@@ -32,6 +32,7 @@ MinimalOgre::MinimalOgre(void)
     mTrayMgr(0),
     mCameraMan(0),
     mDetailsPanel(0),
+    scorePanel(0),
     mCursorWasVisible(false),
     mShutDown(false),
     mInputManager(0),
@@ -39,8 +40,6 @@ MinimalOgre::MinimalOgre(void)
     mKeyboard(0),
     mState(0),
     headNode(0),
-    mSpeed(0),
-    mDirection(Ogre::Vector3::ZERO),
     vZero(Ogre::Vector3::ZERO)
 {
 	mTimer = OGRE_NEW Ogre::Timer();
@@ -133,6 +132,7 @@ bool MinimalOgre::go(void)
     // create camera
     // Create the camera
     mCamera = mSceneMgr->createCamera("PlayerCam");
+    mCamera->setFOVy(Ogre::Radian(1.50));
 
     // Position it at 500 in Z direction
     mCamera->setPosition(Ogre::Vector3(0,0,2000));
@@ -140,7 +140,7 @@ bool MinimalOgre::go(void)
     mCamera->lookAt(vZero);
     mCamera->setNearClipDistance(5);
 
-    mCameraMan = new OgreBites::SdkCameraMan(mCamera);   // create a default camera controller
+    mCameraMan = new CameraMan(mCamera);   // create a default camera controller
 //-------------------------------------------------------------------------------------
     // create viewports
     // Create one viewport, entire window
@@ -162,15 +162,8 @@ bool MinimalOgre::go(void)
 //-------------------------------------------------------------------------------------
     // Create the scene
 
-    // Create the visible mesh ball with initial velocity.
-    Ogre::Entity* ballMesh = mSceneMgr->createEntity("Ball", "sphere.mesh");
-    ballMesh->setMaterialName("Examples/SphereMappedRustySteel");
-    ballMesh->setCastShadows(true);
-    mDirection = Ogre::Vector3(-0.3, 0.6, -0.9);
-    mSpeed = 300.0f;
-
     // Create the bounding geometry, used only in collision testing.
-    ballBound = Ogre::Sphere(vZero, 200);
+    //ballBound = Ogre::Sphere(vZero, 200);
     boxBound = Ogre::PlaneBoundedVolume(Ogre::Plane::NEGATIVE_SIDE);
     boxBound.planes.push_back(wallBack = Ogre::Plane(Ogre::Vector3::UNIT_Z, -PLANE_DIST));
     boxBound.planes.push_back(wallFront = Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_Z, -PLANE_DIST));
@@ -229,30 +222,28 @@ bool MinimalOgre::go(void)
     entRight->setMaterialName("Examples/Rockwall");
     entRight->setCastShadows(false);
 
-  /*  Ogre::MeshManager::getSingleton().createPlane("tileRight",
-        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, wallTileRight,
-        800, 800, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Y);
-    Ogre::Entity* tileRight = mSceneMgr->createEntity("tileRightEntity", "tileRight");
-    mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(tileRight);
-    tileRight->setMaterialName("Examples/BumpyMetal");
-    tileRight->setCastShadows(false);
 
-
-    Ogre::MeshManager::getSingleton().createPlane("tileRight2",
-        Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, wallTileRight,
-        800, 800, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Y);
-    Ogre::Entity* tileRight2 = mSceneMgr->createEntity("tileRightEntity2", "tileRight2");
-    Ogre::SceneNode* node1 = mSceneMgr->getRootSceneNode()->createChildSceneNode(); 
-    node1->setPosition(0 ,400, -400);
-    node1->attachObject(tileRight2);
-    tileRight2->setMaterialName("Examples/BumpyMetal");
-    tileRight2->setCastShadows(false);*/
 
     levelSetup(1);
+
+    sim = new Simulator(mSceneMgr);
+
+    // Create the visible mesh ball.
+    
+    Ogre::Entity* ballMesh = mSceneMgr->createEntity("Ball", "sphere.mesh");
+    ballMesh->setMaterialName("Examples/SphereMappedRustySteel");
+    ballMesh->setCastShadows(true);
+
 
     // Attach the node.
     headNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
     headNode->attachObject(ballMesh);
+
+    Ball* ball = new Ball(headNode, 40, 0, 20, 100);
+    sim->addBall(ball);
+    ball->removeGravity();
+
+    newballcount = 0;
 
     // Set ambient light
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.05, 0.05, 0.05));
@@ -311,6 +302,15 @@ bool MinimalOgre::go(void)
     mDetailsPanel->setParamValue(9, "Bilinear");
     mDetailsPanel->setParamValue(10, "Solid");
     mDetailsPanel->hide();
+
+    Ogre::StringVector scorelist;
+    scorelist.push_back("Score");
+
+    scorePanel = mTrayMgr->createParamsPanel(OgreBites::TL_TOPLEFT, "ScorePanel", 200, scorelist);
+
+    paused = false;
+    slowdownval = 0.0;
+
 
     mRoot->addFrameListener(this);
 //-------------------------------------------------------------------------------------
@@ -422,15 +422,21 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
     if(mShutDown)
         return false;
 
+    if(paused)
+        slowdownval += 1/1800.f;
+    if(slowdownval <= 1/60.f)
+        sim->simulateStep(slowdownval);
+
     /********************************************************************
      * Animation
      */
 
-    Ogre::Vector3 point = headNode->getPosition();
-    Ogre::Real adjust = 0.0;
-    bool found = false;
+    //Ogre::Vector3 point = headNode->getPosition();
+    //Ogre::Real adjust = 0.0;
+    //bool found = false;
 
     // Given a bounding box, we can easily test each plane in the PlaneList.
+    /*
     for (int i = 0; i < 6 && !found; i++) {
       Ogre::Real dist = boxBound.planes[i].getDistance(ballBound.getCenter());
       if (dist < 100.01) {
@@ -438,12 +444,12 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
         adjust = 100.5 - dist;
         found = true;
       }
-    }
+    } */
 
     // Add distance traveled plus collision adjustment, and update position.
-    point = point + (((evt.timeSinceLastFrame * mSpeed) + adjust) * mDirection);
-    ballBound.setCenter(point);
-    headNode->setPosition(point);
+    //point = point + (((evt.timeSinceLastFrame * mSpeed) + adjust) * mDirection);
+    //ballBound.setCenter(point);
+    //headNode->setPosition(point);
 
     /*******************************************************************/
 
@@ -452,7 +458,7 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
     mMouse->capture();
 
     mTrayMgr->frameRenderingQueued(evt);
-
+    
     if (!mTrayMgr->isDialogVisible())
     {
         mCameraMan->frameRenderingQueued(evt);   // if dialog isn't up, then update the camera
@@ -466,6 +472,7 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
             mDetailsPanel->setParamValue(6, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().y));
             mDetailsPanel->setParamValue(7, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().z));
         }
+        scorePanel->setParamValue(0, Ogre::StringConverter::toString(newballcount));
     }
 
     return true;
@@ -561,6 +568,29 @@ bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
     else if (arg.key == OIS::KC_ESCAPE)
     {
         mShutDown = true;
+    }
+    else if (arg.key == OIS::KC_SPACE)
+    {
+        Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
+        //ballMeshpc->setMaterialName("Examples/SphereMappedRustySteel");
+        ballMeshpc->setCastShadows(true);
+
+        Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+        nodepc->attachObject(ballMeshpc);
+        int x = mCamera->getPosition().x;
+        int y = mCamera->getPosition().y;
+        int z = mCamera->getPosition().z;
+        Ball* ballpc = new Ball(nodepc, x, y, z, 100);
+        sim->addBall(ballpc);
+        double force = 4000.0;
+        Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
+        ballpc->applyForce(force * direction.x, force * direction.y, force * direction.z);
+        newballcount += 1;
+    }
+    else if (arg.key == OIS::KC_P)
+    {
+        paused = !paused;
+        slowdownval = 0.0;
     }
 
     mCameraMan->injectKeyDown(arg);

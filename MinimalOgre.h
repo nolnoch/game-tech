@@ -33,6 +33,8 @@ This source file is part of the
 
 #include <SdkTrays.h>
 #include <SdkCameraMan.h>
+#include "Simulator.h"
+#include "CameraMan.h"
 
 class MinimalOgre : public Ogre::FrameListener, public Ogre::WindowEventListener, public OIS::KeyListener, public OIS::MouseListener, OgreBites::SdkTrayListener
 {
@@ -65,11 +67,12 @@ protected:
     Ogre::AnimationState *mState;
     Ogre::SceneNode* headNode;
 
-    Ogre::Vector3 mDirection;
-    Ogre::Real mSpeed;
-
-    Ogre::Sphere ballBound;
+    //Ogre::Vector3 mDirection;
+    //Ogre::Real mSpeed;
+    //Ogre::Sphere ballBound;
     Ogre::PlaneBoundedVolume boxBound;
+    Simulator* sim;
+    int newballcount;
 
     Ogre::Plane wallUp;
     Ogre::Plane wallDown;
@@ -80,10 +83,14 @@ protected:
 
     Ogre::Vector3 vZero;
 
+    bool paused;
+    double slowdownval;
+
     // OgreBites
     OgreBites::SdkTrayManager* mTrayMgr;
-    OgreBites::SdkCameraMan* mCameraMan;      // basic camera controller
+    CameraMan* mCameraMan;      // basic camera controller
     OgreBites::ParamsPanel* mDetailsPanel;    // sample details panel
+    OgreBites::ParamsPanel* scorePanel;
     bool mCursorWasVisible;                   // was cursor visible before dialog appeared
     bool mShutDown;
 

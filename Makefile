@@ -56,7 +56,8 @@ PROGRAMS = $(bin_PROGRAMS)
 am_OgreApp_OBJECTS = OgreApp-MinimalOgre.$(OBJEXT)
 OgreApp_OBJECTS = $(am_OgreApp_OBJECTS)
 am__DEPENDENCIES_1 =
-OgreApp_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+OgreApp_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 OgreApp_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(OgreApp_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -100,6 +101,8 @@ AUTOCONF = ${SHELL} /v/filer4b/v38q001/aaronv92/cs354r/assgn/game-tech/missing -
 AUTOHEADER = ${SHELL} /v/filer4b/v38q001/aaronv92/cs354r/assgn/game-tech/missing --run autoheader
 AUTOMAKE = ${SHELL} /v/filer4b/v38q001/aaronv92/cs354r/assgn/game-tech/missing --run automake-1.11
 AWK = gawk
+BULLET_CFLAGS = 
+BULLET_LIBS = 
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2
@@ -185,6 +188,8 @@ build_cpu = x86_64
 build_os = linux-gnu
 build_vendor = unknown
 builddir = .
+bullet_CFLAGS = -I/usr/local/include/bullet  
+bullet_LIBS = -L/usr/local/lib -lBulletSoftBody -lBulletDynamics -lBulletCollision -lLinearMath  
 datadir = ${datarootdir}
 datarootdir = ${prefix}/share
 docdir = ${datarootdir}/doc/${PACKAGE}
@@ -219,11 +224,11 @@ top_build_prefix =
 top_builddir = .
 top_srcdir = .
 ACLOCAL_AMFLAGS = -I m4
-noinst_HEADERS = MinimalOgre.h
+noinst_HEADERS = MinimalOgre.h Ball.h OgreMotionState.h Simulator.h CameraMan.h
 OgreApp_CPPFLAGS = -I$(top_srcdir)
 OgreApp_SOURCES = MinimalOgre.cpp
-OgreApp_CXXFLAGS = $(OGRE_CFLAGS) $(OIS_CFLAGS)
-OgreApp_LDADD = $(OGRE_LIBS) $(OIS_LIBS)
+OgreApp_CXXFLAGS = $(OGRE_CFLAGS) $(OIS_CFLAGS) $(bullet_CFLAGS)
+OgreApp_LDADD = $(OGRE_LIBS) $(OIS_LIBS) $(bullet_LIBS)
 EXTRA_DIST = buildit makeit
 AUTOMAKE_OPTIONS = foreign
 all: config.h
