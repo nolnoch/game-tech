@@ -36,6 +36,9 @@ This source file is part of the
 #include "Simulator.h"
 #include "CameraMan.h"
 
+
+
+
 class MinimalOgre : public Ogre::FrameListener, public Ogre::WindowEventListener, public OIS::KeyListener, public OIS::MouseListener, OgreBites::SdkTrayListener
 {
 public:

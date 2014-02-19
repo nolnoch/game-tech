@@ -18,15 +18,6 @@ class Simulator
 
   private:
 
-    void addPlane(int x, int y, int z, int d)
-    {
-        btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(x, y, z), d);
-        btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1, 0)));
-        btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(0, groundMotionState, groundShape, btVector3(0, 0, 0));
-        btRigidBody* groundRigidBody = new btRigidBody(groundRigidBodyCI);
-        groundRigidBody->setRestitution(1.0);
-        dynamicsWorld->addRigidBody(groundRigidBody);
-    }
 
   public:
 
@@ -40,12 +31,7 @@ class Simulator
         dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
         dynamicsWorld->setGravity(btVector3(0, -980, 0));
 
-        addPlane(0, 1, 0, -800);
-        addPlane(0, -1, 0, -800);
-        addPlane(1, 0, 0, -800);
-        addPlane(-1, 0, 0, -800);
-        addPlane(0, 0, 1, -800);
-        addPlane(0, 0, -1, -800);
+       
     }
 
     void addBall(Ball* ball)
@@ -53,6 +39,18 @@ class Simulator
         ball->addToWorld(dynamicsWorld);
         balls.push_back(ball);
     }
+
+    
+    void addPlane(int x, int y, int z, int d)
+    {
+        btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(x, y, z), d);
+        btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1, 0)));
+        btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(0, groundMotionState, groundShape, btVector3(0, 0, 0));
+        btRigidBody* groundRigidBody = new btRigidBody(groundRigidBodyCI);
+        groundRigidBody->setRestitution(1.0);
+        dynamicsWorld->addRigidBody(groundRigidBody);
+    }
+    
 
     void simulateStep(double delay)
     {

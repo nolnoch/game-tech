@@ -228,6 +228,15 @@ bool MinimalOgre::go(void)
 
     sim = new Simulator(mSceneMgr);
 
+
+    sim->addPlane(0, 1, 0, -PLANE_DIST);
+    sim->addPlane(0, -1, 0, -PLANE_DIST);
+    sim->addPlane(1, 0, 0, -PLANE_DIST);
+    sim->addPlane(-1, 0, 0, -PLANE_DIST);
+    sim->addPlane(0, 0, 1, -PLANE_DIST);
+    sim->addPlane(0, 0, -1, -PLANE_DIST);
+
+
     // Create the visible mesh ball.
     
     Ogre::Entity* ballMesh = mSceneMgr->createEntity("Ball", "sphere.mesh");
@@ -243,6 +252,10 @@ bool MinimalOgre::go(void)
     sim->addBall(ball);
     ball->removeGravity();
 
+
+
+
+
     newballcount = 0;
 
     // Set ambient light
@@ -253,7 +266,7 @@ bool MinimalOgre::go(void)
     lSun->setType(Ogre::Light::LT_POINT);
     lSun->setDiffuseColour(0.95, 0.95, 1.00);
     lSun->setPosition(0,1400,0);
-    lSun->setAttenuation(2250, 1.0, 0.0000000001, 0.000001);
+    lSun->setAttenuation(3250, 1.0, 0.0000000001, 0.000001);
 //-------------------------------------------------------------------------------------
     //create FrameListener
     Ogre::LogManager::getSingletonPtr()->logMessage("*** Initializing OIS ***");
