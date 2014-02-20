@@ -1,4 +1,5 @@
 
+#include <OgreSceneManager.h>
 
 class OgreMotionState : public btMotionState
 {

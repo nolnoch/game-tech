@@ -267,12 +267,12 @@ bool MinimalOgre::go(void)
     sim = new Simulator(mSceneMgr);
 
 
-    // sim->addPlane(0, 1, 0, -PLANE_DIST);
-    // sim->addPlane(0, -1, 0, -PLANE_DIST);
-    // sim->addPlane(1, 0, 0, -PLANE_DIST);
-    // sim->addPlane(-1, 0, 0, -PLANE_DIST);
-    // sim->addPlane(0, 0, 1, -PLANE_DIST);
-    // sim->addPlane(0, 0, -1, -PLANE_DIST);
+    sim->addPlane(0, 1, 0, -PLANE_DIST);
+    sim->addPlane(0, -1, 0, -PLANE_DIST);
+    sim->addPlane(1, 0, 0, -PLANE_DIST);
+    sim->addPlane(-1, 0, 0, -PLANE_DIST);
+    sim->addPlane(0, 0, 1, -PLANE_DIST);
+    sim->addPlane(0, 0, -1, -PLANE_DIST);
 
 
     // Create the visible mesh ball.
@@ -287,17 +287,17 @@ bool MinimalOgre::go(void)
     headNode->attachObject(ballMesh);
 
     Ball* ball = new Ball(headNode, 40, 0, 20, 100);
-    sim->addBall(ball);
+    sim->addMainBall(ball);
     ball->removeGravity();
 
-    levelSetup(7);
+    levelSetup(4);
 
 
 
-    newballcount = 0;
+    score = 0;
 
     // Set ambient light
-    mSceneMgr->setAmbientLight(Ogre::ColourValue(0.05, 0.05, 0.05));
+    mSceneMgr->setAmbientLight(Ogre::ColourValue(0.15, 0.15, 0.15));
 
     // Create a light
     Ogre::Light* lSun = mSceneMgr->createLight("SunLight");
@@ -382,6 +382,8 @@ void MinimalOgre::levelSetup(int num) {
     // Since each mesh starts at the center of the plane, we need to offset it
     // to the top right corner of the plane and start counting from there.
     int offset = WALL_SIZE/2 - TILE_WIDTH/2;
+
+    srand(time(0));
 
     for(int i = 0; i < num; i++) {
         std::stringstream ss;
@@ -508,7 +510,15 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
       //  tile->setMaterialName("Examples/BumpyMetal");
     }
     if(slowdownval <= 1/60.f)
-        sim->simulateStep(slowdownval);
+    {
+        bool hit = sim->simulateStep(slowdownval);
+        if(hit)
+        {
+            tileEntities.back()->setMaterialName("Examples/BumpyMetal");
+            tileEntities.pop_back();
+            score++;
+        }
+    }
 
 
 
@@ -561,7 +571,7 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
             mDetailsPanel->setParamValue(6, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().y));
             mDetailsPanel->setParamValue(7, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().z));
         }
-        scorePanel->setParamValue(0, Ogre::StringConverter::toString(newballcount));
+        scorePanel->setParamValue(0, Ogre::StringConverter::toString(score));
     }
 
     return true;
@@ -674,7 +684,6 @@ bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
         double force = 4000.0;
         Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
         ballpc->applyForce(force * direction.x, force * direction.y, force * direction.z);
-        newballcount += 1;
     }
     else if (arg.key == OIS::KC_P)
     {

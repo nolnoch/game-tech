@@ -75,7 +75,7 @@ protected:
     //Ogre::Sphere ballBound;
     Ogre::PlaneBoundedVolume boxBound;
     Simulator* sim;
-    int newballcount;
+    int score;
 
     Ogre::Plane wallUp;
     Ogre::Plane wallDown;

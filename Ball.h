@@ -30,6 +30,7 @@ class Ball
         collisionShape->calculateLocalInertia(mass, sphereInertia);
         btRigidBody::btRigidBodyConstructionInfo ballCI(mass, motionState, collisionShape, sphereInertia);
         rigidBody = new btRigidBody(ballCI);
+        rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() ^ btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
 
         rigidBody->setRestitution(0.3);
     }
@@ -42,7 +43,7 @@ class Ball
     void removeGravity()
     {
         rigidBody->setGravity(btVector3(0, 0, 0));
-        rigidBody->setRestitution(0.9);
+        rigidBody->setRestitution(0.6);
         rigidBody->applyDamping(1);
     }
 
@@ -57,5 +58,10 @@ class Ball
     {
         rigidBody->activate(true);
         rigidBody->applyCentralImpulse(btVector3(dx, dy, dz));
+    }
+
+    bool checkRigidBody(btRigidBody* ptr)
+    {
+        return ptr == rigidBody;
     }
 };

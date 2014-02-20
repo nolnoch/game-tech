@@ -1,7 +1,5 @@
 #include <btBulletDynamicsCommon.h>
 #include <vector>
-#include "MinimalOgre.h"
-
 
 #include "Ball.h"
 
@@ -14,69 +12,50 @@
 
 using std::vector;
 
+
+
 class Simulator
 {
+  private:
     btBroadphaseInterface* broadphase;
     btDefaultCollisionConfiguration* collisionConfiguration;
     btCollisionDispatcher* dispatcher;
     btSequentialImpulseConstraintSolver* solver;
     btDiscreteDynamicsWorld* dynamicsWorld;
     Ogre::SceneManager* sceneMgr;
-
     vector<Ball*> balls;
+    std::deque<btRigidBody*> tiles;
 
-  private:
-
+    static btRigidBody* activetile;
+    static Ball* mainball;
+    static bool targethit;
 
   public:
 
-    Simulator(Ogre::SceneManager* sceneMgrPtr)
+    static bool foo(btManifoldPoint& cp, void* body0, void* body1)
     {
-        sceneMgr = sceneMgrPtr;
-        broadphase = new btDbvtBroadphase();
-        collisionConfiguration = new btDefaultCollisionConfiguration();
-        dispatcher = new btCollisionDispatcher(collisionConfiguration);
-        solver = new btSequentialImpulseConstraintSolver();
-        dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
-        dynamicsWorld->setGravity(btVector3(0, -980, 0));
-
-
-
+        for(int i = 0; i < 2; i++)
+        {
+            if(activetile == body0 && mainball->checkRigidBody((btRigidBody*)body1))
+            {
+                targethit = true;
+            }
+            else if(activetile == body1 && mainball->checkRigidBody((btRigidBody*)body0))
+            {
+                targethit = true;
+            }
+        }
     }
 
-    void addBall(Ball* ball)
-    {
-        ball->addToWorld(dynamicsWorld);
-        balls.push_back(ball);
-    }
+    Simulator(Ogre::SceneManager* sceneMgrPtr);
 
+    void addBall(Ball* ball);
+
+    void addMainBall(Ball* ball);
+
+    void addPlane(int x, int y, int z, int d);
     
-    void addPlane(int x, int y, int z, int d)
-    {
-        btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(x, y, z), d);
-        btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1, 0)));
-        btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(0, groundMotionState, groundShape, btVector3(0, 0, 0));
-        btRigidBody* groundRigidBody = new btRigidBody(groundRigidBodyCI);
-        groundRigidBody->setRestitution(1.0);
-        dynamicsWorld->addRigidBody(groundRigidBody);
-    }
-    
+    bool simulateStep(double delay);
 
-    void simulateStep(double delay)
-    {
-        dynamicsWorld->stepSimulation((1/60.f) - delay, 10);
-    }
-
-
-    void addTile(Ogre::SceneNode* node, int xsize, int ysize, int zsize) {
-
-        btCollisionShape* groundShape = new btBoxShape(btVector3(xsize, ysize, zsize));
-        btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),   
-            btVector3(node->_getDerivedPosition().x, node->_getDerivedPosition().y, node->_getDerivedPosition().z)));
-        btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(0, groundMotionState, groundShape, btVector3(0, 0, 0));
-        btRigidBody* groundRigidBody = new btRigidBody(groundRigidBodyCI);
-        groundRigidBody->setRestitution(1.0);
-        dynamicsWorld->addRigidBody(groundRigidBody);
-    }
-
+    void addTile(Ogre::SceneNode* node, int xsize, int ysize, int zsize);
 };

@@ -22,7 +22,7 @@ class CameraMan : public OgreBites::SdkCameraMan
             if (mGoingDown) accel -= mCamera->getUp();
 
             // if accelerating, try to reach top speed in a certain time
-            Ogre::Real topSpeed = mFastMove ? mTopSpeed * 5 : mTopSpeed;
+            Ogre::Real topSpeed = mFastMove ? mTopSpeed * 10 : mTopSpeed;
             if (accel.squaredLength() != 0)
             {
                 accel.normalise();
