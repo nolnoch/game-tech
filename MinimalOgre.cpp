@@ -165,12 +165,12 @@ bool MinimalOgre::go(void)
     // Create the bounding geometry, used only in collision testing.
     //ballBound = Ogre::Sphere(vZero, 200);
     boxBound = Ogre::PlaneBoundedVolume(Ogre::Plane::NEGATIVE_SIDE);
-    boxBound.planes.push_back(wallBack = Ogre::Plane(Ogre::Vector3::UNIT_Z, -PLANE_DIST));
-    boxBound.planes.push_back(wallFront = Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_Z, -PLANE_DIST));
-    boxBound.planes.push_back(wallDown = Ogre::Plane(Ogre::Vector3::UNIT_Y, -PLANE_DIST));
-    boxBound.planes.push_back(wallUp = Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_Y, -PLANE_DIST));
-    boxBound.planes.push_back(wallLeft = Ogre::Plane(Ogre::Vector3::UNIT_X, -PLANE_DIST));
-    boxBound.planes.push_back(wallRight = Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_X, -PLANE_DIST));
+    boxBound.planes.push_back(wallBack = Ogre::Plane(Ogre::Vector3::UNIT_Z, 0));
+    boxBound.planes.push_back(wallFront = Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_Z,0));
+    boxBound.planes.push_back(wallDown = Ogre::Plane(Ogre::Vector3::UNIT_Y,0));
+    boxBound.planes.push_back(wallUp = Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_Y,0));
+    boxBound.planes.push_back(wallLeft = Ogre::Plane(Ogre::Vector3::UNIT_X, 0));
+    boxBound.planes.push_back(wallRight = Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_X,0));
 
 
     // Use the planes from above to generate new meshes for walls.
@@ -178,53 +178,91 @@ bool MinimalOgre::go(void)
         Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, wallDown,
         WALL_SIZE, WALL_SIZE, 20, 20, true, 1, 1, 1, Ogre::Vector3::UNIT_Z);
     Ogre::Entity* entGround = mSceneMgr->createEntity("GroundEntity", "ground");
-    mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(entGround);
     entGround->setMaterialName("Custom/texture_blend");
     entGround->setCastShadows(false);
+    Ogre::SceneNode* nodeGround = mSceneMgr->getRootSceneNode()->createChildSceneNode(); 
+    nodeGround->setPosition(0 , -PLANE_DIST, 0); //1600 / 5 is our tilewidth
+    nodeGround->attachObject(entGround);
+
 
     Ogre::MeshManager::getSingleton().createPlane("ceiling",
         Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, wallUp,
         WALL_SIZE, WALL_SIZE, 20, 20, true, 1, 2, 2, Ogre::Vector3::UNIT_Z);
     Ogre::Entity* entCeiling = mSceneMgr->createEntity("CeilingEntity", "ceiling");
-    mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(entCeiling);
     entCeiling->setMaterialName("Examples/CloudySky");
     entCeiling->setCastShadows(false);
+    Ogre::SceneNode* nodeCeiling = mSceneMgr->getRootSceneNode()->createChildSceneNode(); 
+    nodeCeiling->setPosition(0 , PLANE_DIST, 0); //1600 / 5 is our tilewidth
+    nodeCeiling->attachObject(entCeiling);
+
+    // mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(entCeiling);
+    // entCeiling->setMaterialName("Examples/CloudySky");
+    // entCeiling->setCastShadows(false);
 
     Ogre::MeshManager::getSingleton().createPlane("back",
         Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, wallBack,
         WALL_SIZE, WALL_SIZE, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Y);
     Ogre::Entity* entBack = mSceneMgr->createEntity("BackEntity", "back");
-    mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(entBack);
     entBack->setMaterialName("Examples/Rockwall");
     entBack->setCastShadows(false);
+    Ogre::SceneNode* nodeBack = mSceneMgr->getRootSceneNode()->createChildSceneNode("backNode"); 
+    nodeBack->setPosition(0 , 0, -PLANE_DIST); //1600 / 5 is our tilewidth
+    nodeBack->attachObject(entBack);
+
+
+    // mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(entBack);
+    // entBack->setMaterialName("Examples/Rockwall");
+    // entBack->setCastShadows(false);
 
     Ogre::MeshManager::getSingleton().createPlane("front",
         Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, wallFront,
         WALL_SIZE, WALL_SIZE, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Y);
     Ogre::Entity* entFront = mSceneMgr->createEntity("FrontEntity", "front");
-    mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(entFront);
     entFront->setMaterialName("Examples/Rockwall");
     entFront->setCastShadows(false);
+    Ogre::SceneNode* nodeFront = mSceneMgr->getRootSceneNode()->createChildSceneNode("frontNode"); 
+    nodeFront->setPosition(0 , 0, PLANE_DIST); //1600 / 5 is our tilewidth
+    nodeFront->attachObject(entFront);
+
+
+
+    // mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(entFront);
+    // entFront->setMaterialName("Examples/Rockwall");
+    // entFront->setCastShadows(false);
 
     Ogre::MeshManager::getSingleton().createPlane("left",
         Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, wallLeft,
         WALL_SIZE, WALL_SIZE, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Y);
     Ogre::Entity* entLeft = mSceneMgr->createEntity("LeftEntity", "left");
-    mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(entLeft);
     entLeft->setMaterialName("Examples/Rockwall");
     entLeft->setCastShadows(false);
+    Ogre::SceneNode* nodeLeft = mSceneMgr->getRootSceneNode()->createChildSceneNode("leftNode"); 
+    nodeLeft->setPosition(-PLANE_DIST , 0, 0); //1600 / 5 is our tilewidth
+    nodeLeft->attachObject(entLeft);
+
+
+    // mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(entLeft);
+    // entLeft->setMaterialName("Examples/Rockwall");
+    // entLeft->setCastShadows(false);
 
     Ogre::MeshManager::getSingleton().createPlane("right",
         Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, wallRight,
         WALL_SIZE, WALL_SIZE, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Y);
     Ogre::Entity* entRight = mSceneMgr->createEntity("RightEntity", "right");
-    mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(entRight);
     entRight->setMaterialName("Examples/Rockwall");
     entRight->setCastShadows(false);
+    Ogre::SceneNode* nodeRight = mSceneMgr->getRootSceneNode()->createChildSceneNode("rightNode"); 
+    nodeRight->setPosition(PLANE_DIST, 0, 0); //1600 / 5 is our tilewidth
+    nodeRight->attachObject(entRight);
+
+
+    // mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(entRight);
+    // entRight->setMaterialName("Examples/Rockwall");
+    // entRight->setCastShadows(false);
 
 
 
-    levelSetup(1);
+
 
     sim = new Simulator(mSceneMgr);
 
@@ -252,7 +290,7 @@ bool MinimalOgre::go(void)
     sim->addBall(ball);
     ball->removeGravity();
 
-
+    levelSetup(1);
 
 
 
@@ -371,6 +409,9 @@ void MinimalOgre::levelSetup(int num) {
 
         std::cout << "Row/col " + ssDebug.str() << std::endl;
 
+        Ogre::SceneNode* node1; //= mSceneMgr->getRootSceneNode()->createChildSceneNode(); 
+
+
         // left
         if(tileNum < 25) {
             // set up x y z units of 0, 1 or -1, which will be used when we setPosition
@@ -379,6 +420,7 @@ void MinimalOgre::levelSetup(int num) {
             x = 0;
             y = -1 * (row * TILE_WIDTH) + offset;
             z = -1 * (col * TILE_WIDTH) + offset;
+            node1 = mSceneMgr->getSceneNode("leftNode")->createChildSceneNode();
         }
 
         // front
@@ -387,6 +429,7 @@ void MinimalOgre::levelSetup(int num) {
             y = -1 * (row * TILE_WIDTH) + offset;
             z = 0;
             wallTile = Ogre::Plane(Ogre::Vector3::UNIT_Z, -PLANE_DIST +1);
+            node1 = mSceneMgr->getSceneNode("frontNode")->createChildSceneNode();
         }
 
         // right
@@ -395,6 +438,7 @@ void MinimalOgre::levelSetup(int num) {
             y = -1 * (row * TILE_WIDTH) + offset;
             z = 1 * (col * TILE_WIDTH) - offset;
             wallTile = Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_X, -PLANE_DIST +1);
+            node1 = mSceneMgr->getSceneNode("rightNode")->createChildSceneNode();
         }
 
         // back
@@ -403,6 +447,7 @@ void MinimalOgre::levelSetup(int num) {
             y = -1 * (row * TILE_WIDTH) + offset;
             z = 0;
             wallTile = Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_Z, -PLANE_DIST +1);
+            node1 = mSceneMgr->getSceneNode("backNode")->createChildSceneNode();
         }
        
         // Build the entity name based on which tile number it is.
@@ -410,18 +455,20 @@ void MinimalOgre::levelSetup(int num) {
         str.append(ss.str());
         std::string entityStr = "tileEntity";
         entityStr.append(ss.str());
+        std::cout << "tileEntityName: " + entityStr << std::endl;
 
         Ogre::MeshManager::getSingleton().createPlane(str,
         Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, wallTile,
         TILE_WIDTH, TILE_WIDTH, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Y);
         Ogre::Entity* tile = mSceneMgr->createEntity(entityStr, str);
-        Ogre::SceneNode* node1 = mSceneMgr->getRootSceneNode()->createChildSceneNode(); 
+        
         node1->setPosition(x ,y, z); //1600 / 5 is our tilewidth
         node1->attachObject(tile);
         tile->setMaterialName("Examples/BumpyMetal");
         tile->setCastShadows(false);
+        sim->addTile(node1);
+        tileEntities.push_back(tile);
     }
-
 }
 
 
@@ -435,10 +482,24 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
     if(mShutDown)
         return false;
 
-    if(paused)
+    if(paused) {
         slowdownval += 1/1800.f;
+        Ogre::Entity* tile = tileEntities[0];   // mSceneMgr->getEntity("tileEntity0");     
+        tile->setMaterialName("Examples/Chrome");
+
+    }
+    else {
+        Ogre::Entity* tile = tileEntities[0];   // mSceneMgr->getEntity("tileEntity0");     
+        tile->setMaterialName("Examples/BumpyMetal");
+    }
     if(slowdownval <= 1/60.f)
         sim->simulateStep(slowdownval);
+
+
+
+    // Get collision in each plane (or just front plane for now)
+        // check if collision contact points are within our tile xy (if it's front plane)
+    
 
     /********************************************************************
      * Animation

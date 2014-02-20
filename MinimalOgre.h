@@ -57,7 +57,7 @@ protected:
     const static int TILE_WIDTH = WALL_SIZE / NUM_TILES_ROW;
 
     std::deque<Ogre::SceneNode *> tileList;
-
+    std::deque<Ogre::Entity *> tileEntities;
 
 
     Ogre::Root *mRoot;
