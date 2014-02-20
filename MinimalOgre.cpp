@@ -410,6 +410,9 @@ void MinimalOgre::levelSetup(int num) {
         std::cout << "Row/col " + ssDebug.str() << std::endl;
 
         Ogre::SceneNode* node1; //= mSceneMgr->getRootSceneNode()->createChildSceneNode(); 
+        int xsize = 240;
+        int ysize = 240;
+        int zsize = 240;
 
 
         // left
@@ -420,6 +423,7 @@ void MinimalOgre::levelSetup(int num) {
             x = 0;
             y = -1 * (row * TILE_WIDTH) + offset;
             z = -1 * (col * TILE_WIDTH) + offset;
+            xsize = 10;
             node1 = mSceneMgr->getSceneNode("leftNode")->createChildSceneNode();
         }
 
@@ -428,6 +432,7 @@ void MinimalOgre::levelSetup(int num) {
             x = 1 * (col * TILE_WIDTH) - offset;
             y = -1 * (row * TILE_WIDTH) + offset;
             z = 0;
+            zsize = 10;
             wallTile = Ogre::Plane(Ogre::Vector3::UNIT_Z, 1);
             node1 = mSceneMgr->getSceneNode("frontNode")->createChildSceneNode();
 
@@ -441,6 +446,7 @@ void MinimalOgre::levelSetup(int num) {
             x = 0;
             y = -1 * (row * TILE_WIDTH) + offset;
             z = 1 * (col * TILE_WIDTH) - offset;
+            xsize = 10;
             wallTile = Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_X, 1);
             node1 = mSceneMgr->getSceneNode("rightNode")->createChildSceneNode();
         }
@@ -450,6 +456,7 @@ void MinimalOgre::levelSetup(int num) {
             x = 1 * (col * TILE_WIDTH) - offset;
             y = -1 * (row * TILE_WIDTH) + offset;
             z = 0;
+            zsize = 10;
             wallTile = Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_Z, 1);
             node1 = mSceneMgr->getSceneNode("backNode")->createChildSceneNode();
         }
@@ -474,7 +481,7 @@ void MinimalOgre::levelSetup(int num) {
         node1->attachObject(tile);
         tile->setMaterialName("Examples/Chrome");
         tile->setCastShadows(false);
-        sim->addTile(node1);
+        sim->addTile(node1, xsize, ysize, zsize);
         tileEntities.push_back(tile);
     }
 }

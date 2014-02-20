@@ -68,11 +68,11 @@ class Simulator
     }
 
 
-    void addTile(Ogre::SceneNode* node) {
+    void addTile(Ogre::SceneNode* node, int xsize, int ysize, int zsize) {
 
-        btCollisionShape* groundShape = new btBoxShape(btVector3(240,240,240));
+        btCollisionShape* groundShape = new btBoxShape(btVector3(xsize, ysize, zsize));
         btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1),   
-            btVector3(node->getPosition().x, node->getPosition().y, node->getPosition().z - PLANE_DIST - 239)));
+            btVector3(node->_getDerivedPosition().x, node->_getDerivedPosition().y, node->_getDerivedPosition().z)));
         btRigidBody::btRigidBodyConstructionInfo groundRigidBodyCI(0, groundMotionState, groundShape, btVector3(0, 0, 0));
         btRigidBody* groundRigidBody = new btRigidBody(groundRigidBodyCI);
         groundRigidBody->setRestitution(1.0);
