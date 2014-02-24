@@ -18,11 +18,12 @@ class CameraMan : public OgreBites::SdkCameraMan
             if (mGoingBack) accel -= mCamera->getDirection();
             if (mGoingRight) accel += mCamera->getRight();
             if (mGoingLeft) accel -= mCamera->getRight();
-            if (mGoingUp) accel += mCamera->getUp();
-            if (mGoingDown) accel -= mCamera->getUp();
+            accel.y = 0;
+            if (mGoingUp) accel += Ogre::Vector3(0, 1, 0);
+            if (mGoingDown) accel -= Ogre::Vector3(0, 1, 0);
 
             // if accelerating, try to reach top speed in a certain time
-            Ogre::Real topSpeed = mFastMove ? mTopSpeed * 10 : mTopSpeed;
+            Ogre::Real topSpeed = mFastMove ? mTopSpeed : mTopSpeed * 10;
             if (accel.squaredLength() != 0)
             {
                 accel.normalise();
@@ -40,6 +41,7 @@ class CameraMan : public OgreBites::SdkCameraMan
             }
             else if (mVelocity.squaredLength() < 0.1) 
                 mVelocity = Ogre::Vector3::ZERO;
+
 
             if (mVelocity != Ogre::Vector3::ZERO)
                 mCamera->move(mVelocity * evt.timeSinceLastFrame);
@@ -66,4 +68,25 @@ class CameraMan : public OgreBites::SdkCameraMan
         return true;
     }
 
+    virtual void injectKeyDown(const OIS::KeyEvent& evt)
+    {
+        if (evt.key == OIS::KC_W || evt.key == OIS::KC_UP) mGoingForward = true;
+        else if (evt.key == OIS::KC_S || evt.key == OIS::KC_DOWN) mGoingBack = true;
+        else if (evt.key == OIS::KC_A || evt.key == OIS::KC_LEFT) mGoingLeft = true;
+        else if (evt.key == OIS::KC_D || evt.key == OIS::KC_RIGHT) mGoingRight = true;
+        else if (evt.key == OIS::KC_SPACE) mGoingUp = true;
+        else if (evt.key == OIS::KC_LSHIFT) mGoingDown = true;
+        else if (evt.key == OIS::KC_LCONTROL) mFastMove = true;
+    }
+
+    virtual void injectKeyUp(const OIS::KeyEvent& evt)
+    {
+        if (evt.key == OIS::KC_W || evt.key == OIS::KC_UP) mGoingForward = false;
+        else if (evt.key == OIS::KC_S || evt.key == OIS::KC_DOWN) mGoingBack = false;
+        else if (evt.key == OIS::KC_A || evt.key == OIS::KC_LEFT) mGoingLeft = false;
+        else if (evt.key == OIS::KC_D || evt.key == OIS::KC_RIGHT) mGoingRight = false;
+        else if (evt.key == OIS::KC_SPACE) mGoingUp = false;
+        else if (evt.key == OIS::KC_LSHIFT) mGoingDown = false;
+        else if (evt.key == OIS::KC_LCONTROL) mFastMove = false;
+    }
 };

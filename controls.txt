@@ -1,0 +1,6 @@
+So I decided to play with the controls a bit.
+If you don't like them most of the changes are in CameraMan.h.
+
+WASD mvoes along X and Z axes. Space and left Shift move the player up and down.
+Left-clicking now shoots balls. Left Control moves slowly (fast is the default now).
+P is still pause.

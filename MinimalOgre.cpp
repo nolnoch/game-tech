@@ -670,20 +670,6 @@ bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
     }
     else if (arg.key == OIS::KC_SPACE)
     {
-        Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
-        //ballMeshpc->setMaterialName("Examples/SphereMappedRustySteel");
-        ballMeshpc->setCastShadows(true);
-
-        Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-        nodepc->attachObject(ballMeshpc);
-        int x = mCamera->getPosition().x;
-        int y = mCamera->getPosition().y;
-        int z = mCamera->getPosition().z;
-        Ball* ballpc = new Ball(nodepc, x, y, z, 100);
-        sim->addBall(ballpc);
-        double force = 4000.0;
-        Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
-        ballpc->applyForce(force * direction.x, force * direction.y, force * direction.z);
     }
     else if (arg.key == OIS::KC_P)
     {
@@ -710,6 +696,20 @@ bool MinimalOgre::mouseMoved( const OIS::MouseEvent& arg )
 
 bool MinimalOgre::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
+    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
+    //ballMeshpc->setMaterialName("Examples/SphereMappedRustySteel");
+    ballMeshpc->setCastShadows(true);
+
+    Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+    nodepc->attachObject(ballMeshpc);
+    int x = mCamera->getPosition().x;
+    int y = mCamera->getPosition().y;
+    int z = mCamera->getPosition().z;
+    Ball* ballpc = new Ball(nodepc, x, y, z, 100);
+    sim->addBall(ballpc);
+    double force = 4000.0;
+    Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
+    ballpc->applyForce(force * direction.x, force * direction.y, force * direction.z);
     if (mTrayMgr->injectMouseDown(arg, id)) return true;
     mCameraMan->injectMouseDown(arg, id);
     return true;
