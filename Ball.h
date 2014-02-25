@@ -33,6 +33,7 @@ class Ball
         rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() ^ btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
 
         rigidBody->setRestitution(0.3);
+        rigidBody->setDamping(0.9, 0.0);
     }
 
     void addToWorld(btDynamicsWorld* world)
@@ -44,7 +45,6 @@ class Ball
     {
         rigidBody->setGravity(btVector3(0, 0, 0));
         rigidBody->setRestitution(0.6);
-        rigidBody->applyDamping(1);
     }
 
     void setPosition(int x, int y, int z)

@@ -64,8 +64,11 @@ bool Simulator::simulateStep(double delay)
     dynamicsWorld->stepSimulation((1/60.f) - delay, 10);
     if(targethit)
     {
-        tiles.pop_back();
-        activetile = tiles.back();
+        if(tiles.size() > 1)
+        {
+            tiles.pop_back();
+            activetile = tiles.back();
+        }
     }
     return targethit;
 }

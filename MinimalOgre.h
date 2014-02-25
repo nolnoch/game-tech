@@ -58,6 +58,7 @@ protected:
     bool gameStart;
     int currLevel;
     int currTile;
+    bool animDone;
 
     Ogre::Timer timer;
 

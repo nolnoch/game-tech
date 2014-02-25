@@ -294,6 +294,7 @@ bool MinimalOgre::go(void)
 
     // Handles the simonSays initial animation:
     gameStart = true;
+    animDone = false;
     currTile = tileEntities.size() - 1; // which tile has to be lit up first
 
 
@@ -517,7 +518,8 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
         if(hit)
         {
             tileEntities.back()->setMaterialName("Examples/BumpyMetal");
-            tileEntities.pop_back();
+            if(tileEntities.size() > 1)
+                tileEntities.pop_back();
             score++;
         }
     }
@@ -592,34 +594,32 @@ void MinimalOgre::simonSaysAnim() {
     long currTime = timer.getMilliseconds();
     //   std::cout << currTime << std::endl;
     int numTiles = tileEntities.size();
-    int startTime = 2000; // starts 2 secs into the game.
+    int startTime = 0; // starts 2 secs into the game.
     int timePerTile = 1500; // each tile lights up for this duration (2 secs)
     int waitTime = 100; // waits 500ms between each tile being lit up.
 
-    int animStart = (waitTime + timePerTile) * (tileEntities.size()-1 - currTile) + startTime;
+    int animStart = (waitTime + timePerTile) * ((tileEntities.size() - 1) - currTile) + startTime;
     int animEnd = animStart + timePerTile;
-    if(currTile >= 0) {
+    if(currTile >= -1) {
         if(currTime > animStart && currTime <= animEnd)
         {
-            // If we are at the initial tile, revert the last tile to original texture
-            // since we are currently just looping all the time through them and changing their textures.
-            if(currTile == tileEntities.size() - 1) {
-                tileEntities[0]->setMaterialName("Examples/Chrome");
-            }
             // Revert previous tile to original texture
-            if(currTile + 1 < tileEntities.size()) {
+            if(currTile + 1 < tileEntities.size() && currTile >= -1) {
                 tileEntities[currTile + 1]->setMaterialName("Examples/Chrome");
             }
-            tileEntities[currTile]->setMaterialName("Examples/BumpyMetal");
+            if(currTile >= 0)
+                tileEntities[currTile]->setMaterialName("Examples/BumpyMetal");
             // moves on to the next tile.
             currTile--;
-
+            std::cout << "c: " << currTile << "\n";
         }
     }
-    else {
+    else if (!animDone){
         if(tileEntities.size() > 0) {
-            currTile = tileEntities.size() - 1;
-            timer.reset();
+            tileEntities[0]->setMaterialName("Examples/Chrome");
+            animDone = true;
+            //currTile = tileEntities.size() - 1;
+            //timer.reset();
         }
     }
 
@@ -730,6 +730,14 @@ bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
     {
         paused = !paused;
         slowdownval = 0.0;
+    }
+    else if (arg.key == OIS::KC_Q)
+    {
+        if(currTile >= -1)
+            tileEntities[currTile+1]->setMaterialName("Examples/Chrome");
+        currTile = tileEntities.size() - 1;
+        timer.reset();
+        animDone = false;
     }
 
     mCameraMan->injectKeyDown(arg);

@@ -34,16 +34,13 @@ class Simulator
 
     static bool foo(btManifoldPoint& cp, void* body0, void* body1)
     {
-        for(int i = 0; i < 2; i++)
+        if(activetile == body0 && mainball->checkRigidBody((btRigidBody*)body1))
         {
-            if(activetile == body0 && mainball->checkRigidBody((btRigidBody*)body1))
-            {
-                targethit = true;
-            }
-            else if(activetile == body1 && mainball->checkRigidBody((btRigidBody*)body0))
-            {
-                targethit = true;
-            }
+            targethit = true;
+        }
+        else if(activetile == body1 && mainball->checkRigidBody((btRigidBody*)body0))
+        {
+            targethit = true;
         }
     }
 
