@@ -265,6 +265,7 @@ bool MinimalOgre::go(void)
 
     // Set up simulation/bullet collision objects
     sim = new Simulator(mSceneMgr);
+    globalBall = NULL;
 
 
     sim->addPlane(0, 1, 0, -PLANE_DIST);
@@ -759,6 +760,50 @@ bool MinimalOgre::mouseMoved( const OIS::MouseEvent& arg )
 
 bool MinimalOgre::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
+     // if there is an old ball, remove it
+    // create a new ball
+    if(globalBall != NULL) {
+        sim->removeBall(globalBall);
+       // delete globalBall->node;
+    }
+ 
+
+    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
+    //ballMeshpc->setMaterialName("Examples/SphereMappedRustySteel");
+    ballMeshpc->setCastShadows(true);
+
+    Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+    nodepc->attachObject(ballMeshpc);
+    int x = mCamera->getPosition().x;
+    int y = mCamera->getPosition().y;
+    int z = mCamera->getPosition().z;
+
+
+    //globalBall->setPosition(x, y, z);
+    globalBall = new Ball(nodepc, x, y, z, 100);
+    sim->addBall(globalBall);
+    double force = 4000.0;
+    Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
+    globalBall->applyForce(force * direction.x, force * direction.y, force * direction.z);
+
+    if (mTrayMgr->injectMouseDown(arg, id)) return true;
+        mCameraMan->injectMouseDown(arg, id);
+    return true;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ /*   
     Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
     //ballMeshpc->setMaterialName("Examples/SphereMappedRustySteel");
     ballMeshpc->setCastShadows(true);
@@ -775,7 +820,7 @@ bool MinimalOgre::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID i
     ballpc->applyForce(force * direction.x, force * direction.y, force * direction.z);
     if (mTrayMgr->injectMouseDown(arg, id)) return true;
     mCameraMan->injectMouseDown(arg, id);
-    return true;
+    return true;*/
 }
 
 bool MinimalOgre::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )

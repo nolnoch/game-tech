@@ -65,6 +65,7 @@ protected:
     std::deque<Ogre::SceneNode *> tileList;
     std::deque<Ogre::Entity *> tileEntities;
 
+    Ball* globalBall;
 
     Ogre::Root *mRoot;
     Ogre::Camera* mCamera;

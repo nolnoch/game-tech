@@ -55,4 +55,7 @@ class Simulator
     bool simulateStep(double delay);
 
     void addTile(Ogre::SceneNode* node, int xsize, int ysize, int zsize);
+
+    
+    void removeBall(Ball* ball);
 };

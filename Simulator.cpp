@@ -15,7 +15,7 @@ Simulator::Simulator(Ogre::SceneManager* sceneMgrPtr)
     dispatcher = new btCollisionDispatcher(collisionConfiguration);
     solver = new btSequentialImpulseConstraintSolver();
     dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
-    dynamicsWorld->setGravity(btVector3(0, -980, 0));
+   // dynamicsWorld->setGravity(btVector3(0, -980, 0));
 
     targethit = false;
 }
@@ -72,3 +72,12 @@ bool Simulator::simulateStep(double delay)
     }
     return targethit;
 }
+
+void Simulator::removeBall(Ball* ball) {
+    btRigidBody* body = ball->getRigidBody();
+    dynamicsWorld->removeRigidBody(body);
+    delete body->getMotionState();
+    delete body;
+    delete ball->node;
+}
+

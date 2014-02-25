@@ -9,10 +9,10 @@ class Ball
     btCollisionShape* collisionShape;
     btRigidBody* rigidBody;
     btScalar mass;
-    Ogre::SceneNode* node;
     OgreMotionState* motionState;
 
   public:
+      Ogre::SceneNode* node;
     
     Ball(Ogre::SceneNode* newnode, int nx, int ny, int nz, int nr)
     {
@@ -64,4 +64,9 @@ class Ball
     {
         return ptr == rigidBody;
     }
+
+     btRigidBody* getRigidBody() {
+        return rigidBody;
+    }
+
 };
