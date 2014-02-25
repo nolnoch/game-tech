@@ -55,6 +55,11 @@ protected:
     const static int NUM_TILES_ROW = 5; // number of tiles in each row of a wall.
     const static int NUM_TILES_WALL = NUM_TILES_ROW * NUM_TILES_ROW; //number of total tiles on a wall.
     const static int TILE_WIDTH = WALL_SIZE / NUM_TILES_ROW;
+    bool gameStart;
+    int currLevel;
+    int currTile;
+
+    Ogre::Timer timer;
 
     std::deque<Ogre::SceneNode *> tileList;
     std::deque<Ogre::Entity *> tileEntities;
@@ -105,8 +110,12 @@ protected:
     // Level Setup
     void levelSetup(int num);
 
+    void simonSaysAnim();
+
     // Ogre::FrameListener
     virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
+
+
 
     // OIS::KeyListener
     virtual bool keyPressed( const OIS::KeyEvent &arg );

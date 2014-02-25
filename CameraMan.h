@@ -18,9 +18,12 @@ class CameraMan : public OgreBites::SdkCameraMan
             if (mGoingBack) accel -= mCamera->getDirection();
             if (mGoingRight) accel += mCamera->getRight();
             if (mGoingLeft) accel -= mCamera->getRight();
-            accel.y = 0;
-            if (mGoingUp) accel += Ogre::Vector3(0, 1, 0);
-            if (mGoingDown) accel -= Ogre::Vector3(0, 1, 0);
+           // accel.y = 0;
+            if (mGoingUp) accel += mCamera->getUp();
+            if (mGoingDown) accel -= mCamera->getUp();
+
+            //if (mGoingUp) accel += Ogre::Vector3(0, 1, 0);
+           // if (mGoingDown) accel -= Ogre::Vector3(0, 1, 0);
 
             // if accelerating, try to reach top speed in a certain time
             Ogre::Real topSpeed = mFastMove ? mTopSpeed : mTopSpeed * 10;

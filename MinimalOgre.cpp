@@ -263,7 +263,7 @@ bool MinimalOgre::go(void)
 
 
 
-
+    // Set up simulation/bullet collision objects
     sim = new Simulator(mSceneMgr);
 
 
@@ -289,9 +289,12 @@ bool MinimalOgre::go(void)
     Ball* ball = new Ball(headNode, 40, 0, 20, 100);
     sim->addMainBall(ball);
     ball->removeGravity();
-
+    // Create tile meshes and collision objects for each tile.
     levelSetup(4);
 
+    // Handles the simonSays initial animation:
+    gameStart = true;
+    currTile = tileEntities.size() - 1; // which tile has to be lit up first
 
 
     score = 0;
@@ -439,7 +442,6 @@ void MinimalOgre::levelSetup(int num) {
             node1 = mSceneMgr->getSceneNode("frontNode")->createChildSceneNode();
 
             Ogre::SceneNode* parent = mSceneMgr->getSceneNode("frontNode");
-            std::cout << "parent's position: " << parent->getPosition() << std::endl;
 
         }
 
@@ -521,6 +523,14 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
     }
 
 
+    // If this is the first time we start the game, lets play the simon says animation
+    if(gameStart) {
+        timer.reset();
+        gameStart = false;
+    }
+
+    simonSaysAnim();
+
 
     // Get collision in each plane (or just front plane for now)
         // check if collision contact points are within our tile xy (if it's front plane)
@@ -576,6 +586,51 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
     return true;
 }
+
+// Lights up the tiles in the tileEntities, from the back of the deque to the front.
+void MinimalOgre::simonSaysAnim() {
+    long currTime = timer.getMilliseconds();
+    //   std::cout << currTime << std::endl;
+    int numTiles = tileEntities.size();
+    int startTime = 2000; // starts 2 secs into the game.
+    int timePerTile = 1500; // each tile lights up for this duration (2 secs)
+    int waitTime = 100; // waits 500ms between each tile being lit up.
+
+    int animStart = (waitTime + timePerTile) * (tileEntities.size()-1 - currTile) + startTime;
+    int animEnd = animStart + timePerTile;
+    if(currTile >= 0) {
+        if(currTime > animStart && currTime <= animEnd)
+        {
+            // If we are at the initial tile, revert the last tile to original texture
+            // since we are currently just looping all the time through them and changing their textures.
+            if(currTile == tileEntities.size() - 1) {
+                tileEntities[0]->setMaterialName("Examples/Chrome");
+            }
+            // Revert previous tile to original texture
+            if(currTile + 1 < tileEntities.size()) {
+                tileEntities[currTile + 1]->setMaterialName("Examples/Chrome");
+            }
+            tileEntities[currTile]->setMaterialName("Examples/BumpyMetal");
+            // moves on to the next tile.
+            currTile--;
+
+        }
+    }
+    else {
+        if(tileEntities.size() > 0) {
+            currTile = tileEntities.size() - 1;
+            timer.reset();
+        }
+    }
+
+
+
+
+
+}
+
+
+
 //-------------------------------------------------------------------------------------
 bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
 {
