@@ -39,7 +39,6 @@ MinimalOgre::MinimalOgre(void)
     mMouse(0),
     mKeyboard(0),
     mState(0),
-    headNode(0),
     vZero(Ogre::Vector3::ZERO)
 {
 	mTimer = OGRE_NEW Ogre::Timer();
@@ -277,21 +276,9 @@ bool MinimalOgre::go(void)
 
 
     // Create the visible mesh ball.
-    
-    Ogre::Entity* ballMesh = mSceneMgr->createEntity("Ball", "sphere.mesh");
-    ballMesh->setMaterialName("Examples/SphereMappedRustySteel");
-    ballMesh->setCastShadows(true);
-
-
-    // Attach the node.
-    headNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    headNode->attachObject(ballMesh);
-
-    Ball* ball = new Ball(headNode, 40, 0, 20, 100);
-    sim->addMainBall(ball);
-    ball->removeGravity();
     // Create tile meshes and collision objects for each tile.
-    levelSetup(4);
+    currLevel = 2;
+    levelSetup(currLevel);
 
     // Handles the simonSays initial animation:
     gameStart = true;
@@ -366,6 +353,7 @@ bool MinimalOgre::go(void)
 
     paused = false;
     slowdownval = 0.0;
+    gameDone = false;
 
 
     mRoot->addFrameListener(this);
@@ -379,6 +367,23 @@ bool MinimalOgre::go(void)
 //  - attaches textured tiles placed at random locations
 //  to the main SceneNode depending on what level it is.
 void MinimalOgre::levelSetup(int num) {
+    for(int i = 0; i < num; i++)
+    {
+        Ogre::Entity* ballMesh = mSceneMgr->createEntity("sphere.mesh");
+        ballMesh->setMaterialName("Examples/SphereMappedRustySteel");
+        ballMesh->setCastShadows(true);
+        // Attach the node.
+        Ogre::SceneNode* headNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+        headNode->attachObject(ballMesh);
+        int x = (std::rand() % 1800) - 900;
+        int y = (std::rand() % 1800) - 900;
+        int z = (std::rand() % 1800) - 900;
+        Ball* ball = new Ball(headNode, x, y, z, 100);
+        ball->removeGravity();
+        sim->addMainBall(ball);
+        balls.push_back(ball);
+    }
+
     Ogre::Plane wallTile = Ogre::Plane(Ogre::Vector3::UNIT_X, -PLANE_DIST +1);
 
     int x = 0;
@@ -489,10 +494,24 @@ void MinimalOgre::levelSetup(int num) {
         tile->setCastShadows(false);
         sim->addTile(node1, xsize, ysize, zsize);
         tileEntities.push_back(tile);
+        allTileEntities.push_back(tile);
+        tileList.push_back(node1);
     }
 }
 
+void MinimalOgre::levelTearDown()
+{
+    for(int i = 0; i < balls.size(); i++)
+        sim->removeBall(balls[i]);
+    balls.clear();
 
+    for(int i = 0; i < tileList.size(); i++)
+        mSceneMgr->destroySceneNode(tileList[i]);
+    for(int i = 0; i < allTileEntities.size(); i++)
+        mSceneMgr->destroyEntity(allTileEntities[i]);
+    tileList.clear();
+    allTileEntities.clear();
+}
 
 
 bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
@@ -516,12 +535,17 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
     if(slowdownval <= 1/60.f)
     {
         bool hit = sim->simulateStep(slowdownval);
-        if(hit)
+        if(hit && !gameDone)
         {
             tileEntities.back()->setMaterialName("Examples/BumpyMetal");
-            if(tileEntities.size() > 1)
+            if(tileEntities.size() > 0)
                 tileEntities.pop_back();
             score++;
+            if(tileEntities.size() == 0 && !gameDone)
+            {
+                gameDone = true;
+                winTimer = 0;
+            }
         }
     }
 
@@ -530,6 +554,18 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
     if(gameStart) {
         timer.reset();
         gameStart = false;
+    }
+
+    if(gameDone)
+    {
+        winTimer++;
+        if(winTimer > 360)
+        {
+            levelTearDown();
+            currLevel++;
+            levelSetup(currLevel);
+            gameDone = false;
+        }
     }
 
     simonSaysAnim();
@@ -789,14 +825,6 @@ bool MinimalOgre::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID i
     if (mTrayMgr->injectMouseDown(arg, id)) return true;
         mCameraMan->injectMouseDown(arg, id);
     return true;
-
-
-
-
-
-
-
-
 
 
 

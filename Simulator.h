@@ -27,20 +27,30 @@ class Simulator
     std::deque<btRigidBody*> tiles;
 
     static btRigidBody* activetile;
-    static Ball* mainball;
+    static vector<Ball*> mainballs;
     static bool targethit;
 
   public:
 
     static bool foo(btManifoldPoint& cp, void* body0, void* body1)
     {
-        if(activetile == body0 && mainball->checkRigidBody((btRigidBody*)body1))
+        if(activetile == NULL)
+            return true;
+        for(int i = 0; i < mainballs.size(); i++)
         {
-            targethit = true;
-        }
-        else if(activetile == body1 && mainball->checkRigidBody((btRigidBody*)body0))
-        {
-            targethit = true;
+            Ball* mball = mainballs[i];
+            if(activetile == body0 && mball->checkRigidBody((btRigidBody*)body1))
+            {
+                targethit = true;
+                mball->lockPosition();
+                return true;
+            }
+            else if(activetile == body1 && mball->checkRigidBody((btRigidBody*)body0))
+            {
+                targethit = true;
+                mball->lockPosition();
+                return true;
+            }
         }
     }
 

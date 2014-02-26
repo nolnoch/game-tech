@@ -2,7 +2,7 @@
 #include "Simulator.h"
 
 btRigidBody* Simulator::activetile;
-Ball* Simulator::mainball;
+vector<Ball*> Simulator::mainballs;
 bool Simulator::targethit;
 
 
@@ -15,7 +15,7 @@ Simulator::Simulator(Ogre::SceneManager* sceneMgrPtr)
     dispatcher = new btCollisionDispatcher(collisionConfiguration);
     solver = new btSequentialImpulseConstraintSolver();
     dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
-   // dynamicsWorld->setGravity(btVector3(0, -980, 0));
+    dynamicsWorld->setGravity(btVector3(0, 0, 0));
 
     targethit = false;
 }
@@ -29,7 +29,7 @@ void Simulator::addBall(Ball* ball)
 void Simulator::addMainBall(Ball* ball)
 {
     addBall(ball);
-    mainball = ball;
+    mainballs.push_back(ball);
 }
 
 void Simulator::addPlane(int x, int y, int z, int d)
@@ -64,10 +64,13 @@ bool Simulator::simulateStep(double delay)
     dynamicsWorld->stepSimulation((1/60.f) - delay, 10);
     if(targethit)
     {
-        if(tiles.size() > 1)
+        if(tiles.size() > 0)
         {
             tiles.pop_back();
-            activetile = tiles.back();
+            if(tiles.size() > 0)
+                activetile = tiles.back();
+            else
+                activetile = NULL;
         }
     }
     return targethit;

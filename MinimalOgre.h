@@ -60,11 +60,16 @@ protected:
     int currTile;
     bool animDone;
 
+    bool gameDone;
+    int winTimer;
+
     Ogre::Timer timer;
 
     std::deque<Ogre::SceneNode *> tileList;
     std::deque<Ogre::Entity *> tileEntities;
+    std::deque<Ogre::Entity *> allTileEntities;
 
+    vector<Ball*> balls;
     Ball* globalBall;
 
     Ogre::Root *mRoot;
@@ -75,7 +80,6 @@ protected:
     Ogre::String mPluginsCfg;
     Ogre::Timer *mTimer;
     Ogre::AnimationState *mState;
-    Ogre::SceneNode* headNode;
 
     //Ogre::Vector3 mDirection;
     //Ogre::Real mSpeed;
@@ -111,6 +115,7 @@ protected:
 
     // Level Setup
     void levelSetup(int num);
+    void levelTearDown();
 
     void simonSaysAnim();
 
