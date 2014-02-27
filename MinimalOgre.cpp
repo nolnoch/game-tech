@@ -400,23 +400,9 @@ bool MinimalOgre::go(void)
 //  - attaches textured tiles placed at random locations
 //  to the main SceneNode depending on what level it is.
 void MinimalOgre::levelSetup(int num) {
+    if(num > 50)
+        num = 50;
     srand(time(0));
-    /*
-    for(int i = 0; i < num; i++)
-    {
-        Ogre::Entity* ballMesh = mSceneMgr->createEntity("sphere.mesh");
-        ballMesh->setMaterialName("Examples/SphereMappedRustySteel");
-        ballMesh->setCastShadows(true);
-        // Attach the node.
-        Ogre::SceneNode* headNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-        headNode->attachObject(ballMesh);
-        int x = (std::rand() % 1800) - 900;
-        int y = (std::rand() % 1800) - 900;
-        int z = (std::rand() % 1800) - 900;
-        Ball* ball = new Ball(headNode, x, y, z, 100);
-        sim->addMainBall(ball);
-        balls.push_back(ball);
-    } */
 
     Ogre::Plane wallTile = Ogre::Plane(Ogre::Vector3::UNIT_X, -PLANE_DIST +1);
 
@@ -429,6 +415,10 @@ void MinimalOgre::levelSetup(int num) {
     int y = 0;
     int z = 0;
 
+    vector<int> randomnumbers;
+    for(int i = 0; i < 50; i++)
+        randomnumbers.push_back(i);
+
     for(int i = 0; i < num; i++) {
    
         std::stringstream ss;
@@ -436,10 +426,9 @@ void MinimalOgre::levelSetup(int num) {
         std::stringstream ssDebug;
         ss << (i + tileCounter);
 
-
-        // TODO, check random num was not already seen, or maybe we do want
-        // to have tiles repeat in the sequence we need
-        int tileNum = std::rand() % 50; // get random tile between 0 and 99;
+        int rn = std::rand() % randomnumbers.size(); // get random tile in list of unused tiles
+        int tileNum = randomnumbers[rn];
+        randomnumbers.erase(randomnumbers.begin() + rn);
         ssDebug << tileNum;
         std::cout << "Random number1: " + ssDebug.str() << std::endl;
         ssDebug.str(std::string());
@@ -537,6 +526,8 @@ void MinimalOgre::levelSetup(int num) {
     {
         formationsize++;
         formationcounter = formationsize - 1;
+        if(formationsize > 6)
+            formationsize = 6;
     }
     ballSetup(formationsize);
 }
