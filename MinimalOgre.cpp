@@ -295,12 +295,17 @@ bool MinimalOgre::go(void)
     sim->addPlane(0, 0, 1, -PLANE_DIST);
     sim->addPlane(0, 0, -1, -PLANE_DIST);
 
+
+    score = 0;
+    shotsFired = 0;
+    formationcounter = 1;
+    formationsize = 1;
+
     tileCounter = 0;
     // Create the visible mesh ball.
     // Create tile meshes and collision objects for each tile.
-    currLevel = 2;
+    currLevel = 1;
     levelSetup(currLevel);
-    ballSetup(2);
 
     // Handles the simonSays initial animation:
     gameStart = true;
@@ -308,7 +313,6 @@ bool MinimalOgre::go(void)
     currTile = tileEntities.size() - 1; // which tile has to be lit up first
 
 
-    score = 0;
 
     // Set ambient light
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.15, 0.15, 0.15));
@@ -370,9 +374,14 @@ bool MinimalOgre::go(void)
 
     Ogre::StringVector scorelist;
     scorelist.push_back("Score");
+    scorelist.push_back("Shots Fired");
+    scorelist.push_back("Current Level");
     scorePanel = mTrayMgr->createParamsPanel(OgreBites::TL_TOPLEFT, "ScorePanel", 200, scorelist);
 
     congratsPanel = mTrayMgr->createLabel(OgreBites::TL_TOP, "CongratsPanel", "this is dumb", 300);
+    congratsPanel->hide();
+
+    chargePanel = mTrayMgr->createLabel(OgreBites::TL_BOTTOM, "Chargepanel", "|", 300);
     congratsPanel->hide();
 
     paused = false;
@@ -392,6 +401,7 @@ bool MinimalOgre::go(void)
 //  to the main SceneNode depending on what level it is.
 void MinimalOgre::levelSetup(int num) {
     srand(time(0));
+    /*
     for(int i = 0; i < num; i++)
     {
         Ogre::Entity* ballMesh = mSceneMgr->createEntity("sphere.mesh");
@@ -406,7 +416,7 @@ void MinimalOgre::levelSetup(int num) {
         Ball* ball = new Ball(headNode, x, y, z, 100);
         sim->addMainBall(ball);
         balls.push_back(ball);
-    }
+    } */
 
     Ogre::Plane wallTile = Ogre::Plane(Ogre::Vector3::UNIT_X, -PLANE_DIST +1);
 
@@ -521,6 +531,14 @@ void MinimalOgre::levelSetup(int num) {
         tileList.push_back(node1);
     }
     tileCounter += num;
+
+    formationcounter--;
+    if(formationcounter < 0)
+    {
+        formationsize++;
+        formationcounter = formationsize - 1;
+    }
+    ballSetup(formationsize);
 }
 
 
@@ -633,7 +651,6 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
             levelTearDown();
             currLevel++;
             levelSetup(currLevel);
-            ballSetup(currLevel);
             gameDone = false;
             congratsPanel->hide();
         }
@@ -700,11 +717,20 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
             mDetailsPanel->setParamValue(7, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().z));
         }
         scorePanel->setParamValue(0, Ogre::StringConverter::toString(score));
+        scorePanel->setParamValue(1, Ogre::StringConverter::toString(shotsFired));
+        scorePanel->setParamValue(2, Ogre::StringConverter::toString(currLevel));
         std::stringstream grats;
         grats << "Moving to level ";
         grats << (currLevel + 1);
         grats << "...";
         congratsPanel->setCaption(grats.str());
+
+
+        std::stringstream scharge;
+        scharge << "|";
+        for(int i = 1000; i < chargeShot; i += 160)
+            scharge << "|";
+        chargePanel->setCaption(scharge.str());
     }
 
     return true;
@@ -880,59 +906,12 @@ bool MinimalOgre::mouseMoved( const OIS::MouseEvent& arg )
 
 bool MinimalOgre::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
-    
     isCharging = true;
-
-    // Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
-    // //ballMeshpc->setMaterialName("Examples/SphereMappedRustySteel");
-    // ballMeshpc->setCastShadows(true);
-
-    // Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    // nodepc->attachObject(ballMeshpc);
-    // int x = mCamera->getPosition().x;
-    // int y = mCamera->getPosition().y;
-    // int z = mCamera->getPosition().z;
-
-    //  isCharging= true;
-     // if there is an old ball, remove it
-    // create a new ball
-    // if(globalBall != NULL) {
-    //     sim->removeBall(globalBall);
-    //    // delete globalBall->node;
-    // }
- 
-    // //globalBall->setPosition(x, y, z);
-    // globalBall = new Ball(nodepc, x, y, z, 100);
-    // sim->addBall(globalBall);
-    // double force = 8000.0;
-    // Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
-    // globalBall->applyForce(force * direction.x, force * direction.y, force * direction.z);
+    chargeShot = 0;
 
     if (mTrayMgr->injectMouseDown(arg, id)) return true;
         mCameraMan->injectMouseDown(arg, id);
     return true;
-
-
-
-
- /*   
-    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
-    //ballMeshpc->setMaterialName("Examples/SphereMappedRustySteel");
-    ballMeshpc->setCastShadows(true);
-
-    Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    nodepc->attachObject(ballMeshpc);
-    int x = mCamera->getPosition().x;
-    int y = mCamera->getPosition().y;
-    int z = mCamera->getPosition().z;
-    Ball* ballpc = new Ball(nodepc, x, y, z, 100);
-    sim->addBall(ballpc);
-    double force = 4000.0;
-    Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
-    ballpc->applyForce(force * direction.x, force * direction.y, force * direction.z);
-    if (mTrayMgr->injectMouseDown(arg, id)) return true;
-    mCameraMan->injectMouseDown(arg, id);
-    return true;*/
 }
 
 bool MinimalOgre::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
@@ -957,8 +936,11 @@ bool MinimalOgre::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID 
     globalBall = new Ball(nodepc, x, y, z, 100);
     sim->addBall(globalBall);
     double force = chargeShot;
+    if(force < 1000)
+        force = 1000;
     Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
     globalBall->applyForce(force * direction.x, force * direction.y, force * direction.z);
+    shotsFired++;
 
 
     if (mTrayMgr->injectMouseUp(arg, id)) return true;

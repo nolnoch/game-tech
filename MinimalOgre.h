@@ -91,6 +91,7 @@ protected:
     Ogre::PlaneBoundedVolume boxBound;
     Simulator* sim;
     int score;
+    int shotsFired;
 
     Ogre::Plane wallUp;
     Ogre::Plane wallDown;
@@ -103,6 +104,8 @@ protected:
 
     bool paused;
     double slowdownval;
+    int formationsize;
+    int formationcounter;
 
     bool sounding;
     Mix_Chunk *boing;
@@ -113,6 +116,7 @@ protected:
     OgreBites::ParamsPanel* mDetailsPanel;    // sample details panel
     OgreBites::ParamsPanel* scorePanel;
     OgreBites::Label* congratsPanel;
+    OgreBites::Label* chargePanel;
     bool mCursorWasVisible;                   // was cursor visible before dialog appeared
     bool mShutDown;
 
