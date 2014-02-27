@@ -5,7 +5,7 @@ bin_PROGRAMS= OgreApp
 OgreApp_CPPFLAGS= -I$(top_srcdir)
 OgreApp_SOURCES= MinimalOgre.cpp Simulator.cpp
 OgreApp_CXXFLAGS= $(OGRE_CFLAGS) $(OIS_CFLAGS) $(bullet_CFLAGS)
-OgreApp_LDADD= $(OGRE_LIBS) $(OIS_LIBS) $(bullet_LIBS)
+OgreApp_LDADD= $(OGRE_LIBS) $(OIS_LIBS) $(bullet_LIBS) -lSDL -lSDL_mixer
 
 EXTRA_DIST= buildit makeit
 AUTOMAKE_OPTIONS= foreign

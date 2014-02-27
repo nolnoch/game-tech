@@ -50,6 +50,9 @@ MinimalOgre::~MinimalOgre(void)
     if (mTrayMgr) delete mTrayMgr;
     if (mCameraMan) delete mCameraMan;
 
+    Mix_CloseAudio();
+    SDL_Quit();
+
     //Remove ourself as a Window listener
     Ogre::WindowEventUtilities::removeWindowEventListener(mWindow, this);
     windowClosed(mWindow);
@@ -75,7 +78,25 @@ bool MinimalOgre::go(void)
     // construct Ogre::Root
     mRoot = new Ogre::Root(mPluginsCfg);
 
-//-------------------------------------------------------------------------------------
+    // Initialize Audio [based on http://www.kekkai.org/roger/sdl/mixer/]
+    /* We're going to be requesting certain things from our audio
+             device, so we set them up beforehand */
+    int audio_rate = 22050;
+    Uint16 audio_format = AUDIO_S16; /* 16-bit stereo */
+    int audio_channels = 2;
+    int audio_buffers = 4096;
+
+    /* This is where we open up our audio device.  Mix_OpenAudio takes
+             as its parameters the audio format we'd /like/ to have. */
+    if (Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers))
+      std::cout << "Unable to open audio!\n" << std::endl;
+    else
+      sounding = true;
+
+    if (sounding)
+      boing = Mix_LoadWAV("blip.wav");
+
+    //-------------------------------------------------------------------------------------
     // setup resources
     // Load resource paths from config file
     Ogre::ConfigFile cf;
@@ -537,6 +558,8 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
         bool hit = sim->simulateStep(slowdownval);
         if(hit && !gameDone)
         {
+            if (sounding)
+              Mix_PlayChannel(-1, boing, 0);
             tileEntities.back()->setMaterialName("Examples/BumpyMetal");
             if(tileEntities.size() > 0)
                 tileEntities.pop_back();
