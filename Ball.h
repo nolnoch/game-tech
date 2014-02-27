@@ -41,9 +41,10 @@ class Ball
         world->addRigidBody(rigidBody);
     }
 
-    void removeGravity()
+    void enableGravity()
     {
-        rigidBody->setRestitution(0.6);
+        rigidBody->setMassProps(1, btVector3(0, 0, 0));
+        rigidBody->setGravity(btVector3(0, -980, 0));
     }
 
     void lockPosition()
