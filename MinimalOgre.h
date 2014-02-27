@@ -109,6 +109,7 @@ protected:
 
     bool sounding;
     Mix_Chunk *boing;
+    Mix_Music *music;
 
     // OgreBites
     OgreBites::SdkTrayManager* mTrayMgr;

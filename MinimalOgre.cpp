@@ -93,8 +93,10 @@ bool MinimalOgre::go(void)
     else
       sounding = true;
 
-    if (sounding)
-      boing = Mix_LoadWAV("blip.wav");
+    if (sounding) {
+      boing = Mix_LoadWAV("hit1.wav");
+      music = Mix_LoadMUS("ambient1.wav");
+    }
 
     //-------------------------------------------------------------------------------------
     // setup resources
@@ -622,8 +624,10 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
         bool hit = sim->simulateStep(slowdownval);
         if(hit && !gameDone)
         {
-            if (sounding)
+            if (sounding) {
               Mix_PlayChannel(-1, boing, 0);
+	      std::cout << "Playing impact noise." << std::endl;
+	    }
             tileEntities.back()->setMaterialName("Examples/BumpyMetal");
             if(tileEntities.size() > 0)
                 tileEntities.pop_back();
