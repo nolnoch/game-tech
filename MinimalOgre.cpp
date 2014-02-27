@@ -383,7 +383,16 @@ bool MinimalOgre::go(void)
 
     chargePanel = mTrayMgr->createLabel(OgreBites::TL_BOTTOM, "Chargepanel", "|", 300);
 
-    crosshair = mTrayMgr->createLabel(OgreBites::TL_CENTER, "crosshair", "", 1);
+    Ogre::OverlayManager& overlayMgr = Ogre::OverlayManager::getSingleton();
+    Ogre::Overlay* overlay = overlayMgr.create("Crosshair");
+
+    Ogre::OverlayContainer* panel = static_cast<Ogre::OverlayContainer*>(
+        overlayMgr.createOverlayElement("Panel", "PanelName"));
+    panel->setPosition(0.45, 0.425);
+    panel->setDimensions(0.1, 0.15);
+    panel->setMaterialName("Examples/Crosshair");
+    overlay->add2D(panel);
+    overlay->show();
 
     paused = false;
     slowdownval = 0.0;

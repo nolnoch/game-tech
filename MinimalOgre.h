@@ -117,7 +117,6 @@ protected:
     OgreBites::ParamsPanel* scorePanel;
     OgreBites::Label* congratsPanel;
     OgreBites::Label* chargePanel;
-    OgreBites::Label* crosshair;
     bool mCursorWasVisible;                   // was cursor visible before dialog appeared
     bool mShutDown;
 
@@ -129,7 +128,7 @@ protected:
     // Level Setup
     void levelSetup(int num);
     void levelTearDown();
-     void ballSetup(int cubeSize);
+    void ballSetup(int cubeSize);
 
     void simonSaysAnim();
 
