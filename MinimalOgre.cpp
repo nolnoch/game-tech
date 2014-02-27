@@ -388,8 +388,8 @@ bool MinimalOgre::go(void)
 
     Ogre::OverlayContainer* panel = static_cast<Ogre::OverlayContainer*>(
         overlayMgr.createOverlayElement("Panel", "PanelName"));
-    panel->setPosition(0.45, 0.425);
-    panel->setDimensions(0.1, 0.15);
+    panel->setPosition(0.488, 0.475);
+    panel->setDimensions(0.025, 0.0375);
     panel->setMaterialName("Examples/Crosshair");
     overlay->add2D(panel);
     overlay->show();
@@ -891,10 +891,10 @@ bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
         animDone = false;
     }
 
-    else if(arg.key == OIS::KC_L)
-    {
-        gameDone = true;
-    }
+//    else if(arg.key == OIS::KC_L)
+//    {
+//        gameDone = true;
+//    }
 
     mCameraMan->injectKeyDown(arg);
     return true;
