@@ -413,11 +413,12 @@ void MinimalOgre::levelSetup(int num) {
     int offset = WALL_SIZE/2 - TILE_WIDTH/2;
 
     srand(time(0));
+    int x = 0;
+    int y = 0;
+    int z = 0;
 
     for(int i = 0; i < num; i++) {
-        int x = 0;
-        int y = 0;
-        int z = 0;
+   
         std::stringstream ss;
 
         std::stringstream ssDebug;
