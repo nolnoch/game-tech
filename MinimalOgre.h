@@ -64,6 +64,8 @@ protected:
     bool gameDone;
     int winTimer;
     int tileCounter;
+    int chargeShot;
+    bool isCharging;
 
     Ogre::Timer timer;
 
@@ -122,8 +124,10 @@ protected:
     // Level Setup
     void levelSetup(int num);
     void levelTearDown();
+     void ballSetup(int cubeSize);
 
     void simonSaysAnim();
+
 
     // Ogre::FrameListener
     virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);

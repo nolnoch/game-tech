@@ -300,6 +300,7 @@ bool MinimalOgre::go(void)
     // Create tile meshes and collision objects for each tile.
     currLevel = 2;
     levelSetup(currLevel);
+    ballSetup(2);
 
     // Handles the simonSays initial animation:
     gameStart = true;
@@ -403,7 +404,6 @@ void MinimalOgre::levelSetup(int num) {
         int y = (std::rand() % 1800) - 900;
         int z = (std::rand() % 1800) - 900;
         Ball* ball = new Ball(headNode, x, y, z, 100);
-        ball->removeGravity();
         sim->addMainBall(ball);
         balls.push_back(ball);
     }
@@ -523,6 +523,48 @@ void MinimalOgre::levelSetup(int num) {
     tileCounter += num;
 }
 
+
+void MinimalOgre::ballSetup(int cubeSize) {
+    // 10, 20
+    float ballSize = 200; //diameter
+    // default size of sphere mesh is 200.
+    float meshSize =  ballSize / 200; //200 is size of the mesh.
+   
+                
+        // ballMeshpc->setCastShadows(true);
+
+    for(int x = 0; x < cubeSize; x++) {
+        for (int y = 0; y < cubeSize; y++) {
+            for(int z = 0; z < cubeSize; z++) {
+                // Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
+                // Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+                // nodepc->attachObject(ballMeshpc);
+                // nodepc->setScale(Ogre::Vector3(meshSize, meshSize, meshSize));
+
+                // Ball* ball = new Ball(nodepc, x * ballSize, y * ballSize, z * ballSize, ballSize/2);
+                // sim->addBall(ball);
+
+                Ogre::Entity* ballMesh = mSceneMgr->createEntity("sphere.mesh");
+                ballMesh->setMaterialName("Examples/SphereMappedRustySteel");
+                ballMesh->setCastShadows(true);
+                // Attach the node.
+                Ogre::SceneNode* headNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+                headNode->attachObject(ballMesh);
+                headNode->setScale(Ogre::Vector3(meshSize, meshSize, meshSize));
+                Ball* ball = new Ball(headNode, x * ballSize, y * ballSize, z * ballSize, ballSize/2);
+                sim->addMainBall(ball);
+                balls.push_back(ball);
+
+
+                //  double force = 4000.0;
+                //  Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
+                //  ball->applyForce(force * direction.x, force * direction.y, force * direction.z);
+            }
+        }
+    }
+}
+
+
 void MinimalOgre::levelTearDown()
 {
     for(int i = 0; i < balls.size(); i++)
@@ -591,6 +633,7 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
             levelTearDown();
             currLevel++;
             levelSetup(currLevel);
+            ballSetup(currLevel);
             gameDone = false;
             congratsPanel->hide();
         }
@@ -598,6 +641,14 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
     simonSaysAnim();
 
+    if(isCharging) {
+        if(chargeShot < 10000)
+            chargeShot++;
+        //chargeShot = 0;
+    }
+    else {
+        chargeShot = 0;
+    }
 
     // Get collision in each plane (or just front plane for now)
         // check if collision contact points are within our tile xy (if it's front plane)
@@ -824,6 +875,8 @@ bool MinimalOgre::mouseMoved( const OIS::MouseEvent& arg )
 
 bool MinimalOgre::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
+    
+  //  isCharging= true;
      // if there is an old ball, remove it
     // create a new ball
     if(globalBall != NULL) {
@@ -846,7 +899,7 @@ bool MinimalOgre::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID i
     //globalBall->setPosition(x, y, z);
     globalBall = new Ball(nodepc, x, y, z, 100);
     sim->addBall(globalBall);
-    double force = 4000.0;
+    double force = 8000.0;
     Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
     globalBall->applyForce(force * direction.x, force * direction.y, force * direction.z);
 
@@ -879,6 +932,7 @@ bool MinimalOgre::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID i
 
 bool MinimalOgre::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
+    isCharging = false;
     if (mTrayMgr->injectMouseUp(arg, id)) return true;
     mCameraMan->injectMouseUp(arg, id);
     return true;
