@@ -376,7 +376,7 @@ bool MinimalOgre::go(void)
     paused = false;
     slowdownval = 0.0;
     gameDone = false;
-
+    isCharging = false;
 
     mRoot->addFrameListener(this);
 //-------------------------------------------------------------------------------------
@@ -529,7 +529,7 @@ void MinimalOgre::ballSetup(int cubeSize) {
     float meshSize =  ballSize / 200; //200 is size of the mesh.
    
                 
-        // ballMeshpc->setCastShadows(true);
+    // ballMeshpc->setCastShadows(true);
 
     for(int x = 0; x < cubeSize; x++) {
         for (int y = 0; y < cubeSize; y++) {
@@ -639,8 +639,8 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
     if(isCharging) {
         if(chargeShot < 10000)
-            chargeShot++;
-        //chargeShot = 0;
+            chargeShot += 80;
+        std::cout << chargeShot << std::endl;
     }
     else {
         chargeShot = 0;
@@ -852,6 +852,11 @@ bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
         animDone = false;
     }
 
+    else if(arg.key == OIS::KC_L)
+    {
+        gameDone = true;
+    }
+
     mCameraMan->injectKeyDown(arg);
     return true;
 }
@@ -872,32 +877,32 @@ bool MinimalOgre::mouseMoved( const OIS::MouseEvent& arg )
 bool MinimalOgre::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
     
-  //  isCharging= true;
+    isCharging = true;
+
+    // Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
+    // //ballMeshpc->setMaterialName("Examples/SphereMappedRustySteel");
+    // ballMeshpc->setCastShadows(true);
+
+    // Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+    // nodepc->attachObject(ballMeshpc);
+    // int x = mCamera->getPosition().x;
+    // int y = mCamera->getPosition().y;
+    // int z = mCamera->getPosition().z;
+
+    //  isCharging= true;
      // if there is an old ball, remove it
     // create a new ball
-    if(globalBall != NULL) {
-        sim->removeBall(globalBall);
-       // delete globalBall->node;
-    }
+    // if(globalBall != NULL) {
+    //     sim->removeBall(globalBall);
+    //    // delete globalBall->node;
+    // }
  
-
-    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
-    //ballMeshpc->setMaterialName("Examples/SphereMappedRustySteel");
-    ballMeshpc->setCastShadows(true);
-
-    Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    nodepc->attachObject(ballMeshpc);
-    int x = mCamera->getPosition().x;
-    int y = mCamera->getPosition().y;
-    int z = mCamera->getPosition().z;
-
-
-    //globalBall->setPosition(x, y, z);
-    globalBall = new Ball(nodepc, x, y, z, 100);
-    sim->addBall(globalBall);
-    double force = 8000.0;
-    Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
-    globalBall->applyForce(force * direction.x, force * direction.y, force * direction.z);
+    // //globalBall->setPosition(x, y, z);
+    // globalBall = new Ball(nodepc, x, y, z, 100);
+    // sim->addBall(globalBall);
+    // double force = 8000.0;
+    // Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
+    // globalBall->applyForce(force * direction.x, force * direction.y, force * direction.z);
 
     if (mTrayMgr->injectMouseDown(arg, id)) return true;
         mCameraMan->injectMouseDown(arg, id);
@@ -931,6 +936,29 @@ bool MinimalOgre::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID i
 bool MinimalOgre::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
     isCharging = false;
+    if(globalBall != NULL) {
+        sim->removeBall(globalBall);
+       // delete globalBall->node;
+    }
+    int x = mCamera->getPosition().x;
+    int y = mCamera->getPosition().y;
+    int z = mCamera->getPosition().z;
+
+ 
+    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
+    //ballMeshpc->setMaterialName("Examples/SphereMappedRustySteel");
+    ballMeshpc->setCastShadows(true);
+
+    Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+    nodepc->attachObject(ballMeshpc);
+    //globalBall->setPosition(x, y, z);
+    globalBall = new Ball(nodepc, x, y, z, 100);
+    sim->addBall(globalBall);
+    double force = chargeShot;
+    Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
+    globalBall->applyForce(force * direction.x, force * direction.y, force * direction.z);
+
+
     if (mTrayMgr->injectMouseUp(arg, id)) return true;
     mCameraMan->injectMouseUp(arg, id);
     return true;
