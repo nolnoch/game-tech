@@ -112,6 +112,7 @@ protected:
     CameraMan* mCameraMan;      // basic camera controller
     OgreBites::ParamsPanel* mDetailsPanel;    // sample details panel
     OgreBites::ParamsPanel* scorePanel;
+    OgreBites::Label* congratsPanel;
     bool mCursorWasVisible;                   // was cursor visible before dialog appeared
     bool mShutDown;
 

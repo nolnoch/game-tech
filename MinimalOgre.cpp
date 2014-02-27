@@ -370,8 +370,10 @@ bool MinimalOgre::go(void)
 
     Ogre::StringVector scorelist;
     scorelist.push_back("Score");
-
     scorePanel = mTrayMgr->createParamsPanel(OgreBites::TL_TOPLEFT, "ScorePanel", 200, scorelist);
+
+    congratsPanel = mTrayMgr->createLabel(OgreBites::TL_TOP, "CongratsPanel", "this is dumb", 300);
+    congratsPanel->hide();
 
     paused = false;
     slowdownval = 0.0;
@@ -389,6 +391,7 @@ bool MinimalOgre::go(void)
 //  - attaches textured tiles placed at random locations
 //  to the main SceneNode depending on what level it is.
 void MinimalOgre::levelSetup(int num) {
+    srand(time(0));
     for(int i = 0; i < num; i++)
     {
         Ogre::Entity* ballMesh = mSceneMgr->createEntity("sphere.mesh");
@@ -412,7 +415,6 @@ void MinimalOgre::levelSetup(int num) {
     // to the top right corner of the plane and start counting from there.
     int offset = WALL_SIZE/2 - TILE_WIDTH/2;
 
-    srand(time(0));
     int x = 0;
     int y = 0;
     int z = 0;
@@ -611,6 +613,7 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
             {
                 gameDone = true;
                 winTimer = 0;
+                congratsPanel->show();
             }
         }
     }
@@ -632,6 +635,7 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
             levelSetup(currLevel);
             ballSetup(currLevel);
             gameDone = false;
+            congratsPanel->hide();
         }
     }
 
@@ -696,6 +700,11 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
             mDetailsPanel->setParamValue(7, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().z));
         }
         scorePanel->setParamValue(0, Ogre::StringConverter::toString(score));
+        std::stringstream grats;
+        grats << "Moving to level ";
+        grats << (currLevel + 1);
+        grats << "...";
+        congratsPanel->setCaption(grats.str());
     }
 
     return true;
@@ -734,11 +743,6 @@ void MinimalOgre::simonSaysAnim() {
             //timer.reset();
         }
     }
-
-
-
-
-
 }
 
 
@@ -907,8 +911,6 @@ bool MinimalOgre::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID i
     if (mTrayMgr->injectMouseDown(arg, id)) return true;
         mCameraMan->injectMouseDown(arg, id);
     return true;
-
-
 
 
 
