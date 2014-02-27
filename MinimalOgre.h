@@ -117,6 +117,7 @@ protected:
     OgreBites::ParamsPanel* scorePanel;
     OgreBites::Label* congratsPanel;
     OgreBites::Label* chargePanel;
+    OgreBites::Label* crosshair;
     bool mCursorWasVisible;                   // was cursor visible before dialog appeared
     bool mShutDown;
 

@@ -315,7 +315,7 @@ bool MinimalOgre::go(void)
 
 
     // Set ambient light
-    mSceneMgr->setAmbientLight(Ogre::ColourValue(0.15, 0.15, 0.15));
+    mSceneMgr->setAmbientLight(Ogre::ColourValue(0.35, 0.35, 0.35));
 
     // Create a light
     Ogre::Light* lSun = mSceneMgr->createLight("SunLight");
@@ -382,7 +382,8 @@ bool MinimalOgre::go(void)
     congratsPanel->hide();
 
     chargePanel = mTrayMgr->createLabel(OgreBites::TL_BOTTOM, "Chargepanel", "|", 300);
-    congratsPanel->hide();
+
+    crosshair = mTrayMgr->createLabel(OgreBites::TL_CENTER, "crosshair", "", 1);
 
     paused = false;
     slowdownval = 0.0;
@@ -626,6 +627,7 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
                 for(int i = 0; i < balls.size(); i++)
                 {
                     balls[i]->enableGravity();
+                    globalBall->enableGravity();
                     std::cout << "enabling gravity\n";
                 }
             }
@@ -646,6 +648,8 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
         {
             levelTearDown();
             currLevel++;
+            sim->removeBall(globalBall);
+            globalBall = NULL;
             levelSetup(currLevel);
             gameDone = false;
             congratsPanel->hide();
@@ -751,7 +755,7 @@ void MinimalOgre::simonSaysAnim() {
                 tileEntities[currTile + 1]->setMaterialName("Examples/Chrome");
             }
             if(currTile >= 0)
-                tileEntities[currTile]->setMaterialName("Examples/BumpyMetal");
+                tileEntities[currTile]->setMaterialName("Examples/Hilite/Yellow");
             // moves on to the next tile.
             currTile--;
             std::cout << "c: " << currTile << "\n";
