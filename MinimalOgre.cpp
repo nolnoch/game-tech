@@ -295,7 +295,7 @@ bool MinimalOgre::go(void)
     sim->addPlane(0, 0, 1, -PLANE_DIST);
     sim->addPlane(0, 0, -1, -PLANE_DIST);
 
-
+    tileCounter = 0;
     // Create the visible mesh ball.
     // Create tile meshes and collision objects for each tile.
     currLevel = 2;
@@ -407,9 +407,7 @@ void MinimalOgre::levelSetup(int num) {
 
     Ogre::Plane wallTile = Ogre::Plane(Ogre::Vector3::UNIT_X, -PLANE_DIST +1);
 
-    int x = 0;
-    int y = 0;
-    int z = 0;
+  
     // Since each mesh starts at the center of the plane, we need to offset it
     // to the top right corner of the plane and start counting from there.
     int offset = WALL_SIZE/2 - TILE_WIDTH/2;
@@ -417,14 +415,18 @@ void MinimalOgre::levelSetup(int num) {
     srand(time(0));
 
     for(int i = 0; i < num; i++) {
+        int x = 0;
+        int y = 0;
+        int z = 0;
         std::stringstream ss;
 
         std::stringstream ssDebug;
-        ss << i;
+        ss << (i + tileCounter);
+
 
         // TODO, check random num was not already seen, or maybe we do want
         // to have tiles repeat in the sequence we need
-        int tileNum = std::rand() % 99; // get random tile between 0 and 99;
+        int tileNum = std::rand() % 50; // get random tile between 0 and 99;
         ssDebug << tileNum;
         std::cout << "Random number1: " + ssDebug.str() << std::endl;
         ssDebug.str(std::string());
@@ -468,9 +470,6 @@ void MinimalOgre::levelSetup(int num) {
             zsize = 10;
             wallTile = Ogre::Plane(Ogre::Vector3::UNIT_Z, 1);
             node1 = mSceneMgr->getSceneNode("frontNode")->createChildSceneNode();
-
-            Ogre::SceneNode* parent = mSceneMgr->getSceneNode("frontNode");
-
         }
 
         // right
@@ -518,6 +517,7 @@ void MinimalOgre::levelSetup(int num) {
         allTileEntities.push_back(tile);
         tileList.push_back(node1);
     }
+    tileCounter += num;
 }
 
 void MinimalOgre::levelTearDown()

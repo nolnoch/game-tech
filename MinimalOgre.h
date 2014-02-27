@@ -63,6 +63,7 @@ protected:
 
     bool gameDone;
     int winTimer;
+    int tileCounter;
 
     Ogre::Timer timer;
 
