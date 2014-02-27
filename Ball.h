@@ -31,8 +31,8 @@ class Ball
         btRigidBody::btRigidBodyConstructionInfo ballCI(mass, motionState, collisionShape, sphereInertia);
         rigidBody = new btRigidBody(ballCI);
         rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() ^ btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
-
-        rigidBody->setRestitution(0.3);
+        rigidBody->setAngularFactor(0.0f);
+        rigidBody->setRestitution(0.7);
         rigidBody->setDamping(0.5, 0.0);
     }
 
