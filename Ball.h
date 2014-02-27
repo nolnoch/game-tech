@@ -45,6 +45,7 @@ class Ball
     {
         rigidBody->setMassProps(1, btVector3(0, 0, 0));
         rigidBody->setGravity(btVector3(0, -980, 0));
+        rigidBody->activate(true);
     }
 
     void lockPosition()

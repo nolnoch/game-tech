@@ -68,10 +68,12 @@ protected:
     bool isCharging;
 
     Ogre::Timer timer;
+    Ogre::Light* panelLight;
 
+    std::deque<Ogre::Entity *> allTileEntities;
     std::deque<Ogre::SceneNode *> tileList;
     std::deque<Ogre::Entity *> tileEntities;
-    std::deque<Ogre::Entity *> allTileEntities;
+    std::deque<Ogre::SceneNode *> tileSceneNodes;
 
     vector<Ball*> balls;
     Ball* globalBall;
@@ -104,8 +106,6 @@ protected:
 
     bool paused;
     double slowdownval;
-    int formationsize;
-    int formationcounter;
 
     bool sounding;
     Mix_Chunk *boing;

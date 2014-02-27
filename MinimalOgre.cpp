@@ -155,7 +155,7 @@ bool MinimalOgre::go(void)
     mCamera->setFOVy(Ogre::Radian(1.50));
 
     // Position it at 500 in Z direction
-    mCamera->setPosition(Ogre::Vector3(0,0,2000));
+    mCamera->setPosition(Ogre::Vector3(2000,0,2000));
     // Look back along -Z
     mCamera->lookAt(vZero);
     mCamera->setNearClipDistance(5);
@@ -286,7 +286,7 @@ bool MinimalOgre::go(void)
     // Set up simulation/bullet collision objects
     sim = new Simulator(mSceneMgr);
     globalBall = NULL;
-
+    panelLight = NULL;
 
     sim->addPlane(0, 1, 0, -PLANE_DIST);
     sim->addPlane(0, -1, 0, -PLANE_DIST);
@@ -298,8 +298,6 @@ bool MinimalOgre::go(void)
 
     score = 0;
     shotsFired = 0;
-    formationcounter = 1;
-    formationsize = 1;
 
     tileCounter = 0;
     // Create the visible mesh ball.
@@ -528,18 +526,19 @@ void MinimalOgre::levelSetup(int num) {
         tileEntities.push_back(tile);
         allTileEntities.push_back(tile);
         tileList.push_back(node1);
+        tileSceneNodes.push_back(node1);
     }
     tileCounter += num;
 
-    formationcounter--;
-    if(formationcounter < 0)
+    int it = 1;
+    int numballs = 1;
+    while (numballs < num)
     {
-        formationsize++;
-        formationcounter = formationsize - 1;
-        if(formationsize > 6)
-            formationsize = 6;
+        it++;
+        numballs = it * it * it;
     }
-    ballSetup(formationsize);
+    std::cout << "getting " << numballs << " balls with " << it << " layers";
+    ballSetup(it);
 }
 
 
@@ -609,13 +608,12 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
     if(paused) {
         slowdownval += 1/1800.f;
-        Ogre::Entity* tile = tileEntities[0];   // mSceneMgr->getEntity("tileEntity0");     
+        Ogre::Entity* tile = tileEntities[0];
         tile->setMaterialName("Examples/Chrome");
 
     }
     else {
-        Ogre::Entity* tile = tileEntities[0];   // mSceneMgr->getEntity("tileEntity0");     
-      //  tile->setMaterialName("Examples/BumpyMetal");
+        Ogre::Entity* tile = tileEntities[0];
     }
     if(slowdownval <= 1/60.f)
     {
@@ -626,7 +624,10 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
               Mix_PlayChannel(-1, boing, 0);
             tileEntities.back()->setMaterialName("Examples/BumpyMetal");
             if(tileEntities.size() > 0)
+            {
                 tileEntities.pop_back();
+                tileSceneNodes.pop_back();
+            }
             score++;
             if(tileEntities.size() == 0 && !gameDone)
             {
@@ -661,6 +662,11 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
             globalBall = NULL;
             levelSetup(currLevel);
             gameDone = false;
+
+            currTile = tileEntities.size() - 1;
+            animDone = false;
+            timer.reset();
+
             congratsPanel->hide();
         }
     }
@@ -764,7 +770,27 @@ void MinimalOgre::simonSaysAnim() {
                 tileEntities[currTile + 1]->setMaterialName("Examples/Chrome");
             }
             if(currTile >= 0)
+            {
                 tileEntities[currTile]->setMaterialName("Examples/Hilite/Yellow");
+
+                if(panelLight != NULL)
+                    mSceneMgr->destroyLight(panelLight);
+                
+                // Create a light
+                panelLight = mSceneMgr->createLight("Panel");
+                panelLight->setType(Ogre::Light::LT_POINT);
+                int x = tileSceneNodes[currTile]->getPosition().x;
+                int y = tileSceneNodes[currTile]->getPosition().y;
+                int z = tileSceneNodes[currTile]->getPosition().z;
+                panelLight->setDiffuseColour(0.20, 0.20, 0.40);
+                panelLight->setPosition(x, y, z);
+                panelLight->setAttenuation(4000, 0.0, 0.0001, 0.000001);
+            }
+            else
+            {
+                mSceneMgr->destroyLight(panelLight);
+                panelLight = NULL;
+            }
             // moves on to the next tile.
             currTile--;
             std::cout << "c: " << currTile << "\n";
