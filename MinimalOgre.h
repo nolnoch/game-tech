@@ -108,7 +108,8 @@ protected:
     double slowdownval;
 
     bool sounding;
-    Mix_Chunk *boing;
+    Mix_Chunk *boing, *gong;
+    Mix_Music *music;
 
     // OgreBites
     OgreBites::SdkTrayManager* mTrayMgr;
