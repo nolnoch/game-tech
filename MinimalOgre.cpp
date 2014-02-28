@@ -90,11 +90,17 @@ bool MinimalOgre::go(void)
              as its parameters the audio format we'd /like/ to have. */
     if (Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers))
       std::cout << "Unable to open audio!\n" << std::endl;
-    else
+    else {
+      std::cout << "Loading audio files.\n" << std::endl;
       sounding = true;
+    }
 
-    if (sounding)
-      boing = Mix_LoadWAV("blip.wav");
+    if (sounding) {
+      boing = Mix_LoadWAV("hit.wav");
+      gong = Mix_LoadWAV("gong.wav");
+      music = Mix_LoadMUS("ambient.wav");
+      Mix_PlayMusic(music, -1);
+    }
 
     //-------------------------------------------------------------------------------------
     // setup resources
@@ -537,8 +543,10 @@ void MinimalOgre::levelSetup(int num) {
         it++;
         numballs = it * it * it;
     }
-    std::cout << "getting " << numballs << " balls with " << it << " layers";
-    ballSetup(it);
+    ballSetup(formationsize);
+
+    if (sounding)
+	Mix_PlayChannel(-1, gong, 0);
 }
 
 
@@ -620,8 +628,10 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
         bool hit = sim->simulateStep(slowdownval);
         if(hit && !gameDone)
         {
-            if (sounding)
+            if (sounding) {
               Mix_PlayChannel(-1, boing, 0);
+	      std::cout << "Playing impact noise." << std::endl;
+	    }
             tileEntities.back()->setMaterialName("Examples/BumpyMetal");
             if(tileEntities.size() > 0)
             {
@@ -920,7 +930,8 @@ bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
     }
     else if (arg.key == OIS::KC_ESCAPE)
     {
-        mShutDown = true;
+        Mix_FreeMusic(music);
+	mShutDown = true;
     }
     else if (arg.key == OIS::KC_SPACE)
     {
@@ -929,6 +940,17 @@ bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
     {
         paused = !paused;
         slowdownval = 0.0;
+	if (paused)
+	    Mix_HaltMusic();
+	else
+	    Mix_PlayMusic(music, 0);
+    }
+    else if (arg.key == OIS::KC_M) {
+	sounding = !sounding;
+	if (sounding)
+	    Mix_PlayMusic(music, -1);
+	else
+	    Mix_HaltMusic();
     }
     else if (arg.key == OIS::KC_Q)
     {
