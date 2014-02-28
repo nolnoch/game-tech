@@ -1,0 +1,40 @@
+3D semi-billiards.
+
+James Kunze - jak2575
+Aaron Villalpando - av9844
+Wade Burch - wab256
+
+To build:
+Run ./buildit. This produces the executable under the name "OgreApp".
+
+
+
+Controls:
+
+Mouse- look around
+WASD- move around
+Space- move up
+Shift- move down
+Left-click- shoot (hold and release to charge)
+Q- Repeat hint
+M- toggle sound
+
+
+This is a simple game of 3D Simon Says Billiards. At the start of a round, panels on the walls will glow in sequence. You must knock the floating balls into them in order, by shooting them with your own. 
+
+Features:
+
+- Gravity activates when the player finishes a level.
+- Bullet integrated into the game.
+- Music.
+- Charge a shot by holding the mouse.
+- UI that shows the player's score, shot, and when they have finished the level.
+- Crosshair.
+
+On the whole, we fulfilled what we said we would in the initial design document and more. The player shoots balls into other balls in the style of Simon Says. We did differ from it on a few points:
+
+- The controls changed- space was used to move up instead of shoot. This might not be ideal, but being able to move up with the left hand makes the game much easier to handle.
+- We don't play sounds for every collision, as that gets overwhelming with 4x4 starting set-ups. Instead, we only play sounds when the ball hits the target panel.
+- The ball that the player shoots is not affected by gravity, to make aiming easier. We still fulfill the spec requirement of gravity by re-adding it when the player wins a level.
+- We did not implement the additional obstacles we considered.
+- Division of labor turned out a bit differently from planned as people pretty much did whatever needed doing.
