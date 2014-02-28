@@ -543,10 +543,10 @@ void MinimalOgre::levelSetup(int num) {
         it++;
         numballs = it * it * it;
     }
-    ballSetup(formationsize);
+    ballSetup(it);
 
     if (sounding)
-	Mix_PlayChannel(-1, gong, 0);
+	    Mix_PlayChannel(-1, gong, 0);
 }
 
 
