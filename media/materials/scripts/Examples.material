@@ -659,6 +659,19 @@ material Examples/Hilite/Yellow
 		}
 	}
 }
+material Examples/SpaceSky
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture frost.png
+			}
+		}
+	}
+}
 material Examples/Crosshair
 {
 	technique

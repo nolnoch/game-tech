@@ -753,6 +753,16 @@ bool MinimalOgre::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
 // Lights up the tiles in the tileEntities, from the back of the deque to the front.
 void MinimalOgre::simonSaysAnim() {
+    if(gameDone)
+    {
+        currTile = -2;
+        if(panelLight != NULL)
+        {
+            mSceneMgr->destroyLight(panelLight);
+            panelLight = NULL;
+        }
+        return;
+    }
     long currTime = timer.getMilliseconds();
     //   std::cout << currTime << std::endl;
     int numTiles = tileEntities.size();
@@ -771,20 +781,32 @@ void MinimalOgre::simonSaysAnim() {
             }
             if(currTile >= 0)
             {
-                tileEntities[currTile]->setMaterialName("Examples/Hilite/Yellow");
+                tileEntities[currTile]->setMaterialName("Examples/SpaceSky");
 
                 if(panelLight != NULL)
                     mSceneMgr->destroyLight(panelLight);
                 
                 // Create a light
                 panelLight = mSceneMgr->createLight("Panel");
-                panelLight->setType(Ogre::Light::LT_POINT);
-                int x = tileSceneNodes[currTile]->getPosition().x;
-                int y = tileSceneNodes[currTile]->getPosition().y;
-                int z = tileSceneNodes[currTile]->getPosition().z;
-                panelLight->setDiffuseColour(0.20, 0.20, 0.40);
-                panelLight->setPosition(x, y, z);
-                panelLight->setAttenuation(4000, 0.0, 0.0001, 0.000001);
+                panelLight->setCastShadows(false);
+                panelLight->setType(Ogre::Light::LT_SPOTLIGHT);
+                int x = tileSceneNodes[currTile]->_getDerivedPosition().x;
+                int y = tileSceneNodes[currTile]->_getDerivedPosition().y;
+                int z = tileSceneNodes[currTile]->_getDerivedPosition().z;
+                if (x < 0)
+                    x += 10;
+                else if (x > 0)
+                    x -= 10;
+                if (z < 0)
+                    z += 10;
+                else if (z > 0)
+                    z -= 10;
+                std::cout << "x: " << x << " y: " << y << " z: " << z << "\n";
+                panelLight->setDiffuseColour(0.70, 0.50, 0.30);
+                panelLight->setDirection(x, y, z);
+                panelLight->setPosition(0, 0, 0);
+                panelLight->setSpotlightFalloff(0);
+                panelLight->setAttenuation(4000, 0.0, 0.0001, 0.0000005);
             }
             else
             {
@@ -952,7 +974,7 @@ bool MinimalOgre::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID i
 bool MinimalOgre::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
     isCharging = false;
-    if(chargeShot >= 1000)
+    if(chargeShot >= 1000 && !gameDone)
     {
         if(globalBall != NULL) {
             sim->removeBall(globalBall);
