@@ -90,12 +90,16 @@ bool MinimalOgre::go(void)
              as its parameters the audio format we'd /like/ to have. */
     if (Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers))
       std::cout << "Unable to open audio!\n" << std::endl;
-    else
+    else {
+      std::cout << "Loading audio files.\n" << std::endl;
       sounding = true;
+    }
 
     if (sounding) {
-      boing = Mix_LoadWAV("hit1.wav");
-      music = Mix_LoadMUS("ambient1.wav");
+      boing = Mix_LoadWAV("hit.wav");
+      gong = Mix_LoadWAV("gong.wav");
+      music = Mix_LoadMUS("ambient.wav");
+      Mix_PlayMusic(music, -1);
     }
 
     //-------------------------------------------------------------------------------------
@@ -542,6 +546,9 @@ void MinimalOgre::levelSetup(int num) {
             formationsize = 6;
     }
     ballSetup(formationsize);
+
+    if (sounding)
+	Mix_PlayChannel(-1, gong, 0);
 }
 
 
@@ -876,7 +883,8 @@ bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
     }
     else if (arg.key == OIS::KC_ESCAPE)
     {
-        mShutDown = true;
+        Mix_FreeMusic(music);
+	mShutDown = true;
     }
     else if (arg.key == OIS::KC_SPACE)
     {
@@ -885,6 +893,17 @@ bool MinimalOgre::keyPressed( const OIS::KeyEvent &arg )
     {
         paused = !paused;
         slowdownval = 0.0;
+	if (paused)
+	    Mix_HaltMusic();
+	else
+	    Mix_PlayMusic(music, 0);
+    }
+    else if (arg.key == OIS::KC_M) {
+	sounding = !sounding;
+	if (sounding)
+	    Mix_PlayMusic(music);
+	else
+	    Mix_HaltMusic();
     }
     else if (arg.key == OIS::KC_Q)
     {

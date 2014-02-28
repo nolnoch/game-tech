@@ -108,7 +108,7 @@ protected:
     int formationcounter;
 
     bool sounding;
-    Mix_Chunk *boing;
+    Mix_Chunk *boing, *gong;
     Mix_Music *music;
 
     // OgreBites
