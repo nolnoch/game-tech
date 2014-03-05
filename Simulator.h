@@ -1,71 +1,48 @@
-#include <btBulletDynamicsCommon.h>
+/*
+-----------------------------------------------------------------------------
+Filename:    Simulator.h
+-----------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------
+ */
+#ifndef __Simulator_h_
+#define __Simulator_h_
+
+#include <bullet/btBulletDynamicsCommon.h>
+#include <OgreSceneManager.h>
 #include <vector>
 
-#include "Ball.h"
+#include "OgreMotionState.h"
 
 
- const static int WALL_SIZE = 2400;
-    const static int PLANE_DIST = WALL_SIZE / 2; //the initial offset from the center
-    const static int NUM_TILES_ROW = 5; // number of tiles in each row of a wall.
-    const static int NUM_TILES_WALL = NUM_TILES_ROW * NUM_TILES_ROW; //number of total tiles on a wall.
-    const static int TILE_WIDTH = WALL_SIZE / NUM_TILES_ROW;
+extern ContactProcessedCallback gContactProcessedCallback;
 
-using std::vector;
+class Simulator {
 
+public:
+  Ogre::SceneManager* sceneMgr;
 
+  Simulator();
+  virtual ~Simulator();
 
-class Simulator
-{
-  private:
-    btBroadphaseInterface* broadphase;
-    btDefaultCollisionConfiguration* collisionConfiguration;
-    btCollisionDispatcher* dispatcher;
-    btSequentialImpulseConstraintSolver* solver;
-    btDiscreteDynamicsWorld* dynamicsWorld;
-    Ogre::SceneManager* sceneMgr;
-    vector<Ball*> balls;
-    std::deque<btRigidBody*> tiles;
+  virtual void initSimulator();
+  virtual void createBounds(const int offset);
+  virtual void registerCallback(void * func);
+  virtual bool simulateStep(double delay);
+  virtual void addPlaneBound(int x, int y, int z, int d);
+  virtual btRigidBody* addBoxShape(Ogre::SceneNode* n, int x, int y, int z);
+  virtual btRigidBody* addBallShape(Ogre::SceneNode* n, int r, int m);
 
-    static btRigidBody* activetile;
-    static vector<Ball*> mainballs;
-    static bool targethit;
+  virtual btDiscreteDynamicsWorld& getDynamicsWorld();
 
-  public:
+private:
+  btDefaultCollisionConfiguration* collisionConfiguration;
+  btBroadphaseInterface* broadphase;
+  btCollisionDispatcher* dispatcher;
+  btSequentialImpulseConstraintSolver* solver;
+  btDiscreteDynamicsWorld* dynamicsWorld;
 
-    static bool foo(btManifoldPoint& cp, void* body0, void* body1)
-    {
-        if(activetile == NULL)
-            return true;
-        for(int i = 0; i < mainballs.size(); i++)
-        {
-            Ball* mball = mainballs[i];
-            if(activetile == body0 && mball->checkRigidBody((btRigidBody*)body1))
-            {
-                targethit = true;
-                mball->lockPosition();
-                return true;
-            }
-            else if(activetile == body1 && mball->checkRigidBody((btRigidBody*)body0))
-            {
-                targethit = true;
-                mball->lockPosition();
-                return true;
-            }
-        }
-    }
-
-    Simulator(Ogre::SceneManager* sceneMgrPtr);
-
-    void addBall(Ball* ball);
-
-    void addMainBall(Ball* ball);
-
-    void addPlane(int x, int y, int z, int d);
-    
-    bool simulateStep(double delay);
-
-    void addTile(Ogre::SceneNode* node, int xsize, int ysize, int zsize);
-
-    
-    void removeBall(Ball* ball);
+  std::vector<btCollisionShape *> collisionShapes;
 };
+
+#endif // #ifndef __Simulator_h_
