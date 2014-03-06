@@ -49,6 +49,7 @@ protected:
   virtual void createFrameListener(void);
   virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
   virtual bool keyPressed( const OIS::KeyEvent &arg );
+  virtual bool mouseMoved( const OIS::MouseEvent &arg );
   virtual bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
   virtual bool mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
 
@@ -69,6 +70,14 @@ protected:
   OgreBites::ParamsPanel* scorePanel;
   OgreBites::Label* congratsPanel;
   OgreBites::Label* chargePanel;
+  OgreBites::Label* yesPrompt;
+  OgreBites::Label* noPrompt;
+  OgreBites::Label* IPPrompt;
+  std::string enteredIP;
+
+  bool startUpOption;
+  bool setup;
+  bool readingIP;
 
   BallManager *ballMgr;
   TileSimulator *sim;

@@ -192,16 +192,10 @@ void TutorialApplication::createFrameListener(void) {
 
   chargePanel = mTrayMgr->createLabel(OgreBites::TL_BOTTOM, "Chargepanel", "|", 300);
 
-  Ogre::OverlayManager& overlayMgr = Ogre::OverlayManager::getSingleton();
-  Ogre::Overlay* overlay = overlayMgr.create("Crosshair");
-
-  Ogre::OverlayContainer* panel = static_cast<Ogre::OverlayContainer*>(
-      overlayMgr.createOverlayElement("Panel", "PanelName"));
-  panel->setPosition(0.488, 0.475);
-  panel->setDimensions(0.025, 0.0375);
-  panel->setMaterialName("Examples/Crosshair");
-  overlay->add2D(panel);
-  overlay->show();
+  setup = true;
+  startUpOption = true;
+  yesPrompt = mTrayMgr->createLabel(OgreBites::TL_CENTER, "yesprompt", "option 1", 300);
+  noPrompt = mTrayMgr->createLabel(OgreBites::TL_CENTER, "noprompt", "option 10", 300);
 }
 //-------------------------------------------------------------------------------------
 bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
@@ -271,12 +265,115 @@ bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     for(int i = 1000; i < chargeShot; i += 160)
       scharge << "|";
     chargePanel->setCaption(scharge.str());
+
+    if(setup && !readingIP)
+    {
+        if(startUpOption)
+        {
+            yesPrompt->setCaption("> Start Game <");
+            noPrompt->setCaption("Stare At Menu");
+        }
+        else
+        {
+            yesPrompt->setCaption("Start Game");
+            noPrompt->setCaption("> Stare At Menu <");
+        }
+    }
+    else if(setup)
+    {
+        IPPrompt->setCaption(enteredIP);
+    }
   }
 
   return ret;
 }
 //-------------------------------------------------------------------------------------
 bool TutorialApplication::keyPressed( const OIS::KeyEvent &arg ) {
+  if (readingIP)
+  {
+      if(arg.key == OIS::KC_SPACE)
+      {
+          setup = false;
+          readingIP = false;
+
+          mTrayMgr->clearTray(OgreBites::TL_CENTER);
+          IPPrompt->hide();
+
+          Ogre::OverlayManager& overlayMgr = Ogre::OverlayManager::getSingleton();
+          Ogre::Overlay* overlay = overlayMgr.create("Crosshair");
+          Ogre::OverlayContainer* panel = static_cast<Ogre::OverlayContainer*>(
+              overlayMgr.createOverlayElement("Panel", "PanelName"));
+          panel->setPosition(0.488, 0.475);
+          panel->setDimensions(0.025, 0.0375);
+          panel->setMaterialName("Examples/Crosshair");
+          overlay->add2D(panel);
+          overlay->show();
+      }
+      else if(arg.key == OIS::KC_DELETE)
+      {
+          enteredIP = "";
+      }
+      std::string c = "";
+      bool numread = true;
+      switch(arg.key)
+      {
+          case OIS::KC_0: c = "0"; break;
+          case OIS::KC_1: c = "1"; break;
+          case OIS::KC_2: c = "2"; break;
+          case OIS::KC_3: c = "3"; break;
+          case OIS::KC_4: c = "4"; break;
+          case OIS::KC_5: c = "5"; break;
+          case OIS::KC_6: c = "6"; break;
+          case OIS::KC_7: c = "7"; break;
+          case OIS::KC_8: c = "8"; break;
+          case OIS::KC_9: c = "9"; break;
+          default: numread = false; break;
+      }
+      if(numread)
+      {
+          enteredIP += c;
+      }
+      return true;
+  }
+  else if(setup)
+  {  
+      if (arg.key == OIS::KC_UP || arg.key == OIS::KC_DOWN ||
+          arg.key == OIS::KC_W  || arg.key == OIS::KC_S)
+      {
+          startUpOption = !startUpOption;
+      }
+      else if (arg.key == OIS::KC_SPACE)
+      {
+          if(startUpOption)
+          {
+              setup = false;
+
+              mTrayMgr->clearTray(OgreBites::TL_CENTER);
+              yesPrompt->hide();
+              noPrompt->hide();
+
+              Ogre::OverlayManager& overlayMgr = Ogre::OverlayManager::getSingleton();
+              Ogre::Overlay* overlay = overlayMgr.create("Crosshair");
+
+              Ogre::OverlayContainer* panel = static_cast<Ogre::OverlayContainer*>(
+                  overlayMgr.createOverlayElement("Panel", "PanelName"));
+              panel->setPosition(0.488, 0.475);
+              panel->setDimensions(0.025, 0.0375);
+              panel->setMaterialName("Examples/Crosshair");
+              overlay->add2D(panel);
+              overlay->show();
+          }
+          else
+          {
+              readingIP = true;
+              enteredIP = "";
+              mTrayMgr->destroyAllWidgetsInTray(OgreBites::TL_CENTER);
+
+              IPPrompt = mTrayMgr->createLabel(OgreBites::TL_CENTER, "IPPrompt", "blahblahblah", 400);
+          }
+      }
+      return true;
+  }
   if (arg.key == OIS::KC_ESCAPE)
   {
     Mix_FreeMusic(music);
@@ -310,10 +407,20 @@ bool TutorialApplication::keyPressed( const OIS::KeyEvent &arg ) {
     animDone = false;
   }
 
+
   return BaseApplication::keyPressed(arg);
 }
 //-------------------------------------------------------------------------------------
+bool TutorialApplication::mouseMoved ( const OIS::MouseEvent &arg )
+{
+  if(setup)
+      return true;
+  return BaseApplication::mouseMoved(arg);
+}
+//-------------------------------------------------------------------------------------
 bool TutorialApplication::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) {
+  if(setup)
+      return true;
   isCharging = true;
   chargeShot = 0;
 
@@ -321,6 +428,8 @@ bool TutorialApplication::mousePressed( const OIS::MouseEvent &arg, OIS::MouseBu
 }
 //-------------------------------------------------------------------------------------
 bool TutorialApplication::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) {
+  if(setup)
+      return true;
   isCharging = false;
   if(chargeShot >= 1000 && !gameDone) {
     Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
