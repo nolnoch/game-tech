@@ -4,3 +4,8 @@ environment/project/cdt.managedbuild.config.gnu.exe.debug.570085110/OGRE_LOC/ope
 environment/project/cdt.managedbuild.config.gnu.exe.debug.570085110/OGRE_LOC/value=/home/nolnoch/ogre3d/ogre_src_v1-7-4
 environment/project/cdt.managedbuild.config.gnu.exe.debug.570085110/append=true
 environment/project/cdt.managedbuild.config.gnu.exe.debug.570085110/appendContributed=true
+environment/project/cdt.managedbuild.toolchain.gnu.base.2013163772/OGRE_LOC/delimiter=\:
+environment/project/cdt.managedbuild.toolchain.gnu.base.2013163772/OGRE_LOC/operation=append
+environment/project/cdt.managedbuild.toolchain.gnu.base.2013163772/OGRE_LOC/value=/home/nolnoch/ogre3d/ogre_src_v1-7-4
+environment/project/cdt.managedbuild.toolchain.gnu.base.2013163772/append=true
+environment/project/cdt.managedbuild.toolchain.gnu.base.2013163772/appendContributed=true

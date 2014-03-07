@@ -1,6 +1,6 @@
 /*
 -----------------------------------------------------------------------------
-Filename:    BaseApplication.cpp
+Filename:    BaseGame.cpp
 -----------------------------------------------------------------------------
 
 This source file is part of the
@@ -14,10 +14,10 @@ This source file is part of the
       http://www.ogre3d.org/tikiwiki/
 -----------------------------------------------------------------------------
  */
-#include "BaseApplication.h"
+#include "BaseGame.h"
 
 //-------------------------------------------------------------------------------------
-BaseApplication::BaseApplication(void)
+BaseGame::BaseGame(void)
 : mRoot(0),
   mCamera(0),
   mSceneMgr(0),
@@ -36,7 +36,7 @@ BaseApplication::BaseApplication(void)
 }
 
 //-------------------------------------------------------------------------------------
-BaseApplication::~BaseApplication(void)
+BaseGame::~BaseGame(void)
 {
   if (mTrayMgr) delete mTrayMgr;
   if (mCameraMan) delete mCameraMan;
@@ -48,7 +48,7 @@ BaseApplication::~BaseApplication(void)
 }
 
 //-------------------------------------------------------------------------------------
-bool BaseApplication::configure(void)
+bool BaseGame::configure(void)
 {
   // Show the configuration dialog and initialise the system
   // You can skip this and use root.restoreConfig() to load configuration
@@ -67,7 +67,7 @@ bool BaseApplication::configure(void)
   }
 }
 //-------------------------------------------------------------------------------------
-void BaseApplication::chooseSceneManager(void)
+void BaseGame::chooseSceneManager(void)
 {
   // Get the SceneManager, in this case a generic one
   mSceneMgr = mRoot->createSceneManager(Ogre::ST_GENERIC);
@@ -75,7 +75,7 @@ void BaseApplication::chooseSceneManager(void)
   mSceneMgr->setShadowFarDistance(2500.0);
 }
 //-------------------------------------------------------------------------------------
-void BaseApplication::createCamera(void)
+void BaseGame::createCamera(void)
 {
   // Create the camera
   mCamera = mSceneMgr->createCamera("PlayerCam");
@@ -88,7 +88,7 @@ void BaseApplication::createCamera(void)
   mCamera->setNearClipDistance(5);
 }
 //-------------------------------------------------------------------------------------
-void BaseApplication::createFrameListener(void)
+void BaseGame::createFrameListener(void)
 {
   Ogre::LogManager::getSingletonPtr()->logMessage("*** Initializing OIS ***");
   OIS::ParamList pl;
@@ -140,11 +140,11 @@ void BaseApplication::createFrameListener(void)
   mRoot->addFrameListener(this);
 }
 //-------------------------------------------------------------------------------------
-void BaseApplication::destroyScene(void)
+void BaseGame::destroyScene(void)
 {
 }
 //-------------------------------------------------------------------------------------
-void BaseApplication::createViewports(void)
+void BaseGame::createViewports(void)
 {
   // Create one viewport, entire window
   Ogre::Viewport* vp = mWindow->addViewport(mCamera);
@@ -155,7 +155,7 @@ void BaseApplication::createViewports(void)
       Ogre::Real(vp->getActualWidth()) / Ogre::Real(vp->getActualHeight()));
 }
 //-------------------------------------------------------------------------------------
-void BaseApplication::setupResources(void)
+void BaseGame::setupResources(void)
 {
   // Load resource paths from config file
   Ogre::ConfigFile cf;
@@ -187,17 +187,17 @@ void BaseApplication::setupResources(void)
   }
 }
 //-------------------------------------------------------------------------------------
-void BaseApplication::createResourceListener(void)
+void BaseGame::createResourceListener(void)
 {
 
 }
 //-------------------------------------------------------------------------------------
-void BaseApplication::loadResources(void)
+void BaseGame::loadResources(void)
 {
   Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 }
 //-------------------------------------------------------------------------------------
-void BaseApplication::go(void)
+void BaseGame::go(void)
 {
 #ifdef _DEBUG
   mResourcesCfg = "resources_d.cfg";
@@ -222,7 +222,7 @@ void BaseApplication::go(void)
   destroyScene();
 }
 //-------------------------------------------------------------------------------------
-bool BaseApplication::setup(void)
+bool BaseGame::setup(void)
 {
   mRoot = new Ogre::Root(mPluginsCfg);
 
@@ -251,7 +251,7 @@ bool BaseApplication::setup(void)
   return true;
 };
 //-------------------------------------------------------------------------------------
-bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
+bool BaseGame::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
   if(mWindow->isClosed())
     return false;
@@ -283,7 +283,7 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
   return true;
 }
 //-------------------------------------------------------------------------------------
-bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
+bool BaseGame::keyPressed( const OIS::KeyEvent &arg )
 {
   if (mTrayMgr->isDialogVisible()) return true;   // don't process any more keys if dialog is up
 
@@ -355,6 +355,7 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
       default:
         newVal = "Solid";
         pm = Ogre::PM_SOLID;
+        break;
     }
 
     mCamera->setPolygonMode(pm);
@@ -377,27 +378,27 @@ bool BaseApplication::keyPressed( const OIS::KeyEvent &arg )
   return true;
 }
 
-bool BaseApplication::keyReleased( const OIS::KeyEvent &arg )
+bool BaseGame::keyReleased( const OIS::KeyEvent &arg )
 {
   mCameraMan->injectKeyUp(arg);
   return true;
 }
 
-bool BaseApplication::mouseMoved( const OIS::MouseEvent &arg )
+bool BaseGame::mouseMoved( const OIS::MouseEvent &arg )
 {
   if (mTrayMgr->injectMouseMove(arg)) return true;
   mCameraMan->injectMouseMove(arg);
   return true;
 }
 
-bool BaseApplication::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
+bool BaseGame::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
   if (mTrayMgr->injectMouseDown(arg, id)) return true;
   mCameraMan->injectMouseDown(arg, id);
   return true;
 }
 
-bool BaseApplication::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
+bool BaseGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
   if (mTrayMgr->injectMouseUp(arg, id)) return true;
   mCameraMan->injectMouseUp(arg, id);
@@ -405,7 +406,7 @@ bool BaseApplication::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButto
 }
 
 //Adjust mouse clipping area
-void BaseApplication::windowResized(Ogre::RenderWindow* rw)
+void BaseGame::windowResized(Ogre::RenderWindow* rw)
 {
   unsigned int width, height, depth;
   int left, top;
@@ -417,7 +418,7 @@ void BaseApplication::windowResized(Ogre::RenderWindow* rw)
 }
 
 //Unattach OIS before window shutdown (very important under Linux)
-void BaseApplication::windowClosed(Ogre::RenderWindow* rw)
+void BaseGame::windowClosed(Ogre::RenderWindow* rw)
 {
   //Only close for window that created OIS (the main window in these demos)
   if( rw == mWindow )

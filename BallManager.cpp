@@ -116,6 +116,7 @@ bool BallManager::checkCollisions(btRigidBody *aTile, void *body0, void *body1) 
       std::cout << "Target hit: in checkCollisions" << std::endl;
     }
   }
+  std::cout << "Leaving checkCollisions" << std::endl;
 
   return hit;
 }

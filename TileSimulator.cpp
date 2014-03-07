@@ -20,10 +20,10 @@ bool TileSimulator::simulateStep(double delay) {
   if (targethit) {
     std::cout << "Target hit: in simulateStep" << std::endl;
 
-    if(tiles.size() > 0) {
+    if (tiles.size() > 0) {
       tiles.pop_back();
 
-      if(tiles.size() > 0)
+      if (tiles.size() > 0)
         activetile = tiles.back();
       else
         activetile = NULL;

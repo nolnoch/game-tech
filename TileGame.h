@@ -1,6 +1,6 @@
 /*
 -----------------------------------------------------------------------------
-Filename:    TutorialApplication.h
+Filename:    TileGame.h
 -----------------------------------------------------------------------------
 
 This source file is part of the
@@ -14,15 +14,14 @@ This source file is part of the
       http://www.ogre3d.org/tikiwiki/
 -----------------------------------------------------------------------------
  */
-#ifndef __TutorialApplication_h_
-#define __TutorialApplication_h_
+#ifndef __TileGame_h_
+#define __TileGame_h_
 
-#include "BaseApplication.h"
+#include "BaseGame.h"
 #include "BallManager.h"
 #include "CameraMan.h"
+#include "SoundManager.h"
 
-#include <SDL/SDL.h>
-#include <SDL/SDL_mixer.h>
 #include <vector>
 
 const static int WALL_SIZE = 2400;
@@ -31,11 +30,11 @@ const static int NUM_TILES_ROW = 5;                                 // number of
 const static int NUM_TILES_WALL = NUM_TILES_ROW * NUM_TILES_ROW;    // number of total tiles on a wall.
 const static int TILE_WIDTH = WALL_SIZE / NUM_TILES_ROW;
 
-class TutorialApplication : public BaseApplication
+class TileGame : public BaseGame
 {
 public:
-  TutorialApplication(void);
-  virtual ~TutorialApplication(void);
+  TileGame(void);
+  virtual ~TileGame(void);
 
   Ogre::RenderWindow * getWindow(void) { return mWindow; }
   Ogre::Timer * getTimer(void) { return mTimer; }
@@ -72,6 +71,7 @@ protected:
 
   BallManager *ballMgr;
   TileSimulator *sim;
+  SoundManager *soundMgr;
 
   Ogre::Vector3 vZero;
   Mix_Chunk *boing, *gong;
@@ -323,4 +323,4 @@ protected:
   }
 };
 
-#endif // #ifndef __TutorialApplication_h_
+#endif // #ifndef __TileGame_h_

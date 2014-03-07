@@ -18,3 +18,9 @@
 /m4
 /autom4te.cache
 /Ogre.log
+/OgreApp-BallManager.o
+/OgreApp-BaseApplication.o
+/OgreApp-TileSimulator.o
+/OgreApp-TutorialApplication.o
+/OgreApp-BaseGame.o
+/OgreApp-TileGame.o

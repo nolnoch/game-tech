@@ -1,6 +1,6 @@
 /*
 -----------------------------------------------------------------------------
-Filename:    TutorialApplication.cpp
+Filename:    TileGame.cpp
 -----------------------------------------------------------------------------
 
 This source file is part of the
@@ -14,7 +14,7 @@ This source file is part of the
       http://www.ogre3d.org/tikiwiki/
 -----------------------------------------------------------------------------
  */
-#include "TutorialApplication.h"
+#include "TileGame.h"
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS || OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 #   include <macUtils.h>
@@ -22,7 +22,7 @@ This source file is part of the
 #endif
 
 //-------------------------------------------------------------------------------------
-TutorialApplication::TutorialApplication(void) :
+TileGame::TileGame(void) :
 mDirection(Ogre::Vector3::ZERO),
 vZero(Ogre::Vector3::ZERO),
 sounding(false),
@@ -34,6 +34,7 @@ paused(false),
 currLevel(1),
 headNode(0),
 ballMgr(0),
+soundMgr(0),
 sim(0),
 panelLight(0),
 scorePanel(0),
@@ -50,29 +51,19 @@ gong(0)
   mTimer->reset();
 }
 //-------------------------------------------------------------------------------------
-TutorialApplication::~TutorialApplication(void)
+TileGame::~TileGame(void)
 {
-  Mix_CloseAudio();
-  SDL_Quit();
+  delete soundMgr;
+  delete ballMgr;
 }
 //-------------------------------------------------------------------------------------
-bool TutorialApplication::configure() {
-  bool ret = BaseApplication::configure();
+bool TileGame::configure() {
+  bool ret = BaseGame::configure();
 
-  // Initialize Audio [based on http://www.kekkai.org/roger/sdl/mixer/]
-  /* We're going to be requesting certain things from our audio
-           device, so we set them up beforehand */
-  int audio_rate = 22050;
-  Uint16 audio_format = AUDIO_S16; /* 16-bit stereo */
-  int audio_channels = 2;
-  int audio_buffers = 4096;
+  soundMgr = new SoundManager();
+  soundMgr->initSoundManager();
 
-  /* This is where we open up our audio device.  Mix_OpenAudio takes
-           as its parameters the audio format we'd /like/ to have. */
-  if (Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers))
-    std::cout << "Unable to open audio!\n" << std::endl;
-  else
-    sounding = true;
+  // TODO Left off here...
 
   if (sounding) {
     boing = Mix_LoadWAV("hit.wav");
@@ -87,12 +78,12 @@ bool TutorialApplication::configure() {
   return ret;
 }
 //-------------------------------------------------------------------------------------
-void TutorialApplication::createCamera(void) {
-  BaseApplication::createCamera();
+void TileGame::createCamera(void) {
+  BaseGame::createCamera();
   mCameraMan = new CameraMan(mCamera);
 }
 //-------------------------------------------------------------------------------------
-void TutorialApplication::createScene(void)
+void TileGame::createScene(void)
 {
   boxBound = Ogre::PlaneBoundedVolume(Ogre::Plane::NEGATIVE_SIDE);
   boxBound.planes.push_back(wallBack = Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_Z, 0));
@@ -178,8 +169,8 @@ void TutorialApplication::createScene(void)
   levelSetup(currLevel);
 }
 //-------------------------------------------------------------------------------------
-void TutorialApplication::createFrameListener(void) {
-  BaseApplication::createFrameListener();
+void TileGame::createFrameListener(void) {
+  BaseGame::createFrameListener();
 
   Ogre::StringVector scorelist;
   scorelist.push_back("Score");
@@ -204,9 +195,9 @@ void TutorialApplication::createFrameListener(void) {
   overlay->show();
 }
 //-------------------------------------------------------------------------------------
-bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
+bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
-  bool ret = BaseApplication::frameRenderingQueued(evt);
+  bool ret = BaseGame::frameRenderingQueued(evt);
 
   if (paused) {
     slowdownval += 1/1800.f;
@@ -276,7 +267,7 @@ bool TutorialApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
   return ret;
 }
 //-------------------------------------------------------------------------------------
-bool TutorialApplication::keyPressed( const OIS::KeyEvent &arg ) {
+bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
   if (arg.key == OIS::KC_ESCAPE)
   {
     Mix_FreeMusic(music);
@@ -310,17 +301,17 @@ bool TutorialApplication::keyPressed( const OIS::KeyEvent &arg ) {
     animDone = false;
   }
 
-  return BaseApplication::keyPressed(arg);
+  return BaseGame::keyPressed(arg);
 }
 //-------------------------------------------------------------------------------------
-bool TutorialApplication::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) {
+bool TileGame::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) {
   isCharging = true;
   chargeShot = 0;
 
-  return BaseApplication::mousePressed(arg, id);
+  return BaseGame::mousePressed(arg, id);
 }
 //-------------------------------------------------------------------------------------
-bool TutorialApplication::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) {
+bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) {
   isCharging = false;
   if(chargeShot >= 1000 && !gameDone) {
     Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
@@ -344,7 +335,7 @@ bool TutorialApplication::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseB
     shotsFired++;
   }
 
-  return BaseApplication::mouseReleased(arg, id);
+  return BaseGame::mouseReleased(arg, id);
 }
 //-------------------------------------------------------------------------------------
 
@@ -381,7 +372,7 @@ int main(int argc, char *argv[])
   return retVal;
 #else
   // Create application object
-  TutorialApplication app;
+  TileGame app;
 
   try {
     app.go();
