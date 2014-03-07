@@ -8,7 +8,8 @@
 #include "NetManager.h"
 
 NetManager::NetManager():
-netStatus(0)
+netStatus(0),
+nUDPChannels(-1)
 {
   initNetManager();
 }
@@ -77,8 +78,6 @@ bool NetManager::openTCPSocket(IPaddress *addr) {
 }
 
 bool NetManager::openUDPSocket(uint16 port) {
-  bool ret = false;
-
   if (netStatus ^ NET_RESOLVED)
     return false;
 
@@ -87,65 +86,80 @@ bool NetManager::openUDPSocket(uint16 port) {
 
   UDPsocket udpSock = SDLNet_UDP_Open(port);
 
-  if ((ret = !udpSock)) {
+  if (!udpSock) {
     netStatus ^= NET_RESOLVED;
     netStatus |= NET_OPEN;
     udpSockets.push_back(udpSock);
   } else
     std::cout << "SDL_net: Failed to open UDP socket!" << std::endl;
 
+  IPaddress *addr = (netStatus & NET_CLIENT) ? netServer : NULL;
+
+  return bindUDPSocket(udpSock, nUDPChannels, addr);
+}
+
+bool NetManager::acceptTCP(TCPsocket server) {
+
+}
+
+bool NetManager::bindUDPSocket (UDPsocket sock, int channel, IPaddress *addr) {
+  bool ret = true;
+
+  if (!addr) {
+    // TODO Handle multiple clients.
+  }
+
+  boundChannel = SDLNet_UDP_Bind(sock, channel, addr);
+
+  if (boundChannel == -1) {
+    std::cout << "SDL_net: Failed to bind UDP socket to channel." << std::endl;
+    ret = false;
+  }
+
   return ret;
 }
 
-bool acceptTCP(TCPsocket server) {
+bool NetManager::unbindUDPSocket(UDPsocket sock, int channel) {
 
 }
 
-bool bindUDPSocket (UDPsocket sock, int channel, IPaddress *addr) {
+bool NetManager::sendTCP(TCPsocket sock, const void *data, int len) {
 
 }
 
-bool unbindUDPSocket(UDPsocket sock, int channel) {
+bool NetManager::sendUDP(UDPsocket sock, int channel, UDPpacket *pack) {
 
 }
 
-bool sendTCP(TCPsocket sock, const void *data, int len) {
+bool NetManager::recvTCP(TCPsocket sock, void *data, int maxlen) {
 
 }
 
-bool sendUDP(UDPsocket sock, int channel, UDPpacket *pack) {
+bool NetManager::recvUDP(UDPsocket sock, UDPpacket *pack) {
 
 }
 
-bool recvTCP(TCPsocket sock, void *data, int maxlen) {
+bool NetManager::sendUDPV(UDPsocket sock, UDPpacket **packetV, int npackets) {
 
 }
 
-bool recvUDP(UDPsocket sock, UDPpacket *pack) {
+bool NetManager::recvUDPV(UDPsocket sock, UDPpacket **packetV) {
 
 }
 
-bool sendUDPV(UDPsocket sock, UDPpacket **packetV, int npackets) {
+bool NetManager::closeTCP(TCPsocket sock) {
 
 }
 
-bool recvUDPV(UDPsocket sock, UDPpacket **packetV) {
+bool NetManager::closeUDP(UDPsocket sock) {
 
 }
 
-bool closeTCP(TCPsocket sock) {
+IPaddress* NetManager::queryTCPAddress(TCPsocket sock) {
 
 }
 
-bool closeUDP(UDPsocket sock) {
-
-}
-
-IPaddress* queryTCPAddress(TCPsocket sock) {
-
-}
-
-IPaddress* queryUDPAddress(UDPsocket sock, int channel) {
+IPaddress* NetManager::queryUDPAddress(UDPsocket sock, int channel) {
 
 }
 

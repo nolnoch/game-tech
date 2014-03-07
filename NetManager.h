@@ -46,7 +46,8 @@ private:
   enum {NET_UNINITIALIZED = 0, NET_WAITING = 1, NET_RESOLVED = 2, NET_OPEN = 4,
     NET_BOUND = 8, NET_BLOCKED = 16, NET_SERVER = 256, NET_CLIENT = 512};
   int tcpPorts[5], udpPorts[5];
-  int netStatus;
+  int netStatus, nUDPChannels;
+  int boundChannel;
   uint16 serverPort;
   IPaddress netServer;
   std::vector<IPaddress> netClients;
