@@ -9,6 +9,7 @@
 
 NetManager::NetManager():
 netStatus(0),
+nClients(0),
 nUDPChannels(-1)
 {
   initNetManager();
@@ -59,6 +60,10 @@ bool NetManager::openClient(int protocol, char *addr, uint16 port) {
       openTCPSocket(&netServer) : openUDPSocket(port);
 }
 
+void NetManager::close() {
+
+}
+
 bool NetManager::openTCPSocket(IPaddress *addr) {
   bool ret = false;
 
@@ -69,7 +74,7 @@ bool NetManager::openTCPSocket(IPaddress *addr) {
 
   if ((ret = !tcpSock)) {
     netStatus ^= NET_RESOLVED;
-    netStatus |= NET_OPEN;
+    netStatus |= NET_TCP_OPEN;
     tcpSockets.push_back(tcpSock);
   } else
     std::cout << "SDL_net: Failed to open TCP socket!" << std::endl;
@@ -88,7 +93,7 @@ bool NetManager::openUDPSocket(uint16 port) {
 
   if (!udpSock) {
     netStatus ^= NET_RESOLVED;
-    netStatus |= NET_OPEN;
+    netStatus |= NET_UDP_OPEN;
     udpSockets.push_back(udpSock);
   } else
     std::cout << "SDL_net: Failed to open UDP socket!" << std::endl;
@@ -105,14 +110,32 @@ bool NetManager::acceptTCP(TCPsocket server) {
 bool NetManager::bindUDPSocket (UDPsocket sock, int channel, IPaddress *addr) {
   bool ret = true;
 
-  if (!addr) {
-    // TODO Handle multiple clients.
-  }
+  if (netStatus ^ NET_UDP_OPEN)
+    return false;
 
-  boundChannel = SDLNet_UDP_Bind(sock, channel, addr);
+  if (netStatus & NET_SERVER) {
+    if (!nClients) {
+      std::cout << "NetManager: No clients to bind for UDP!" << std::endl;
+      ret = false;
+    }
 
-  if (boundChannel == -1) {
-    std::cout << "SDL_net: Failed to bind UDP socket to channel." << std::endl;
+    int i;
+    for (i = 0; i < netClients.size() && ret; i ++) {
+      if (SDLNet_UDP_Bind(sock, i, &netClients[i]) == -1) {
+        std::cout << "SDL_net: Failed to bind UDP socket to channel." << std::endl;
+        ret = false;
+      }
+    }
+  } else if (netStatus & NET_CLIENT) {
+    boundChannel = SDLNet_UDP_Bind(sock, channel, addr);
+
+    if (boundChannel == -1) {
+      std::cout << "SDL_net: Failed to bind UDP socket to channel." << std::endl;
+      ret = false;
+    }
+  } else {
+    std::cout << "NetManager: Not a client or server. This cannot happen."
+        << std::endl;
     ret = false;
   }
 

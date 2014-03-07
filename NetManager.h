@@ -26,6 +26,22 @@ public:
   bool initNetManager();
   bool openServer(int protocol, uint16 port);
   bool openClient(int protocol, char *addr, uint16 port);
+  void close();
+
+private:
+  enum {NET_UNINITIALIZED = 0, NET_WAITING = 1, NET_RESOLVED = 2, NET_TCP_OPEN = 4,
+    NET_UDP_OPEN = 8, NET_TCP_ACCEPT = 16, NET_UDP_BOUND = 32, NET_BLOCKED = 64,
+    NET_SERVER = 256, NET_CLIENT = 512};
+  int tcpPorts[5], udpPorts[5];
+  int netStatus;
+  int nUDPChannels, nClients;
+  int boundChannel;
+  uint16 serverPort;
+  IPaddress netServer;
+  std::vector<IPaddress> netClients;
+  std::vector<TCPsocket> tcpSockets;
+  std::vector<UDPsocket> udpSockets;
+
   bool openTCPSocket (IPaddress *addr);
   bool openUDPSocket (uint16 port);
   bool acceptTCP(TCPsocket server);
@@ -41,18 +57,6 @@ public:
   bool closeUDP(UDPsocket sock);
   IPaddress* queryTCPAddress(TCPsocket sock);
   IPaddress* queryUDPAddress(UDPsocket sock, int channel);
-
-private:
-  enum {NET_UNINITIALIZED = 0, NET_WAITING = 1, NET_RESOLVED = 2, NET_OPEN = 4,
-    NET_BOUND = 8, NET_BLOCKED = 16, NET_SERVER = 256, NET_CLIENT = 512};
-  int tcpPorts[5], udpPorts[5];
-  int netStatus, nUDPChannels;
-  int boundChannel;
-  uint16 serverPort;
-  IPaddress netServer;
-  std::vector<IPaddress> netClients;
-  std::vector<TCPsocket> tcpSockets;
-  std::vector<UDPsocket> udpSockets;
 
   // TODO make pointers to fields for auto-load?
 
