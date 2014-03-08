@@ -13,33 +13,39 @@
 #include <SDL/SDL_net.h>
 
 
-typedef unsigned short int uint16;
-
 struct ConnectionInfo {
-  void *socketList;
-  int socketIdx;
+  int tcpSocketIdx;
+  int udpSocketIdx;
   int clientIdx;
-  int protocol;
+  int protocols;
   int udpChannel;
   IPaddress address;
-  uint16 port;
+  Uint16 port;
   std::string hostname;
 };
+
 
 class NetManager {
 public:
   NetManager();
   virtual ~NetManager();
 
-  bool initNetManager();
-  bool startServer(int protocol, uint16 port);
-  bool startClient(int protocol, char *addr, uint16 port);
-  int  addClient();
-  void dropServer();
-  void dropClient();
+  bool startServerTCP();
+  bool startServerUDP();
+  bool listenForClient();
+  void updateClientsTCP();
+  void updateClientsUDP();
+  void updateServerTCP();
+  void updateServerUDP();
+  void stopServer();
+  void stopClient();
   void close();
 
-  // bool changeServer(int protocol);
+  int getDefaultPort();
+  int getDefaultUDPChannel();
+  void setDefaultPort(int newPort);
+  void setDefaultUDPChannel(int newChannel);
+
 
 private:
   enum {
@@ -50,26 +56,34 @@ private:
     NET_UDP_OPEN        = 8,
     NET_TCP_ACCEPT      = 16,
     NET_UDP_BOUND       = 32,
-    NET_BLOCKED         = 64,
+
     NET_SERVER          = 256,
-    NET_CLIENT          = 512
-  };
-  enum {
+    NET_CLIENT          = 512,
+    PORT_TCP            = 1024,
+    PORT_UDP            = 2048,
+
     PORT_RANDOM         = 0,
-    PORT_TCP            = 1020,
-    PORT_UDP            = 1040
+    PORT_DEFAULT        = 51215,
+    CHANNEL_AUTO        = -1,
+    CHANNEL_DEFAULT     = 1,
+    MAX_SOCKETS         = 8
   };
   static bool forceClientRandomUDP;
   int netStatus;
-  int nUDPChannels, nClients;
-  int serverUDPChannel;
+  int defaultPort;
+  int defaultUDPChannel;
   ConnectionInfo netServer;
-  std::vector<ConnectionInfo *> netClients;
+  std::vector<ConnectionInfo *> tcpClients;
+  std::vector<ConnectionInfo *> udpClients;
   std::vector<TCPsocket> tcpSockets;
   std::vector<UDPsocket> udpSockets;
+  SDLNet_SocketSet socketNursery;
 
+  bool initNetManager();
+  bool startServer(int protocol, Uint16 port);
+  bool startClient(int protocol, char *addr, Uint16 port);
   bool openTCPSocket (IPaddress *addr);
-  bool openUDPSocket (uint16 port);
+  bool openUDPSocket (Uint16 port);
   bool acceptTCP(TCPsocket server);
   bool bindUDPSocket (UDPsocket sock, int channel, IPaddress *addr);
   void unbindUDPSocket(UDPsocket sock, int channel);
@@ -84,7 +98,19 @@ private:
   IPaddress* queryTCPAddress(TCPsocket sock);
   IPaddress* queryUDPAddress(UDPsocket sock, int channel);
 
+  UDPpacket* allocUDPpacket(int size);
+  int resizeUDPpacket(UDPpacket *pack, int size);
+  void freeUDPpacket(UDPpacket *pack);
+
+  void watchSocket(TCPsocket *sock);
+  void watchSocket(UDPsocket *sock);
+  void unwatchSocket(TCPsocket *sock);
+  void unwatchSocket(UDPsocket *sock);
+  void checkSockets(Uint32 timeout_ms);
+
   bool statusCheck(int state);
+  bool statusCheck(int state1, int state2);
+  void clearFlags(int state);
 
   // TODO make pointers to fields for auto-load?
 
