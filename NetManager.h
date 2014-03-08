@@ -20,12 +20,12 @@ struct ConnectionInfo {
   int protocols;
   int udpChannel;
   IPaddress address;
-  Uint16 port;
   std::string hostname;
 };
 
 struct MessageBuffer {
   Uint32 host;
+  bool updated;
   char buffer[128];
 };
 
@@ -77,10 +77,9 @@ private:
     CHANNEL_DEFAULT     = 1,
     CHANNEL_MAX         = 4,
     SOCKET_TCP_MAX      = 12,
-    SOCKET_UDP_MAX      = 4,
+    SOCKET_UDP_MAX      = 12,
     SOCKET_ALL_MAX      = SOCKET_TCP_MAX + SOCKET_UDP_MAX,
     SOCKET_SELF         = SOCKET_ALL_MAX + 1,
-
     MESSAGE_LENGTH      = 128
   };
   static bool forceClientRandomUDP;
