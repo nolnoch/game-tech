@@ -14,7 +14,17 @@
 
 
 typedef unsigned short int uint16;
-enum {PORT_RANDOM = 0, PORT_TCP = 1020, PORT_UDP = 1040};
+
+struct ConnectionInfo {
+  void *socketList;
+  int socketIdx;
+  int clientIdx;
+  int protocol;
+  int udpChannel;
+  IPaddress address;
+  uint16 port;
+  std::string hostname;
+};
 
 class NetManager {
 public:
@@ -22,35 +32,39 @@ public:
   virtual ~NetManager();
 
   bool initNetManager();
-  bool openServer(int protocol, uint16 port);
-  bool openClient(int protocol, char *addr, uint16 port);
-  bool connectToServer();
-  int  connectToClient();
+  bool startServer(int protocol, uint16 port);
+  bool startClient(int protocol, char *addr, uint16 port);
+  int  addClient();
   void dropServer();
   void dropClient();
   void close();
 
+  // bool changeServer(int protocol);
+
 private:
   enum {
-    NET_UNINITIALIZED = 0,
-    NET_WAITING =       1,
-    NET_RESOLVED =      2,
-    NET_TCP_OPEN =      4,
-    NET_UDP_OPEN =      8,
-    NET_TCP_ACCEPT =    16,
-    NET_UDP_BOUND =     32,
-    NET_BLOCKED =       64,
-    NET_SERVER =        256,
-    NET_CLIENT =        512
+    NET_UNINITIALIZED   = 0,
+    NET_WAITING         = 1,
+    NET_RESOLVED        = 2,
+    NET_TCP_OPEN        = 4,
+    NET_UDP_OPEN        = 8,
+    NET_TCP_ACCEPT      = 16,
+    NET_UDP_BOUND       = 32,
+    NET_BLOCKED         = 64,
+    NET_SERVER          = 256,
+    NET_CLIENT          = 512
+  };
+  enum {
+    PORT_RANDOM         = 0,
+    PORT_TCP            = 1020,
+    PORT_UDP            = 1040
   };
   static bool forceClientRandomUDP;
   int netStatus;
   int nUDPChannels, nClients;
-  int boundChannel;
-  uint16 tcpPorts[5], udpPorts[5];
-  uint16 serverPort;
-  IPaddress netServer;
-  std::vector<IPaddress> netClients;
+  int serverUDPChannel;
+  ConnectionInfo netServer;
+  std::vector<ConnectionInfo *> netClients;
   std::vector<TCPsocket> tcpSockets;
   std::vector<UDPsocket> udpSockets;
 
@@ -70,12 +84,10 @@ private:
   IPaddress* queryTCPAddress(TCPsocket sock);
   IPaddress* queryUDPAddress(UDPsocket sock, int channel);
 
+  bool statusCheck(int state);
+
   // TODO make pointers to fields for auto-load?
 
-  struct packet {
-    // TODO add fields for game info.
-
-  };
 };
 
 #endif /* NETMANAGER_H_ */
