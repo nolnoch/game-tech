@@ -15,7 +15,7 @@
 
 NetManager::NetManager():
 netStatus(NET_UNINITIALIZED),
-defaultUDPChannel(CHANNEL_DEFAULT),
+nextUDPChannel(CHANNEL_DEFAULT),
 defaultPort(PORT_DEFAULT),
 forceClientRandomUDP(true)
 {
@@ -49,7 +49,7 @@ bool NetManager::initNetManager() {
     printf("SDLNet_Init: %s\n", SDLNet_GetError());
     ret = false;
   } else {
-    socketNursery = SDLNet_AllocSocketSet(MAX_SOCKETS);
+    socketNursery = SDLNet_AllocSocketSet(SOCKET_ALL_MAX);
 
     if (!socketNursery) {
       std::cout << "SDL_net: Unable to allocate SocketSet." << std::endl;
@@ -142,7 +142,9 @@ bool NetManager::openTCPSocket(IPaddress *addr) {
 }
 
 bool NetManager::openUDPSocket(Uint16 port) {
+  bool ret = true;
   Uint16 udpPort = port;
+  IPaddress *addr;
 
   if (statusCheck(NET_RESOLVED))
     return false;
@@ -152,17 +154,21 @@ bool NetManager::openUDPSocket(Uint16 port) {
 
   UDPsocket udpSock = SDLNet_UDP_Open(udpPort);
 
-  if (!udpSock)
+  if (!udpSock) {
     std::cout << "SDL_net: Failed to open UDP socket!" << std::endl;
-  else {
-    netServer.udpSocketIdx = udpSockets.size();
+    ret = false;
+  } else {
     udpSockets.push_back(udpSock);
-    netStatus |= NET_UDP_OPEN;
+
+    if (statusCheck(NET_UDP_OPEN)) {
+      netServer.udpSocketIdx = udpSockets.size();
+      netStatus |= NET_UDP_OPEN;
+      addr = (netStatus & NET_CLIENT) ? netServer.address : NULL;
+      return bindUDPSocket(udpSock, CHANNEL_AUTO, addr);
+    }
   }
 
-  IPaddress *addr = (netStatus & NET_CLIENT) ? netServer.address : NULL;
-
-  return bindUDPSocket(udpSock, defaultUDPChannel, addr);
+  return ret;
 }
 
 bool NetManager::acceptTCP(TCPsocket server) {
@@ -172,6 +178,14 @@ bool NetManager::acceptTCP(TCPsocket server) {
     return false;
 
   TCPsocket tcpSock = SDLNet_TCP_Accept(server);
+
+  if (tcpClients.size() >= SOCKET_TCP_MAX) {
+    // TODO Make rejection message.
+    std::cout << "NetManager: Exceeded max number of TCP connections." << std::endl;
+    rejectTCPClient(tcpSock);
+    closeTCP(tcpSock);
+    return false;
+  }
 
   if (!tcpSock)
     std::cout << "SDL_net: Failed to accept TCP client on server socket." << std::endl;
@@ -200,38 +214,15 @@ bool NetManager::bindUDPSocket (UDPsocket sock, int channel, IPaddress *addr) {
   if (statusCheck(NET_UDP_OPEN))
     return false;
 
-  if (netStatus & NET_SERVER) {
-    int i;
+  int udpchannel;
+  udpchannel = SDLNet_UDP_Bind(sock, channel, addr);
 
-    if (udpClients.empty()) {
-      std::cout << "NetManager: No clients to bind for UDP!" << std::endl;
-      ret = false;
-    }
-
-    for (i = 0; i < udpClients.size() && ret; i ++) {
-      if (!udpClients[i]->udpChannel) {
-        if (-1 == SDLNet_UDP_Bind(sock, i, &udpClients[i]->address)) {
-          std::cout << "SDL_net: Failed to bind UDP socket to channel." << std::endl;
-          ret = false;
-        } else
-          udpClients[i]->udpChannel = i;
-      }
-    }
-  } else if (netStatus & NET_CLIENT) {
-    int udpchannel;
-    udpchannel = SDLNet_UDP_Bind(sock, channel, addr);
-
-    if (udpchannel == -1) {
-      std::cout << "SDL_net: Failed to bind UDP socket to channel." << std::endl;
-      ret = false;
-    } else {
-      netServer.udpChannel = udpchannel;
-      netStatus |= NET_UDP_BOUND;
-    }
-  } else {
-    std::cout << "NetManager: Not a client or server. This cannot happen."
-        << std::endl;
+  if (udpchannel == -1) {
+    std::cout << "SDL_net: Failed to bind UDP socket to channel." << std::endl;
     ret = false;
+  } else if (statusCheck(NET_UDP_BOUND)) {
+    netServer.udpChannel = udpchannel;
+    netStatus |= NET_UDP_BOUND;
   }
 
   return ret;
@@ -443,32 +434,97 @@ void NetManager::checkSockets(Uint32 timeout_ms) {
         }
         for (i = 0; i < tcpClients.size() && nReadySockets; i++) {
           if (SDLNet_SocketReady(tcpSockets[tcpClients[i]->tcpSocketIdx])) {
-            readTCPSocket(tcpSockets[tcpClients[i]->tcpSocketIdx]);
+            readTCPSocket(i);
             nReadySockets--;
           }
         }
       } else if (netStatus & NET_CLIENT) {
         if (SDLNet_SocketReady(tcpSockets[netServer.tcpSocketIdx])) {
-          readTCPSocket(tcpSockets[netServer.tcpSocketIdx]);
+          readTCPSocket(SOCKET_SELF);
           nReadySockets--;
         }
       }
     }
     if (netServer.protocols & PORT_UDP) {
       if (SDLNet_SocketReady(udpSockets[netServer.udpSocketIdx])) {
-        readUDPSocket(udpSockets[netServer.udpSocketIdx]);
+        readUDPSocket(SOCKET_SELF);
         nReadySockets--;
       }
       if (netStatus & NET_SERVER) {
         for (i = 0; i < udpClients.size() && nReadySockets; i++) {
           if (SDLNet_SocketReady(udpSockets[udpClients[i]->udpSocketIdx])) {
-            readUDPSocket(udpSockets[udpClients[i]->udpSocketIdx]);
+            readUDPSocket(i);
             nReadySockets--;
           }
         }
       }
     }
   }
+}
+
+void NetManager::readTCPSocket(int clientIdx) {
+  bool result;
+  int idx;
+
+  // TODO Devise better solution for self-selection.
+  idx = (clientIdx != SOCKET_SELF) ? : 0;
+
+  result = recvTCP(tcpSockets[idx], tcpClientData[idx]->buffer,
+      MESSAGE_LENGTH);
+
+  if (!result) {
+    std::cout << "NetManager: Failed to read TCP packet from tcpClient " << idx
+        << "." << std::endl;
+  }
+}
+
+void NetManager::readUDPSocket(int clientIdx) {
+  UDPpacket *buf;
+  bool result;
+
+  buf = allocUDPpacket(MESSAGE_LENGTH);
+
+  result = recvUDP(udpSockets[clientIdx], buf);
+
+  if (!result) {
+    std::cout << "NetManager: Failed to read UDP packet from udpClient "
+        << clientIdx << "." << std::endl;
+  } else {
+    if (buf->channel == -1) {
+      if (netStatus & NET_CLIENT)
+        std::cout << "NetManager: Unrecognized packet source." << std::endl;
+      else if (!addUDPClient(buf))
+        std::cout << "NetManager: Unable to add new UDP client." << std::endl;
+    } else {
+      memcpy(udpClientData[clientIdx]->buffer, buf->data, buf->len);
+
+      if (buf->address.host != udpClientData[clientIdx]->host)
+        std::cout << "NetManager: UDP client host does not match UDP packet "
+            "host!" << std::endl;
+    }
+  }
+}
+
+bool NetManager::addUDPClient(UDPpacket *pack) {
+  bool ret = true;
+  int socketIdx;
+
+  if (nextUDPChannel >= CHANNEL_MAX) {
+    if (openUDPSocket(PORT_DEFAULT)) {
+      socketIdx = udpSockets.size() - 1;
+      nextUDPChannel = CHANNEL_DEFAULT;
+    } else {
+      // TODO Make rejection message.
+      std::cout << "NetManager: Exceeded max number of TCP connections." << std::endl;
+      rejectUDPClient(pack);
+      freeUDPpacket(pack);
+      return false;
+    }
+  } else {
+    bindUDPSocket(udpSockets.back(), nextUDPChannel++, &pack->address);
+  }
+
+  return ret;
 }
 
 bool NetManager::statusCheck(int state) {

@@ -24,9 +24,18 @@ struct ConnectionInfo {
   std::string hostname;
 };
 
+struct MessageBuffer {
+  Uint32 host;
+  char buffer[128];
+};
+
 
 class NetManager {
 public:
+  MessageBuffer serverData;
+  std::vector<MessageBuffer *> tcpClientData;
+  std::vector<MessageBuffer *> udpClientData;
+
   NetManager();
   virtual ~NetManager();
 
@@ -66,12 +75,18 @@ private:
     PORT_DEFAULT        = 51215,
     CHANNEL_AUTO        = -1,
     CHANNEL_DEFAULT     = 1,
-    MAX_SOCKETS         = 8
+    CHANNEL_MAX         = 4,
+    SOCKET_TCP_MAX      = 12,
+    SOCKET_UDP_MAX      = 4,
+    SOCKET_ALL_MAX      = SOCKET_TCP_MAX + SOCKET_UDP_MAX,
+    SOCKET_SELF         = SOCKET_ALL_MAX + 1,
+
+    MESSAGE_LENGTH      = 128
   };
   static bool forceClientRandomUDP;
   int netStatus;
   int defaultPort;
-  int defaultUDPChannel;
+  int nextUDPChannel;
   ConnectionInfo netServer;
   std::vector<ConnectionInfo *> tcpClients;
   std::vector<ConnectionInfo *> udpClients;
@@ -108,11 +123,18 @@ private:
   void unwatchSocket(UDPsocket *sock);
   void checkSockets(Uint32 timeout_ms);
 
+  void readTCPSocket(int clientIdx);
+  void readUDPSocket(int clientIdx);
+
+  bool addUDPClient(UDPpacket *pack);
+  void rejectTCPClient(TCPsocket sock);
+  void rejectUDPClient(UDPpacket *pack);
+
   bool statusCheck(int state);
   bool statusCheck(int state1, int state2);
   void clearFlags(int state);
 
-  // TODO make pointers to fields for auto-load?
+  // TODO make pointers to fields for auto-load of packets?
 
 };
 
