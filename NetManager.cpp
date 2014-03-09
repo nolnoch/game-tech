@@ -138,15 +138,58 @@ bool NetManager::scanForActivity() {
 }
 
 void NetManager::messageClients(char *buf, int len) {
+  int i;
 
+  if (netServer.protocols & PROTOCOL_TCP) {
+    for (i = 0; i < tcpClients.size(); i++) {
+      sendTCP(tcpSockets[tcpClients[i]->tcpSocketIdx], buf, len);
+    }
+  }
+  if (netServer.protocols & PROTOCOL_UDP) {
+    UDPpacket *pack = craftUDPpacket(buf, len);
+
+    for (i = 0; i < udpClients.size(); i++) {
+      sendUDP(udpSockets[udpClients[i]->udpSocketIdx], udpClients[i]->udpChannel, pack);
+    }
+  }
 }
 
 void NetManager::messageServer(char *buf, int len) {
-
+  if (netServer.protocols & PROTOCOL_TCP) {
+    sendTCP(tcpSockets[netServer.tcpSocketIdx], buf, len);
+  }
+  if (netServer.protocols & PROTOCOL_UDP) {
+    UDPpacket *pack = craftUDPpacket(buf, len);
+    sendUDP(udpSockets[netServer.udpSocketIdx], netServer.udpChannel, pack);
+  }
 }
 
-void NetManager::dropClient(int clientDataIdx) {
+void NetManager::messageClient(Protocol protocol, int clientDataIdx, char *buf, int len) {
+  if (protocol == PROTOCOL_TCP) {
+    TCPsocket client = tcpSockets[tcpClients[clientDataIdx]->tcpSocketIdx];
+    sendTCP(client, buf, len);
+  } else if (protocol == PROTOCOL_UDP) {
+    UDPpacket *pack = craftUDPpacket(buf, len);
+    ConnectionInfo *cInfo = udpClients[clientDataIdx];
+    UDPsocket client = udpSockets[cInfo->udpSocketIdx];
+    sendUDP(client, cInfo->udpChannel, pack);
+  }
+}
 
+void NetManager::dropClient(Protocol protocol, int clientDataIdx) {
+  int i;
+
+  if (protocol == PROTOCOL_TCP) {
+    TCPsocket client = tcpSockets[tcpClients[clientDataIdx]->tcpSocketIdx];
+    unwatchSocket(&client);
+    closeTCP(client);
+  } else if (protocol == PROTOCOL_UDP) {
+    ConnectionInfo *cInfo = udpClients[clientDataIdx];
+    UDPsocket client = udpSockets[cInfo->udpSocketIdx];
+    unbindUDPSocket(client, cInfo->udpChannel);
+
+    // TODO Implement reclaimable channels through bitmap or 2d array?
+  }
 }
 
 void NetManager::stopServer() {
@@ -389,7 +432,7 @@ void NetManager::unbindUDPSocket(UDPsocket sock, int channel) {
 bool NetManager::sendTCP(TCPsocket sock, const void *data, int len) {
   bool ret = true;
 
-  if (statusCheck((NET_TCP_ACCEPT), (NET_CLIENT | NET_TCP_OPEN)))
+  if (statusCheck(NET_TCP_ACCEPT, (NET_CLIENT | NET_TCP_OPEN)))
     return false;
 
   if (len > SDLNet_TCP_Send(sock, data, len)) {

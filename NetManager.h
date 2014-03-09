@@ -54,9 +54,10 @@ public:
   bool scanForActivity();
   void messageClients(char *buf, int len);
   void messageServer(char *buf, int len);
-  void dropClient(int clientDataIdx);
-  void stopServer();
-  void stopClient();
+  void messageClient(Protocol protocol, int clientDataIdx, char *buf, int len);
+  void dropClient(Protocol protocol, int clientDataIdx);
+  void stopServer(Protocol protocol);
+  void stopClient(Protocol protocol);
   void close();
 
   bool addProtocol(Protocol protocol);
@@ -86,7 +87,7 @@ private:
     PORT_DEFAULT        = 51215,
     CHANNEL_AUTO        = -1,
     CHANNEL_DEFAULT     = 1,
-    CHANNEL_MAX         = 4,
+    CHANNEL_MAX         = 2,    // Low for testing. Set to 6+ before launch.
     SOCKET_TCP_MAX      = 12,
     SOCKET_UDP_MAX      = 12,
     SOCKET_ALL_MAX      = SOCKET_TCP_MAX + SOCKET_UDP_MAX,
