@@ -140,6 +140,11 @@ bool NetManager::scanForActivity() {
 void NetManager::messageClients(char *buf, int len) {
   int i;
 
+  if (statusCheck(NET_SERVER)) {
+    std::cout << "NetManager: No server running, and thus no clients to message." << std::endl;
+    return;
+  }
+
   if (netServer.protocols & PROTOCOL_TCP) {
     for (i = 0; i < tcpClients.size(); i++) {
       sendTCP(tcpSockets[tcpClients[i]->tcpSocketIdx], buf, len);
@@ -148,42 +153,62 @@ void NetManager::messageClients(char *buf, int len) {
   if (netServer.protocols & PROTOCOL_UDP) {
     UDPpacket *pack = craftUDPpacket(buf, len);
 
-    for (i = 0; i < udpClients.size(); i++) {
-      sendUDP(udpSockets[udpClients[i]->udpSocketIdx], udpClients[i]->udpChannel, pack);
-    }
+    if (pack)
+      for (i = 0; i < udpClients.size(); i++) {
+        sendUDP(udpSockets[udpClients[i]->udpSocketIdx],
+            udpClients[i]->udpChannel, pack);
+      }
   }
 }
 
 void NetManager::messageServer(char *buf, int len) {
+  if (statusCheck(NET_CLIENT)) {
+    std::cout << "NetManager: No client running, and thus no server to message." << std::endl;
+    return;
+  }
+
   if (netServer.protocols & PROTOCOL_TCP) {
     sendTCP(tcpSockets[netServer.tcpSocketIdx], buf, len);
   }
   if (netServer.protocols & PROTOCOL_UDP) {
     UDPpacket *pack = craftUDPpacket(buf, len);
-    sendUDP(udpSockets[netServer.udpSocketIdx], netServer.udpChannel, pack);
+    if (pack)
+      sendUDP(udpSockets[netServer.udpSocketIdx], netServer.udpChannel, pack);
   }
 }
 
 void NetManager::messageClient(Protocol protocol, int clientDataIdx, char *buf, int len) {
-  if (protocol == PROTOCOL_TCP) {
+  if (statusCheck(NET_SERVER)) {
+    std::cout << "NetManager: No server running, and thus no clients to message." << std::endl;
+    return;
+  }
+
+  if (protocol & PROTOCOL_TCP) {
     TCPsocket client = tcpSockets[tcpClients[clientDataIdx]->tcpSocketIdx];
     sendTCP(client, buf, len);
-  } else if (protocol == PROTOCOL_UDP) {
+  }
+  if (protocol & PROTOCOL_UDP) {
     UDPpacket *pack = craftUDPpacket(buf, len);
     ConnectionInfo *cInfo = udpClients[clientDataIdx];
     UDPsocket client = udpSockets[cInfo->udpSocketIdx];
-    sendUDP(client, cInfo->udpChannel, pack);
+    if (pack)
+      sendUDP(client, cInfo->udpChannel, pack);
   }
 }
 
 void NetManager::dropClient(Protocol protocol, int clientDataIdx) {
-  int i;
+  if (statusCheck(NET_SERVER)) {
+    std::cout << "NetManager: No server running, and thus no clients to drop." << std::endl;
+    return;
+  }
 
-  if (protocol == PROTOCOL_TCP) {
+  if (protocol & PROTOCOL_TCP) {
     TCPsocket client = tcpSockets[tcpClients[clientDataIdx]->tcpSocketIdx];
     unwatchSocket(&client);
     closeTCP(client);
-  } else if (protocol == PROTOCOL_UDP) {
+    tcpSockets.erase(tcpSockets.begin() + clientDataIdx);
+  }
+  if (protocol & PROTOCOL_UDP) {
     ConnectionInfo *cInfo = udpClients[clientDataIdx];
     UDPsocket client = udpSockets[cInfo->udpSocketIdx];
     unbindUDPSocket(client, cInfo->udpChannel);
@@ -192,16 +217,71 @@ void NetManager::dropClient(Protocol protocol, int clientDataIdx) {
   }
 }
 
-void NetManager::stopServer() {
+void NetManager::stopServer(Protocol protocol) {
+  int i;
 
+  if (statusCheck(NET_SERVER)) {
+    std::cout << "NetManager: There's no server running, dummy." << std::endl;
+    return;
+  }
+
+  if (protocol & PROTOCOL_TCP) {
+    for (i = 0; i < tcpClients.size(); i++) {
+      TCPsocket client = tcpSockets[i];
+      unwatchSocket(&client);
+      closeTCP(client);
+      tcpSockets.erase(tcpSockets.begin() + i);
+    }
+  }
+  if (protocol & PROTOCOL_UDP) {
+    for (i = 0; i < udpClients.size(); i++) {
+      ConnectionInfo *cInfo = udpClients[i];
+      UDPsocket client = udpSockets[cInfo->udpSocketIdx];
+      unbindUDPSocket(client, cInfo->udpChannel);
+    }
+    for (i = udpSockets.size() - 1; i > 0; i--) {
+      unwatchSocket(&udpSockets[i]);
+      closeUDP(udpSockets[i]);
+      udpSockets.pop_back();
+    }
+  }
+  SDLNet_FreeSocketSet(socketNursery);
+
+  resetManager();
 }
 
-void NetManager::stopClient() {
+void NetManager::stopClient(Protocol protocol) {
+  if (statusCheck(NET_CLIENT)) {
+    std::cout << "NetManager: You're not a client, thus you can't be stopped." << std::endl;
+    return;
+  }
 
+  if (protocol & PROTOCOL_TCP) {
+    TCPsocket server = tcpSockets[netServer.tcpSocketIdx];
+    unwatchSocket(&server);
+    closeTCP(server);
+    tcpSockets.pop_back();
+  }
+  if (protocol & PROTOCOL_UDP) {
+    UDPsocket server = udpSockets[netServer.udpSocketIdx];
+    unwatchSocket(&server);
+    unbindUDPSocket(server, netServer.udpChannel);
+    closeUDP(server);
+    udpSockets.pop_back();
+  }
+  SDLNet_FreeSocketSet(socketNursery);
+
+  resetManager();
 }
 
 void NetManager::close() {
-
+  if (netStatus & NET_SERVER) {
+    stopServer(netServer.protocols);
+  } else if (netStatus & NET_CLIENT) {
+    stopClient(netServer.protocols);
+  } else {
+    std::cout << "NetManager: No active server or client. Nothing to do." << std::endl;
+  }
 }
 
 bool NetManager::addProtocol(Protocol protocol) {
@@ -382,6 +462,7 @@ bool NetManager::acceptTCP(TCPsocket server) {
     tcpClientData.push_back(buffer);
     tcpClients.push_back(client);
     tcpSockets.push_back(tcpSock);
+    watchSocket(&tcpSock);
 
     netStatus |= NET_TCP_ACCEPT;
     ret = true;
@@ -447,7 +528,7 @@ bool NetManager::sendTCP(TCPsocket sock, const void *data, int len) {
 bool NetManager::sendUDP(UDPsocket sock, int channel, UDPpacket *pack) {
   bool ret = true;
 
-  if (statusCheck(NET_UDP_BOUND))
+  if (statusCheck(NET_UDP_BOUND) || !pack)
     return false;
 
   if (!SDLNet_UDP_Send(sock, channel, pack)) {
@@ -584,9 +665,7 @@ UDPpacket* NetManager::allocUDPpacket(int size) {
   newPacket = SDLNet_AllocPacket(size);
 
   if (!newPacket) {
-
-  } else {
-
+    std::cout << "SDL_net: Unable to allocate UDP packet." << std::endl;
   }
 
   return newPacket;
@@ -599,7 +678,7 @@ bool NetManager::resizeUDPpacket(UDPpacket *pack, int size) {
   newSize = SDLNet_ResizePacket(pack, size);
 
   if (newSize < size) {
-    std::cout << "SDL_net: Unable to resize packet as requested." << std::endl;
+    std::cout << "SDL_net: Unable to resize UDP packet as requested." << std::endl;
     std::cout << SDLNet_GetError() << std::endl;
     ret = false;
   }
@@ -778,6 +857,32 @@ void NetManager::rejectUDPClient(UDPpacket *pack) {
   freeUDPpacket(&pack);
 }
 
+UDPpacket* NetManager::craftUDPpacket(char *buf, int len) {
+  UDPpacket *packet;
+  int header;
+
+  if (len > MESSAGE_LENGTH) {
+    std::cout << "NetManager: Message length exceeds current maximum." << std::endl;
+    return NULL;
+  }
+
+  packet = allocUDPpacket(MESSAGE_LENGTH);
+
+  if (!packet)
+    return NULL;
+
+  packet->len = len;
+  memcpy(packet->data, buf, len);
+
+  return packet;
+}
+
+void NetManager::processPacketData(const char *data) {
+  // TODO Scan copied data to check for messages to NetManager.
+
+  // TODO Establish clear signals for 'drop client' et al.
+}
+
 bool NetManager::statusCheck(int state) {
   bool ret = (state != (netStatus & state));
 
@@ -801,6 +906,35 @@ bool NetManager::statusCheck(int state1, int state2) {
 void NetManager::clearFlags(int state) {
   int mask = netStatus & state;
   netStatus ^= mask;
+}
+
+void NetManager::resetManager() {
+  int i;
+
+  for (i = tcpClientData.size(); i >= 0; i--) {
+    delete tcpClientData[i];
+    tcpClientData.pop_back();
+  }
+  for (i = udpClientData.size(); i >= 0; i--) {
+    delete udpClientData[i];
+    udpClientData.pop_back();
+  }
+  for (i = tcpClients.size(); i >= 0; i--) {
+    delete tcpClients[i];
+    tcpClients.pop_back();
+  }
+  for (i = udpClients.size(); i >= 0; i--) {
+    delete udpClients[i];
+    udpClients.pop_back();
+  }
+
+  forceClientRandomUDP = true;
+  acceptNewClients = true;
+  nextUDPChannel = 1;
+  netStatus = NET_UNINITIALIZED;
+  netPort = PORT_DEFAULT;
+  netProtocol = PROTOCOL_ALL;
+  netHost.clear();
 }
 
 

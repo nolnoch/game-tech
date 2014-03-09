@@ -12,13 +12,18 @@
 #include <vector>
 #include <SDL/SDL_net.h>
 
+static enum Protocol {
+  PROTOCOL_TCP            = 1024,
+  PROTOCOL_UDP            = 2048,
+  PROTOCOL_ALL            = PROTOCOL_TCP | PROTOCOL_UDP
+};
 
 struct ConnectionInfo {
   int tcpSocketIdx;
   int udpSocketIdx;
   int clientIdx;
-  int protocols;
   int udpChannel;
+  Protocol protocols;
   IPaddress address;
   std::string hostname;
 };
@@ -32,11 +37,6 @@ struct MessageBuffer {
 
 class NetManager {
 public:
-  static enum Protocol {
-    PROTOCOL_TCP            = 1024,
-    PROTOCOL_UDP            = 2048,
-    PROTOCOL_ALL            = PROTOCOL_TCP | PROTOCOL_UDP
-  };
   MessageBuffer serverData;
   std::vector<MessageBuffer *> tcpClientData;
   std::vector<MessageBuffer *> udpClientData;
@@ -143,9 +143,13 @@ private:
   void rejectTCPClient(TCPsocket sock);
   void rejectUDPClient(UDPpacket *pack);
 
+  UDPpacket* craftUDPpacket(char *buf, int len);
+  void processPacketData(const char *data);
+
   bool statusCheck(int state);
   bool statusCheck(int state1, int state2);
   void clearFlags(int state);
+  void resetManager();
 
   // TODO make pointers to fields for auto-load of packets?
 
