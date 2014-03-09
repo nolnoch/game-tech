@@ -32,6 +32,11 @@ struct MessageBuffer {
 
 class NetManager {
 public:
+  static enum Protocol {
+    PROTOCOL_TCP            = 1024,
+    PROTOCOL_UDP            = 2048,
+    PROTOCOL_ALL            = PROTOCOL_TCP | PROTOCOL_UDP
+  };
   MessageBuffer serverData;
   std::vector<MessageBuffer *> tcpClientData;
   std::vector<MessageBuffer *> udpClientData;
@@ -39,37 +44,43 @@ public:
   NetManager();
   virtual ~NetManager();
 
-  bool startServerTCP();
-  bool startServerUDP();
-  bool listenForClient();
-  void updateClientsTCP();
-  void updateClientsUDP();
-  void updateServerTCP();
-  void updateServerUDP();
+  bool initNetManager();
+  void addNetworkInfo(Protocol protocol = PROTOCOL_ALL,
+      Uint16 port = 0, const char *host = NULL);
+
+  bool startServer();
+  bool startClient();
+  bool pollForActivity(Uint32 timeout_ms = 5000);
+  bool scanForActivity();
+  void messageClients(char *buf, int len);
+  void messageServer(char *buf, int len);
+  void dropClient(int clientDataIdx);
   void stopServer();
   void stopClient();
   void close();
 
-  int getDefaultPort();
-  int getDefaultUDPChannel();
-  void setDefaultPort(int newPort);
-  void setDefaultUDPChannel(int newChannel);
+  bool addProtocol(Protocol protocol);
+  void setProtocol(Protocol protocol);
+  void setPort(Uint16 port);
+  void setHost(const char *host);
+  Uint32 getProtocol();
+  Uint16 getPort();
+  std::string getHost();
 
 
 private:
   enum {
     NET_UNINITIALIZED   = 0,
-    NET_WAITING         = 1,
-    NET_RESOLVED        = 2,
-    NET_TCP_OPEN        = 4,
-    NET_UDP_OPEN        = 8,
-    NET_TCP_ACCEPT      = 16,
-    NET_UDP_BOUND       = 32,
+    NET_INITIALIZED     = 1,
+    NET_WAITING         = 2,
+    NET_RESOLVED        = 4,
+    NET_TCP_OPEN        = 8,
+    NET_UDP_OPEN        = 16,
+    NET_TCP_ACCEPT      = 32,
+    NET_UDP_BOUND       = 64,
 
     NET_SERVER          = 256,
     NET_CLIENT          = 512,
-    PORT_TCP            = 1024,
-    PORT_UDP            = 2048,
 
     PORT_RANDOM         = 0,
     PORT_DEFAULT        = 51215,
@@ -82,10 +93,13 @@ private:
     SOCKET_SELF         = SOCKET_ALL_MAX + 1,
     MESSAGE_LENGTH      = 128
   };
-  static bool forceClientRandomUDP;
-  int netStatus;
-  int defaultPort;
+  bool forceClientRandomUDP;
+  bool acceptNewClients;
   int nextUDPChannel;
+  int netStatus;
+  int netPort, defaultPort;
+  Protocol netProtocol;
+  std::string netHost;
   ConnectionInfo netServer;
   std::vector<ConnectionInfo *> tcpClients;
   std::vector<ConnectionInfo *> udpClients;
@@ -93,9 +107,8 @@ private:
   std::vector<UDPsocket> udpSockets;
   SDLNet_SocketSet socketNursery;
 
-  bool initNetManager();
-  bool startServer(int protocol, Uint16 port);
-  bool startClient(int protocol, char *addr, Uint16 port);
+  bool openServer(Protocol protocol, Uint16 port);
+  bool openClient(Protocol protocol, std::string addr, Uint16 port);
   bool openTCPSocket (IPaddress *addr);
   bool openUDPSocket (Uint16 port);
   bool acceptTCP(TCPsocket server);
@@ -113,8 +126,8 @@ private:
   IPaddress* queryUDPAddress(UDPsocket sock, int channel);
 
   UDPpacket* allocUDPpacket(int size);
-  int resizeUDPpacket(UDPpacket *pack, int size);
-  void freeUDPpacket(UDPpacket *pack);
+  bool resizeUDPpacket(UDPpacket *pack, int size);
+  void freeUDPpacket(UDPpacket **pack);
 
   void watchSocket(TCPsocket *sock);
   void watchSocket(UDPsocket *sock);
