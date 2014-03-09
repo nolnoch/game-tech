@@ -846,18 +846,26 @@ bool NetManager::addUDPClient(UDPpacket *pack) {
 }
 
 void NetManager::rejectTCPClient(TCPsocket sock) {
-  // TODO Send rejection message in response packet.
+  std::string deny = "Server full; connection rejected.";
+  sendTCP(sock, deny.c_str(), deny.length());
 
   closeTCP(sock);
 }
 
 void NetManager::rejectUDPClient(UDPpacket *pack) {
-  // TODO Send rejection message in response packet.
+  UDPpacket *packet;
+
+  std::string deny = "Server full; connection rejected.";
+  packet = craftUDPpacket(deny.c_str(), deny.length());
+  packet->address.host = pack->address.host;
+  packet->address.port = pack->address.port;
+  sendUDP(udpSockets[netServer.udpSocketIdx], -1, packet);
 
   freeUDPpacket(&pack);
+  freeUDPpacket(&packet);
 }
 
-UDPpacket* NetManager::craftUDPpacket(char *buf, int len) {
+UDPpacket* NetManager::craftUDPpacket(const char *buf, int len) {
   UDPpacket *packet;
   int header;
 
@@ -878,9 +886,14 @@ UDPpacket* NetManager::craftUDPpacket(char *buf, int len) {
 }
 
 void NetManager::processPacketData(const char *data) {
-  // TODO Scan copied data to check for messages to NetManager.
+  /* TODO Scan copied data to check for messages to NetManager.
+   *
+   * Establish clear signals for 'drop client' et al.  How much will
+   * be handled by the OGRE application, and how much will be taken
+   * care of internally (by NetManager)?
+   *
+   */
 
-  // TODO Establish clear signals for 'drop client' et al.
 }
 
 bool NetManager::statusCheck(int state) {

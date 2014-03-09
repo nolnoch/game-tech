@@ -12,6 +12,7 @@
 #include <vector>
 #include <SDL/SDL_net.h>
 
+
 static enum Protocol {
   PROTOCOL_TCP            = 1024,
   PROTOCOL_UDP            = 2048,
@@ -143,7 +144,7 @@ private:
   void rejectTCPClient(TCPsocket sock);
   void rejectUDPClient(UDPpacket *pack);
 
-  UDPpacket* craftUDPpacket(char *buf, int len);
+  UDPpacket* craftUDPpacket(const char *buf, int len);
   void processPacketData(const char *data);
 
   bool statusCheck(int state);
@@ -151,7 +152,7 @@ private:
   void clearFlags(int state);
   void resetManager();
 
-  // TODO make pointers to fields for auto-load of packets?
+  // TODO make pointers to OGRE fields for auto-load of packets?
 
 };
 
