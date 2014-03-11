@@ -9,15 +9,16 @@
 
 
 
-/******************************************************************************
+/* ****************************************************************************
  * Constructors/Destructors
  */
 
-
+/**
+ * Initialize changeable values to defaults. Nothing special.
+ */
 NetManager::NetManager():
 netStatus(NET_UNINITIALIZED),
 nextUDPChannel(CHANNEL_DEFAULT),
-defaultPort(PORT_DEFAULT),
 forceClientRandomUDP(true),
 acceptNewClients(true),
 socketNursery(0),
@@ -26,6 +27,9 @@ netPort(0)
 {
 }
 
+/**
+ * Standard destruction. Calls close().
+ */
 NetManager::~NetManager() {
   if (netStatus != NET_UNINITIALIZED)
     close();
@@ -34,11 +38,17 @@ NetManager::~NetManager() {
 
 
 
-/******************************************************************************
+/* ****************************************************************************
  * Public
  */
 
 
+/**
+ * Initializes the SDL library if it has not started already, followed by the
+ * SDL_net library. If both succeed, the internal SocketSet is allocated, and
+ * the state is set to NET_INITIALIZED.
+ * @return True on success, false on failure.
+ */
 bool NetManager::initNetManager() {
   bool ret = true;
 
@@ -62,6 +72,18 @@ bool NetManager::initNetManager() {
   return ret;
 }
 
+/**
+ * @brief Required to set TCP/UDP, port, and optional host.
+ *
+ * Allows user to set preferred protocol, port, and optional host. If a host is
+ * given, it is assumed to be the server, and a client initialization is
+ * expected. If no host is given, only a server initialization is possible and
+ * will be expected.  Protocol and port are given default values if either or
+ * both are not specified.
+ * @param protocol Desired protocols for server or client. Default: ALL.
+ * @param port Desired port for server or client. Default: 51215
+ * @param host Host server if starting client. Default: NULL (begin server).
+ */
 void NetManager::addNetworkInfo(Protocol protocol, Uint16 port, const char *host) {
   if (statusCheck(NET_INITIALIZED)) {
     std::cout << "NetManager: Must initNetManager before proceeding." << std::endl;
@@ -69,13 +91,20 @@ void NetManager::addNetworkInfo(Protocol protocol, Uint16 port, const char *host
   }
 
   setProtocol(protocol);
-  setPort(port ? : defaultPort);
+  setPort(port ? : PORT_DEFAULT);
   if (host)
     setHost(host);
 
   netStatus |= NET_WAITING;
 }
 
+/**
+ * @brief Launch a server to listen on given/default port over
+ * given/default protocols.
+ *
+ * Warns if host server was specified but proceeds with launch.
+ * @return True on success, false on failure.
+ */
 bool NetManager::startServer() {
   bool ret = true;
 
@@ -100,6 +129,13 @@ bool NetManager::startServer() {
   return ret;
 }
 
+/**
+ * @brief Launch a client on given/default port over given/default protocols
+ * and connected to given host server.
+ *
+ * Fails if no host server was given in addNetworkInfo or addHost.
+ * @return True on success, false on failure.
+ */
 bool NetManager::startClient() {
   bool ret = false;
 
@@ -124,6 +160,17 @@ bool NetManager::startClient() {
   return ret;
 }
 
+/**
+ * @brief Poll for activity on all TCP and UDP sockets.
+ *
+ * If activity is detected, it will be automatically handled according to its
+ * protocol and the server or client configuration. New clients and data will
+ * be processed before this function returns. If the return is \b true, the
+ * <em> user should immediately scan the external MessageInfo bins </em> for
+ * newly output data.
+ * @param timeout_ms Time in milliseconds to block and poll. Default: 5 seconds.
+ * @return True for activity, false for no activity.
+ */
 bool NetManager::pollForActivity(Uint32 timeout_ms) {
   if (statusCheck(NET_UDP_OPEN, NET_TCP_ACCEPT)) {
     std::cout << "NetManager: No established TCP or UDP sockets to poll." << std::endl;
@@ -133,10 +180,24 @@ bool NetManager::pollForActivity(Uint32 timeout_ms) {
   return checkSockets(timeout_ms);
 }
 
+/**
+ * @brief Scan once for activity on all TCP and UDP sockets.
+ *
+ * This calls pollForActivity with a time of 0 milliseconds (instant).
+ * @return True for activity, false for no activity.
+ */
 bool NetManager::scanForActivity() {
   return pollForActivity(0);
 }
 
+/**
+ * @brief Send a single message to all clients.
+ *
+ * Must be running as a server to call this function. If no arguments are given,
+ * it will pull from each client's MessageBuffer \b input field.
+ * @param buf Manually given data buffer. Default: NULL.
+ * @param len Length of given buffer. Default: 0.
+ */
 void NetManager::messageClients(char *buf, int len) {
   int i;
 
@@ -155,6 +216,7 @@ void NetManager::messageClients(char *buf, int len) {
 
     if (pack)
       for (i = 0; i < udpClients.size(); i++) {
+        pack->len = len;
         sendUDP(udpSockets[udpClients[i]->udpSocketIdx],
             udpClients[i]->udpChannel, pack);
       }
@@ -318,7 +380,7 @@ std::string NetManager::getHost() {
 
 
 
-/******************************************************************************
+/* ****************************************************************************
  * Private
  */
 
@@ -456,7 +518,7 @@ bool NetManager::acceptTCP(TCPsocket server) {
     client->address.host = addr->host;
     client->address.port = addr->port;
     client->tcpSocketIdx = tcpSockets.size();
-    client->clientIdx = tcpClients.size();
+    client->tcpClientIdx = tcpClients.size();
     buffer->host = addr->host;
     buffer->updated = false;
     tcpClientData.push_back(buffer);
@@ -495,7 +557,7 @@ bool NetManager::bindUDPSocket (UDPsocket sock, int channel, IPaddress *addr) {
     client->address.host = addr->host;
     client->address.port = addr->port;
     client->udpSocketIdx = udpSockets.size() - 1;
-    client->clientIdx = udpClients.size();
+    client->udpClientIdx = udpClients.size();
     client->udpChannel = udpchannel;
     buffer->host = addr->host;
     buffer->updated = false;
@@ -711,7 +773,7 @@ void NetManager::unwatchSocket(UDPsocket *sock) {
     std::cout << "SDL_net: Unable to remove socket from SocketSet." << std::endl;
 }
 
-void NetManager::checkSockets(Uint32 timeout_ms) {
+bool NetManager::checkSockets(Uint32 timeout_ms) {
   int nReadySockets;
   bool ret = false;
 
@@ -758,6 +820,8 @@ void NetManager::checkSockets(Uint32 timeout_ms) {
       }
     }
   }
+
+  return ret;
 }
 
 void NetManager::readTCPSocket(int clientIdx) {
@@ -767,13 +831,13 @@ void NetManager::readTCPSocket(int clientIdx) {
 
   if (clientIdx == SOCKET_SELF) {
     idxSocket = netServer.tcpSocketIdx;
-    mBuf = (netStatus & NET_SERVER) ? tcpClientData[netServer.clientIdx] : &serverData;
+    mBuf = (netStatus & NET_SERVER) ? tcpClientData[netServer.tcpClientIdx] : &serverData;
   } else {
     idxSocket = tcpClients[clientIdx]->tcpSocketIdx;
     mBuf = tcpClientData[clientIdx];
   }
 
-  result = recvTCP(tcpSockets[idxSocket], mBuf->buffer,
+  result = recvTCP(tcpSockets[idxSocket], mBuf->output,
       MESSAGE_LENGTH);
 
   if (!result) {
@@ -791,7 +855,7 @@ void NetManager::readUDPSocket(int clientIdx) {
 
   if (clientIdx == SOCKET_SELF) {
     idxSocket = netServer.udpSocketIdx;
-    mBuf = (netStatus & NET_SERVER) ? udpClientData[netServer.clientIdx] : &serverData;
+    mBuf = (netStatus & NET_SERVER) ? udpClientData[netServer.udpClientIdx] : &serverData;
   } else {
     idxSocket = udpClients[clientIdx]->udpSocketIdx;
     mBuf = udpClientData[clientIdx];
@@ -812,7 +876,7 @@ void NetManager::readUDPSocket(int clientIdx) {
         std::cout << "NetManager: Unable to add new UDP client." << std::endl;
       }
     } else {
-      memcpy(mBuf->buffer, buf->data, buf->len);
+      memcpy(mBuf->output, buf->data, buf->len);
       mBuf->updated = true;
     }
   }

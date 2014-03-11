@@ -1,8 +1,10 @@
-/*
- * NetManager.h
- *
- *  Created on: Mar 7, 2014
- *      Author: nolnoch
+/**
+ * @file NetManager.h
+ * @date March 7, 2014
+ * @author Wade Burch (nolnoch@cs.utexas.edu)
+ * @brief Networking wrapper for SDL_net created for OGRE engine use in CS 354R
+ * at the University of Texas at Austin, taught by Don Fussell in Spring 2014.
+ * @copyright GNU Public License
  */
 
 #ifndef NETMANAGER_H_
@@ -10,38 +12,60 @@
 
 
 #include <vector>
+#include <string>
+#include <iostream>
 #include <SDL/SDL_net.h>
 
 
-static enum Protocol {
-  PROTOCOL_TCP            = 1024,
-  PROTOCOL_UDP            = 2048,
-  PROTOCOL_ALL            = PROTOCOL_TCP | PROTOCOL_UDP
+/**
+ * @typedef int Protocol
+ * Makes it clearer to users that though an integer is being used, it should be
+ * chosen from the PROTOCOL_XXX enumerated values.
+ */
+typedef int Protocol;
+
+/**
+ * @enum Protocol
+ * These should be used whenever type Protocol is requested.
+ */
+enum {
+  PROTOCOL_TCP        = 1024,                           //!< PROTOCOL_TCP
+  PROTOCOL_UDP        = 2048,                           //!< PROTOCOL_UDP
+  PROTOCOL_ALL        = PROTOCOL_TCP | PROTOCOL_UDP     //!< PROTOCOL_ALL
 };
 
-struct ConnectionInfo {
-  int tcpSocketIdx;
-  int udpSocketIdx;
-  int clientIdx;
-  int udpChannel;
-  Protocol protocols;
-  IPaddress address;
-  std::string hostname;
-};
-
+/**
+ * @struct MessageBuffer
+ * External bins to which all received data is output and from which data may
+ * be automatically pulled as input.
+ * @var host Objective, standardized identifier to differentiate bin owners.
+ * @var updated True to indicate new network output before buffer is read.
+ * @b The @b user @b is @b responsible @b for @b clearing @b this @b flag
+ * @b when @b data @b is @b retrieved!
+ * @var output Received network data to be handled by user.
+ * @var input Target for automatic data pulls by NetManager on client updates.
+ */
 struct MessageBuffer {
   Uint32 host;
   bool updated;
-  char buffer[128];
+  char output[128];
+  char input[128];
 };
 
-
+/**
+ * @class NetManager
+ * @brief Networking wrapper for SDL_net for use in OGRE or similar engines.
+ *
+ * Currently allows simultaneous TCP/UDP connections on a single port.
+ * While parameters may be given, the class is initialized to a default of
+ * both TCP and UDP active on port 51215. Fully managed state preservation
+ * prevents users from initiating illegal or undefined calls.  All retrieved
+ * data is tunneled to public bins which must or may be checked by users.
+ * Data to be sent may be specified or else is retrieved by default from the
+ * established MessageBuffer bin.
+ */
 class NetManager {
 public:
-  MessageBuffer serverData;
-  std::vector<MessageBuffer *> tcpClientData;
-  std::vector<MessageBuffer *> udpClientData;
-
   NetManager();
   virtual ~NetManager();
 
@@ -53,12 +77,12 @@ public:
   bool startClient();
   bool pollForActivity(Uint32 timeout_ms = 5000);
   bool scanForActivity();
-  void messageClients(char *buf, int len);
-  void messageServer(char *buf, int len);
+  void messageClients(char *buf = NULL, int len = 0);
+  void messageServer(char *buf = NULL, int len = 0);
   void messageClient(Protocol protocol, int clientDataIdx, char *buf, int len);
   void dropClient(Protocol protocol, int clientDataIdx);
-  void stopServer(Protocol protocol);
-  void stopClient(Protocol protocol);
+  void stopServer(Protocol protocol = PROTOCOL_ALL);
+  void stopClient(Protocol protocol = PROTOCOL_ALL);
   void close();
 
   bool addProtocol(Protocol protocol);
@@ -69,6 +93,10 @@ public:
   Uint16 getPort();
   std::string getHost();
 
+
+  MessageBuffer serverData;
+  std::vector<MessageBuffer *> tcpClientData;
+  std::vector<MessageBuffer *> udpClientData;
 
 private:
   enum {
@@ -95,19 +123,6 @@ private:
     SOCKET_SELF         = SOCKET_ALL_MAX + 1,
     MESSAGE_LENGTH      = 128
   };
-  bool forceClientRandomUDP;
-  bool acceptNewClients;
-  int nextUDPChannel;
-  int netStatus;
-  int netPort, defaultPort;
-  Protocol netProtocol;
-  std::string netHost;
-  ConnectionInfo netServer;
-  std::vector<ConnectionInfo *> tcpClients;
-  std::vector<ConnectionInfo *> udpClients;
-  std::vector<TCPsocket> tcpSockets;
-  std::vector<UDPsocket> udpSockets;
-  SDLNet_SocketSet socketNursery;
 
   bool openServer(Protocol protocol, Uint16 port);
   bool openClient(Protocol protocol, std::string addr, Uint16 port);
@@ -135,8 +150,8 @@ private:
   void watchSocket(UDPsocket *sock);
   void unwatchSocket(TCPsocket *sock);
   void unwatchSocket(UDPsocket *sock);
-  void checkSockets(Uint32 timeout_ms);
 
+  bool checkSockets(Uint32 timeout_ms);
   void readTCPSocket(int clientIdx);
   void readUDPSocket(int clientIdx);
 
@@ -152,8 +167,31 @@ private:
   void clearFlags(int state);
   void resetManager();
 
-  // TODO make pointers to OGRE fields for auto-load of packets?
+  struct ConnectionInfo {
+    int tcpSocketIdx;
+    int udpSocketIdx;
+    int tcpClientIdx;
+    int udpClientIdx;
+    int udpChannel;
+    Protocol protocols;
+    IPaddress address;
+    std::string hostname;
+  };
 
+
+  bool forceClientRandomUDP;
+  bool acceptNewClients;
+  int nextUDPChannel;
+  int netStatus;
+  int netPort;
+  Protocol netProtocol;
+  std::string netHost;
+  ConnectionInfo netServer;
+  std::vector<ConnectionInfo *> tcpClients;
+  std::vector<ConnectionInfo *> udpClients;
+  std::vector<TCPsocket> tcpSockets;
+  std::vector<UDPsocket> udpSockets;
+  SDLNet_SocketSet socketNursery;
 };
 
 #endif /* NETMANAGER_H_ */

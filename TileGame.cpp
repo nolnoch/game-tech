@@ -24,8 +24,6 @@ This source file is part of the
 //-------------------------------------------------------------------------------------
 TileGame::TileGame(void) :
 mDirection(Ogre::Vector3::ZERO),
-vZero(Ogre::Vector3::ZERO),
-sounding(false),
 gameStart(true),
 gameDone(false),
 animDone(false),
@@ -35,6 +33,7 @@ currLevel(1),
 headNode(0),
 ballMgr(0),
 soundMgr(0),
+netMgr(0),
 sim(0),
 panelLight(0),
 scorePanel(0),
@@ -51,10 +50,10 @@ gong(0)
   mTimer->reset();
 }
 //-------------------------------------------------------------------------------------
-TileGame::~TileGame(void)
-{
+TileGame::~TileGame(void) {
   delete soundMgr;
   delete ballMgr;
+  delete sim;
 }
 //-------------------------------------------------------------------------------------
 bool TileGame::configure() {
@@ -63,17 +62,19 @@ bool TileGame::configure() {
   soundMgr = new SoundManager();
   soundMgr->initSoundManager();
 
-  // TODO Left off here...
+  boing = soundMgr->loadSound("hit.wav");
+  gong = soundMgr->loadSound("gong.wav");
+  music = soundMgr->loadMusic("ambient.wav");
 
-  if (sounding) {
-    boing = Mix_LoadWAV("hit.wav");
-    gong = Mix_LoadWAV("gong.wav");
-    music = Mix_LoadMUS("ambient.wav");
-    Mix_PlayMusic(music, -1);
-  }
+  soundMgr->playMusic();
 
   sim = new TileSimulator();
+  sim->initSimulator();
+
   ballMgr = new BallManager(sim);
+  ballMgr->initBallManager();
+
+  netMgr = new NetManager();
 
   return ret;
 }
@@ -83,8 +84,7 @@ void TileGame::createCamera(void) {
   mCameraMan = new CameraMan(mCamera);
 }
 //-------------------------------------------------------------------------------------
-void TileGame::createScene(void)
-{
+void TileGame::createScene(void) {
   boxBound = Ogre::PlaneBoundedVolume(Ogre::Plane::NEGATIVE_SIDE);
   boxBound.planes.push_back(wallBack = Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_Z, 0));
   boxBound.planes.push_back(wallFront = Ogre::Plane(Ogre::Vector3::UNIT_Z,0));
@@ -195,8 +195,7 @@ void TileGame::createFrameListener(void) {
   overlay->show();
 }
 //-------------------------------------------------------------------------------------
-bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt)
-{
+bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
   bool ret = BaseGame::frameRenderingQueued(evt);
 
   if (paused) {
@@ -208,20 +207,17 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt)
     bool hit = sim->simulateStep(slowdownval);
 
     if (hit && !gameDone) {
-      if (sounding) {
-        Mix_PlayChannel(-1, boing, 0);
-        std::cout << "Playing impact noise." << std::endl;
-      }
+      soundMgr->playSound(boing);
 
       tileEntities.back()->setMaterialName("Examples/BumpyMetal");
 
-      if(tileEntities.size() > 0) {
+      if (tileEntities.size() > 0) {
         tileEntities.pop_back();
         tileSceneNodes.pop_back();
       }
       score++;
 
-      if(tileEntities.size() == 0) {
+      if (tileEntities.size() == 0) {
         gameDone = true;
         winTimer = 0;
         congratsPanel->show();
@@ -234,7 +230,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt)
   if (gameDone) {
     winTimer++;
 
-    if(winTimer > 360) {
+    if (winTimer > 360) {
       levelTearDown();
       levelSetup(currLevel);
       congratsPanel->hide();
@@ -270,7 +266,6 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt)
 bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
   if (arg.key == OIS::KC_ESCAPE)
   {
-    Mix_FreeMusic(music);
     mShutDown = true;
   }
   else if (arg.key == OIS::KC_SPACE)
@@ -280,17 +275,11 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
   {
     paused = !paused;
     slowdownval = 0.0;
-    if (paused)
-      Mix_HaltMusic();
-    else
-      Mix_PlayMusic(music, 0);
+
+    soundMgr->toggleSound();
   }
   else if (arg.key == OIS::KC_M) {
-    sounding = !sounding;
-    if (sounding)
-      Mix_PlayMusic(music, -1);
-    else
-      Mix_HaltMusic();
+    soundMgr->toggleSound();
   }
   else if (arg.key == OIS::KC_Q)
   {
@@ -317,7 +306,7 @@ bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id 
     Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
     Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
     Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
-    std::cout << chargeShot << std::endl;
+    // std::cout << chargeShot << std::endl;
     double force = chargeShot;
     chargeShot = 0;
 

@@ -19,8 +19,9 @@ This source file is part of the
 
 #include "BaseGame.h"
 #include "BallManager.h"
-#include "CameraMan.h"
 #include "SoundManager.h"
+#include "NetManager.h"
+#include "CameraMan.h"
 
 #include <vector>
 
@@ -56,7 +57,6 @@ protected:
   Ogre::Light* panelLight;
   Ogre::Vector3 mDirection;
   Ogre::Real mSpeed;
-  Ogre::Sphere ballBound;
   Ogre::PlaneBoundedVolume boxBound;
   Ogre::Plane wallUp, wallDown, wallBack, wallFront, wallLeft, wallRight;
 
@@ -69,14 +69,13 @@ protected:
   OgreBites::Label* congratsPanel;
   OgreBites::Label* chargePanel;
 
-  BallManager *ballMgr;
   TileSimulator *sim;
+  BallManager *ballMgr;
   SoundManager *soundMgr;
+  NetManager *netMgr;
 
-  Ogre::Vector3 vZero;
-  Mix_Chunk *boing, *gong;
-  Mix_Music *music;
-  bool sounding, paused, gameStart, gameDone, animDone, isCharging;
+  SoundFile boing, gong, music;
+  bool paused, gameStart, gameDone, animDone, isCharging;
   int score, shotsFired, currLevel, currTile, winTimer, tileCounter, chargeShot;
   double slowdownval;
 
@@ -129,12 +128,12 @@ protected:
       int tileNum = randomnumbers[rn];
       randomnumbers.erase(randomnumbers.begin() + rn);
       ssDebug << tileNum;
-      std::cout << "Random number1: " + ssDebug.str() << std::endl;
+      // std::cout << "Random number1: " + ssDebug.str() << std::endl;
       ssDebug.str(std::string());
 
       int wallTileNum = tileNum % NUM_TILES_WALL; //possible number of tiles per wall.
       ssDebug << wallTileNum;
-      std::cout << "Random number: " + ssDebug.str() << std::endl;
+      // std::cout << "Random number: " + ssDebug.str() << std::endl;
       int row = wallTileNum / NUM_TILES_ROW; //5 is the number of tiles per row.
       int col = wallTileNum % NUM_TILES_ROW;
 
@@ -143,7 +142,7 @@ protected:
       ssDebug << " ";
       ssDebug << col;
 
-      std::cout << "Row/col " + ssDebug.str() << std::endl;
+      // std::cout << "Row/col " + ssDebug.str() << std::endl;
 
       Ogre::SceneNode* node1; //= mSceneMgr->getRootSceneNode()->createChildSceneNode();
       int xsize = 240;
@@ -197,7 +196,7 @@ protected:
       str.append(ss.str());
       std::string entityStr = "tileEntity";
       entityStr.append(ss.str());
-      std::cout << "tileEntityName: " + entityStr << std::endl;
+      // std::cout << "tileEntityName: " + entityStr << std::endl;
 
       Ogre::MeshManager::getSingleton().createPlane(str,
           Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, wallTile,
@@ -225,8 +224,7 @@ protected:
 
     ballSetup(it);
 
-    if (sounding)
-      Mix_PlayChannel(-1, gong, 0);
+    soundMgr->playSound(gong);
 
     gameDone = animDone = false;
     currTile = tileEntities.size() - 1;
@@ -298,7 +296,7 @@ protected:
           else if (z > 0)
             z -= 10;
 
-          std::cout << "x: " << x << " y: " << y << " z: " << z << "\n";
+          // std::cout << "x: " << x << " y: " << y << " z: " << z << "\n";
           panelLight->setDiffuseColour(0.70, 0.50, 0.30);
           panelLight->setDirection(x, y, z);
           panelLight->setPosition(0, 0, 0);
@@ -311,7 +309,7 @@ protected:
 
         // moves on to the next tile.
         currTile--;
-        std::cout << "c: " << currTile << "\n";
+        // std::cout << "c: " << currTile << "\n";
       }
     }
     else if (!animDone) {

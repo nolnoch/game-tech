@@ -10,9 +10,12 @@
 
 
 #include <vector>
+#include <iostream>
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
 
+
+typedef int SoundFile;
 
 class SoundManager {
 public:
@@ -20,17 +23,18 @@ public:
   virtual ~SoundManager();
 
   bool initSoundManager();
-  bool loadMusic(char name[]);
-  bool loadSound(char name[]);
+  bool loadMusic(const char *name);
+  int loadSound(const char *name);
   void setVolume(int vol);
   void playMusic();
   void playSound(int chunk);
   void pauseMusic();
-  void pauseSound();
   void mute();
+  void unmute();
+  void toggleSound();
 
 private:
-  bool sounding, initialized;
+  bool sounding, initialized, musicPlaying;
   Mix_Music *music;
   std::vector<Mix_Chunk *> chunks;
 };

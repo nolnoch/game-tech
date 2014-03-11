@@ -12,20 +12,16 @@ sim(sim),
 globalBall(0),
 globalBallActive(false)
 {
-  sim->setBallManager(this);
 }
 
 BallManager::~BallManager() {
   clearBalls();
-  delete &ballList;
 }
 
 bool BallManager::initBallManager() {
-  bool ret = false;
+  sim->setBallManager(this);
 
-  //TODO init.
-
-  return ret;
+  return true;
 }
 
 void BallManager::setGlobalBall(Ball *ball) {
@@ -113,10 +109,10 @@ bool BallManager::checkCollisions(btRigidBody *aTile, void *body0, void *body1) 
         (aTile == body1 && mball->checkRigidBody((btRigidBody*)body0))) {
       mball->lockPosition();
       hit = true;
-      std::cout << "Target hit: in checkCollisions" << std::endl;
+      // std::cout << "Target hit: in checkCollisions" << std::endl;
     }
   }
-  std::cout << "Leaving checkCollisions" << std::endl;
+  // std::cout << "Leaving checkCollisions" << std::endl;
 
   return hit;
 }

@@ -2,7 +2,6 @@
 
 
 TileSimulator::TileSimulator() {
-  this->initSimulator();
 }
 
 TileSimulator::~TileSimulator() {
@@ -18,7 +17,7 @@ bool TileSimulator::simulateStep(double delay) {
   ret = targethit;
 
   if (targethit) {
-    std::cout << "Target hit: in simulateStep" << std::endl;
+    // std::cout << "Target hit: in simulateStep" << std::endl;
 
     if (tiles.size() > 0) {
       tiles.pop_back();

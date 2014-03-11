@@ -99,7 +99,8 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_OgreApp_OBJECTS = OgreApp-BaseGame.$(OBJEXT) \
 	OgreApp-TileGame.$(OBJEXT) OgreApp-Simulator.$(OBJEXT) \
-	OgreApp-TileSimulator.$(OBJEXT) OgreApp-BallManager.$(OBJEXT)
+	OgreApp-TileSimulator.$(OBJEXT) OgreApp-BallManager.$(OBJEXT) \
+	OgreApp-SoundManager.$(OBJEXT) OgreApp-NetManager.$(OBJEXT)
 OgreApp_OBJECTS = $(am_OgreApp_OBJECTS)
 am__DEPENDENCIES_1 =
 OgreApp_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
@@ -323,11 +324,11 @@ top_build_prefix =
 top_builddir = .
 top_srcdir = .
 AACLOCAL_AMFLAGS = -I m4
-noinst_HEADERS = BaseGame.h TileGame.h Simulator.h TileSimulator.h BallManager.h CameraMan.h Ball.h
+noinst_HEADERS = BaseGame.h TileGame.h Simulator.h TileSimulator.h BallManager.h CameraMan.h Ball.h SoundManager.h NetManager.h
 OgreApp_CPPFLAGS = -I$(top_srcdir)
-OgreApp_SOURCES = BaseGame.cpp TileGame.cpp Simulator.cpp TileSimulator.cpp BallManager.cpp
+OgreApp_SOURCES = BaseGame.cpp TileGame.cpp Simulator.cpp TileSimulator.cpp BallManager.cpp SoundManager.cpp NetManager.cpp
 OgreApp_CXXFLAGS = $(OGRE_CFLAGS) $(OIS_CFLAGS) $(bullet_CFLAGS)
-OgreApp_LDADD = $(OGRE_LIBS) $(OIS_LIBS) $(bullet_LIBS) -lSDL -lSDL_mixer
+OgreApp_LDADD = $(OGRE_LIBS) $(OIS_LIBS) $(bullet_LIBS) -lSDL -lSDL_mixer -lSDL_net
 EXTRA_DIST = buildit makeit
 AUTOMAKE_OPTIONS = foreign
 all: config.h
@@ -446,7 +447,9 @@ distclean-compile:
 
 include ./$(DEPDIR)/OgreApp-BallManager.Po
 include ./$(DEPDIR)/OgreApp-BaseGame.Po
+include ./$(DEPDIR)/OgreApp-NetManager.Po
 include ./$(DEPDIR)/OgreApp-Simulator.Po
+include ./$(DEPDIR)/OgreApp-SoundManager.Po
 include ./$(DEPDIR)/OgreApp-TileGame.Po
 include ./$(DEPDIR)/OgreApp-TileSimulator.Po
 
@@ -540,6 +543,34 @@ OgreApp-BallManager.obj: BallManager.cpp
 #	$(AM_V_CXX)source='BallManager.cpp' object='OgreApp-BallManager.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-BallManager.obj `if test -f 'BallManager.cpp'; then $(CYGPATH_W) 'BallManager.cpp'; else $(CYGPATH_W) '$(srcdir)/BallManager.cpp'; fi`
+
+OgreApp-SoundManager.o: SoundManager.cpp
+	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-SoundManager.o -MD -MP -MF $(DEPDIR)/OgreApp-SoundManager.Tpo -c -o OgreApp-SoundManager.o `test -f 'SoundManager.cpp' || echo '$(srcdir)/'`SoundManager.cpp
+	$(AM_V_at)$(am__mv) $(DEPDIR)/OgreApp-SoundManager.Tpo $(DEPDIR)/OgreApp-SoundManager.Po
+#	$(AM_V_CXX)source='SoundManager.cpp' object='OgreApp-SoundManager.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-SoundManager.o `test -f 'SoundManager.cpp' || echo '$(srcdir)/'`SoundManager.cpp
+
+OgreApp-SoundManager.obj: SoundManager.cpp
+	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-SoundManager.obj -MD -MP -MF $(DEPDIR)/OgreApp-SoundManager.Tpo -c -o OgreApp-SoundManager.obj `if test -f 'SoundManager.cpp'; then $(CYGPATH_W) 'SoundManager.cpp'; else $(CYGPATH_W) '$(srcdir)/SoundManager.cpp'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/OgreApp-SoundManager.Tpo $(DEPDIR)/OgreApp-SoundManager.Po
+#	$(AM_V_CXX)source='SoundManager.cpp' object='OgreApp-SoundManager.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-SoundManager.obj `if test -f 'SoundManager.cpp'; then $(CYGPATH_W) 'SoundManager.cpp'; else $(CYGPATH_W) '$(srcdir)/SoundManager.cpp'; fi`
+
+OgreApp-NetManager.o: NetManager.cpp
+	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-NetManager.o -MD -MP -MF $(DEPDIR)/OgreApp-NetManager.Tpo -c -o OgreApp-NetManager.o `test -f 'NetManager.cpp' || echo '$(srcdir)/'`NetManager.cpp
+	$(AM_V_at)$(am__mv) $(DEPDIR)/OgreApp-NetManager.Tpo $(DEPDIR)/OgreApp-NetManager.Po
+#	$(AM_V_CXX)source='NetManager.cpp' object='OgreApp-NetManager.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-NetManager.o `test -f 'NetManager.cpp' || echo '$(srcdir)/'`NetManager.cpp
+
+OgreApp-NetManager.obj: NetManager.cpp
+	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-NetManager.obj -MD -MP -MF $(DEPDIR)/OgreApp-NetManager.Tpo -c -o OgreApp-NetManager.obj `if test -f 'NetManager.cpp'; then $(CYGPATH_W) 'NetManager.cpp'; else $(CYGPATH_W) '$(srcdir)/NetManager.cpp'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/OgreApp-NetManager.Tpo $(DEPDIR)/OgreApp-NetManager.Po
+#	$(AM_V_CXX)source='NetManager.cpp' object='OgreApp-NetManager.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-NetManager.obj `if test -f 'NetManager.cpp'; then $(CYGPATH_W) 'NetManager.cpp'; else $(CYGPATH_W) '$(srcdir)/NetManager.cpp'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
