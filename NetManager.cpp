@@ -1289,6 +1289,7 @@ void NetManager::readTCPSocket(int clientIdx) {
 void NetManager::readUDPSocket(int clientIdx) {
   UDPpacket **bufV;
   ClientData *cData;
+  ConnectionInfo *client;
   int idxSocket, numPackets,  i;
 
   idxSocket = (clientIdx == SOCKET_SELF) ? netServer.udpSocketIdx :
@@ -1311,7 +1312,8 @@ void NetManager::readUDPSocket(int clientIdx) {
             std::cout << "NetManager: Unable to add new UDP client." << std::endl;
         }
       } else {
-        if ((cData = lookupUDPClient(bufV[i]->address.host, false))) {
+        if ((client = lookupUDPClient(bufV[i]->address.host, false))) {
+          cData = udpClientData[client->udpDataIdx];
           memcpy(cData->output, bufV[i]->data, bufV[i]->len);
           cData->updated = true;
         } else
@@ -1331,6 +1333,7 @@ void NetManager::readUDPSocket(int clientIdx) {
  */
 bool NetManager::addUDPClient(UDPpacket *pack) {
   ClientData *cData;
+  ConnectionInfo *client;
   bool ret = true;
   int socketIdx;
 
@@ -1352,7 +1355,8 @@ bool NetManager::addUDPClient(UDPpacket *pack) {
 
   bindUDPSocket(udpSockets.back(), nextUDPChannel++, &pack->address);
 
-  if ((cData = lookupUDPClient(pack->address.host, false))) {
+  if ((client = lookupUDPClient(pack->address.host, false))) {
+    cData = udpClientData[client->udpDataIdx];
     memcpy(cData->output, pack->data, pack->len);
     cData->updated = true;
   }
