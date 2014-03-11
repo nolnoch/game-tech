@@ -24,3 +24,5 @@
 /OgreApp-TutorialApplication.o
 /OgreApp-BaseGame.o
 /OgreApp-TileGame.o
+/OgreApp-NetManager.o
+/OgreApp-SoundManager.o

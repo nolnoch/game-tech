@@ -69,14 +69,17 @@ public:
   NetManager();
   virtual ~NetManager();
 
+  //! Required initialization functions. @{
   bool initNetManager();
   void addNetworkInfo(Protocol protocol = PROTOCOL_ALL,
       Uint16 port = 0, const char *host = NULL);
+  //! @}
 
+  //! Control functions. @{
   bool startServer();
   bool startClient();
-  bool pollForActivity(Uint32 timeout_ms = 5000);
   bool scanForActivity();
+  bool pollForActivity(Uint32 timeout_ms = 5000);
   void messageClients(char *buf = NULL, int len = 0);
   void messageServer(char *buf = NULL, int len = 0);
   void messageClient(Protocol protocol, int clientDataIdx, char *buf, int len);
@@ -84,7 +87,9 @@ public:
   void stopServer(Protocol protocol = PROTOCOL_ALL);
   void stopClient(Protocol protocol = PROTOCOL_ALL);
   void close();
+  //! @}
 
+  /* Getters and setters. *////@{
   bool addProtocol(Protocol protocol);
   void setProtocol(Protocol protocol);
   void setPort(Uint16 port);
@@ -92,14 +97,17 @@ public:
   Uint32 getProtocol();
   Uint16 getPort();
   std::string getHost();
+  //! @}
 
 
+  // Public data members.
   MessageBuffer serverData;
   std::vector<MessageBuffer *> tcpClientData;
   std::vector<MessageBuffer *> udpClientData;
 
 private:
   enum {
+    // State management flag bits.
     NET_UNINITIALIZED   = 0,
     NET_INITIALIZED     = 1,
     NET_WAITING         = 2,
@@ -112,6 +120,7 @@ private:
     NET_SERVER          = 256,
     NET_CLIENT          = 512,
 
+    // Constants.
     PORT_RANDOM         = 0,
     PORT_DEFAULT        = 51215,
     CHANNEL_AUTO        = -1,
@@ -124,6 +133,7 @@ private:
     MESSAGE_LENGTH      = 128
   };
 
+  // Direct SDL call wrappers with state and error checking.
   bool openServer(Protocol protocol, Uint16 port);
   bool openClient(Protocol protocol, std::string addr, Uint16 port);
   bool openTCPSocket (IPaddress *addr);
@@ -142,31 +152,34 @@ private:
   IPaddress* queryTCPAddress(TCPsocket sock);
   IPaddress* queryUDPAddress(UDPsocket sock, int channel);
 
+  // UDP packet management.
+  UDPpacket* craftUDPpacket(const char *buf, int len);
   UDPpacket* allocUDPpacket(int size);
   bool resizeUDPpacket(UDPpacket *pack, int size);
   void freeUDPpacket(UDPpacket **pack);
+  void processPacketData(const char *data);
 
+  // Socket registration and handling.
   void watchSocket(TCPsocket *sock);
   void watchSocket(UDPsocket *sock);
   void unwatchSocket(TCPsocket *sock);
   void unwatchSocket(UDPsocket *sock);
-
   bool checkSockets(Uint32 timeout_ms);
   void readTCPSocket(int clientIdx);
   void readUDPSocket(int clientIdx);
 
+  // Client addition and rejection.
   bool addUDPClient(UDPpacket *pack);
   void rejectTCPClient(TCPsocket sock);
   void rejectUDPClient(UDPpacket *pack);
 
-  UDPpacket* craftUDPpacket(const char *buf, int len);
-  void processPacketData(const char *data);
-
+  // Helper functions.
   bool statusCheck(int state);
   bool statusCheck(int state1, int state2);
   void clearFlags(int state);
   void resetManager();
 
+  // Internal state information packaging.
   struct ConnectionInfo {
     int tcpSocketIdx;
     int udpSocketIdx;
@@ -179,6 +192,7 @@ private:
   };
 
 
+  // Private data members.
   bool forceClientRandomUDP;
   bool acceptNewClients;
   int nextUDPChannel;

@@ -31,8 +31,9 @@ netPort(0)
  * Standard destruction. Calls close().
  */
 NetManager::~NetManager() {
-  if (netStatus != NET_UNINITIALIZED)
+  if (netStatus > NET_INITIALIZED)
     close();
+  SDLNet_FreeSocketSet(socketNursery);
   SDLNet_Quit();
 }
 
@@ -185,6 +186,7 @@ bool NetManager::pollForActivity(Uint32 timeout_ms) {
  *
  * This calls pollForActivity with a time of 0 milliseconds (instant).
  * @return True for activity, false for no activity.
+ * @see pollForActivity()
  */
 bool NetManager::scanForActivity() {
   return pollForActivity(0);
@@ -223,6 +225,14 @@ void NetManager::messageClients(char *buf, int len) {
   }
 }
 
+/**
+ * @brief Send a single message to the server.
+ *
+ * Must be running as a client to call this function. If no argumetns are given,
+ * it will pull from the server's MessageBuffer \b input field.
+ * @param buf Manually given data buffer. Default: NULL.
+ * @param len Length of given buffer. Default: 0.
+ */
 void NetManager::messageServer(char *buf, int len) {
   if (statusCheck(NET_CLIENT)) {
     std::cout << "NetManager: No client running, and thus no server to message." << std::endl;
@@ -239,6 +249,18 @@ void NetManager::messageServer(char *buf, int len) {
   }
 }
 
+/**
+ * @brief Send a single message to a single client over a single protocol.
+ *
+ * Must be running as a server, and all fields must be provided by the user.
+ * This will send the given message to the specified client using the specified
+ * protocol.
+ * @param protocol TCP or UDP, given by the PROTOCOL_XXX enum value.
+ * @param clientDataIdx Index of the client into the tcp/udp ClientData vector.
+ * @param buf Manually given data buffer.
+ * @param len Length of the given buffer.
+ * @see messageClients()
+ */
 void NetManager::messageClient(Protocol protocol, int clientDataIdx, char *buf, int len) {
   if (statusCheck(NET_SERVER)) {
     std::cout << "NetManager: No server running, and thus no clients to message." << std::endl;
@@ -248,8 +270,7 @@ void NetManager::messageClient(Protocol protocol, int clientDataIdx, char *buf, 
   if (protocol & PROTOCOL_TCP) {
     TCPsocket client = tcpSockets[tcpClients[clientDataIdx]->tcpSocketIdx];
     sendTCP(client, buf, len);
-  }
-  if (protocol & PROTOCOL_UDP) {
+  } else if (protocol & PROTOCOL_UDP) {
     UDPpacket *pack = craftUDPpacket(buf, len);
     ConnectionInfo *cInfo = udpClients[clientDataIdx];
     UDPsocket client = udpSockets[cInfo->udpSocketIdx];
@@ -258,6 +279,14 @@ void NetManager::messageClient(Protocol protocol, int clientDataIdx, char *buf, 
   }
 }
 
+/**
+ * @brief Removes an established client from a running server.
+ *
+ * Must be running as a server, and must give a connected client. May choose to
+ * drop the client from TCP, UDP, or both.
+ * @param protocol TCP, UDP, or ALL; given by PROTOCOL_XXX enum value.
+ * @param clientDataIdx Index of the client into the tcp/udp ClientData vector.
+ */
 void NetManager::dropClient(Protocol protocol, int clientDataIdx) {
   if (statusCheck(NET_SERVER)) {
     std::cout << "NetManager: No server running, and thus no clients to drop." << std::endl;
@@ -279,6 +308,18 @@ void NetManager::dropClient(Protocol protocol, int clientDataIdx) {
   }
 }
 
+/**
+ * @brief Shut down the running server on any or all protocols.
+ *
+ * Must be running as a server to call this function. If after completing the
+ * requested removal there are no active protocols, all data structures will
+ * be emptied, freed, and reset to default values. The state of the instance
+ * will return to NET_INITIALIZED, allowing for start of new client or server
+ * after another call to addNetworkInfo().
+ * @param protocol TCP, UDP, or all; given by PROTOCOL_XXX enum value
+ * @see resetManager()
+ * @see close()
+ */
 void NetManager::stopServer(Protocol protocol) {
   int i;
 
@@ -294,6 +335,7 @@ void NetManager::stopServer(Protocol protocol) {
       closeTCP(client);
       tcpSockets.erase(tcpSockets.begin() + i);
     }
+    netServer.protocols ^= PROTOCOL_TCP;
   }
   if (protocol & PROTOCOL_UDP) {
     for (i = 0; i < udpClients.size(); i++) {
@@ -306,12 +348,25 @@ void NetManager::stopServer(Protocol protocol) {
       closeUDP(udpSockets[i]);
       udpSockets.pop_back();
     }
+    netServer.protocols ^= PROTOCOL_UDP;
   }
-  SDLNet_FreeSocketSet(socketNursery);
 
-  resetManager();
+  if (!netServer.protocols)
+    resetManager();
 }
 
+/**
+ * @brief Shut down the running client on any or all protocols.
+ *
+ * Must be running as a client to call this function. If after completing the
+ * requested removal there are no active protocols, all data structures will
+ * be emptied, freed, and reset to default values. The state of the instance
+ * will return to NET_INITIALIZED, allowing for start of new client or server
+ * after another call to addNetworkInfo().
+ * @param protocol TCP, UDP, or all; given by PROTOCOL_XXX enum value
+ * @see resetManager()
+ * @see close()
+ */
 void NetManager::stopClient(Protocol protocol) {
   if (statusCheck(NET_CLIENT)) {
     std::cout << "NetManager: You're not a client, thus you can't be stopped." << std::endl;
@@ -323,6 +378,7 @@ void NetManager::stopClient(Protocol protocol) {
     unwatchSocket(&server);
     closeTCP(server);
     tcpSockets.pop_back();
+    netServer.protocols ^= PROTOCOL_TCP;
   }
   if (protocol & PROTOCOL_UDP) {
     UDPsocket server = udpSockets[netServer.udpSocketIdx];
@@ -330,12 +386,22 @@ void NetManager::stopClient(Protocol protocol) {
     unbindUDPSocket(server, netServer.udpChannel);
     closeUDP(server);
     udpSockets.pop_back();
+    netServer.protocols ^= PROTOCOL_UDP;
   }
-  SDLNet_FreeSocketSet(socketNursery);
 
-  resetManager();
+  if (!netServer.protocols)
+    resetManager();
 }
 
+/**
+ * @brief Terminates all running servers or clients on all protocols.
+ *
+ * This function is called by the destructor, but it may be called explicitly
+ * by the user if desired. It will call stopServer() or stopClient() as
+ * appropriate.
+ * @see stopServer()
+ * @see stopClient()
+ */
 void NetManager::close() {
   if (netStatus & NET_SERVER) {
     stopServer(netServer.protocols);
@@ -346,34 +412,100 @@ void NetManager::close() {
   }
 }
 
+/**
+ * @brief Allows the dynamic addition of TCP or UDP to a running server or
+ * client.
+ *
+ * Must be currently running as a server or client over only one of TCP or UDP.
+ * This function adds and immediately launches the requested, missing protocol.
+ * @param protocol TCP or UDP, given by PROTOCOL_XXX enum value.
+ * @return True on success, false on failure.
+ */
 bool NetManager::addProtocol(Protocol protocol) {
+  if (statusCheck(NET_SERVER, NET_CLIENT)) {
+    std::cout << "NetManager: Not currently running a server or client." << std::endl;
+    return false;
+  }
+
   netProtocol |= protocol;
   netStatus |= NET_WAITING;
 
   return (netStatus & NET_SERVER) ? startServer() : startClient();
 }
 
+/**
+ * @brief Set the protocol manually.
+ *
+ * This is currently useless as a public function given the structured use of
+ * addNetworkInfo() and addProtocol(). It is only public because it seems like
+ * it should be.
+ * @param protocol TCP, UDP, or ALL; given by PROTOCOL_XXX enum value.
+ */
 void NetManager::setProtocol(Protocol protocol) {
+  if (!statusCheck(NET_SERVER, NET_CLIENT)) {
+    return;
+  }
+
   netProtocol = protocol;
 }
 
+/**
+ * @brief Set the port manually.
+ *
+ * Currently useless as a public function. This cannot be safely executed after
+ * a server or client is launched.
+ * @param port The desired port.
+ */
 void NetManager::setPort(Uint16 port) {
+  if (!statusCheck(NET_SERVER, NET_CLIENT)) {
+    return;
+  }
+
   netPort = port;
 }
 
+/**
+ * Set the host manually.
+ *
+ * Currently useless as a public function. This cannot be safely executed after
+ * a server or client is launched.
+ * @param host The desired host.
+ */
 void NetManager::setHost(const char *host) {
+  if (!statusCheck(NET_SERVER, NET_CLIENT)) {
+    return;
+  }
+
   netHost = std::string(host);
 }
 
+/**
+ * @brief Returns the currently active protocols.
+ * @return The currently active protocols.
+ */
 Uint32 NetManager::getProtocol() {
   return (Uint32) netProtocol;
 }
 
+/**
+ * @brief Returns the currently active port.
+ * @return The currently active port.
+ */
 Uint16 NetManager::getPort() {
   return netPort;
 }
 
+/**
+ * @brief Returns the currently active host.
+ *
+ * Must be running as a client to call this function; servers do not have hosts.
+ * @return The currently active host.
+ */
 std::string NetManager::getHost() {
+  if (statusCheck(NET_CLIENT)) {
+    return std::string("Error: Invalid request.");
+  }
+
   return netHost;
 }
 
@@ -1008,7 +1140,9 @@ void NetManager::resetManager() {
   forceClientRandomUDP = true;
   acceptNewClients = true;
   nextUDPChannel = 1;
-  netStatus = NET_UNINITIALIZED;
+
+  // TODO Save last instance of info?
+  netStatus = NET_INITIALIZED;
   netPort = PORT_DEFAULT;
   netProtocol = PROTOCOL_ALL;
   netHost.clear();
