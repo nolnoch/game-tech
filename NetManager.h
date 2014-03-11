@@ -114,8 +114,8 @@ public:
   bool startClient();
   bool scanForActivity();
   bool pollForActivity(Uint32 timeout_ms = 5000);
-  void messageClients(char *buf = NULL, int len = 0);
-  void messageServer(char *buf = NULL, int len = 0);
+  void messageClients(const char *buf = NULL, int len = 0);
+  void messageServer(const char *buf = NULL, int len = 0);
   void messageClient(Protocol protocol, int clientDataIdx, char *buf, int len);
   void dropClient(Protocol protocol, Uint32 host);
   void stopServer(Protocol protocol = PROTOCOL_ALL);
@@ -225,6 +225,7 @@ private:
   bool statusCheck(int state);
   bool statusCheck(int state1, int state2);
   void clearFlags(int state);
+  void printError(std::string errorText);
   void resetManager();
   //! @}
 
