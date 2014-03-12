@@ -1,6 +1,6 @@
 /*
 -----------------------------------------------------------------------------
-Filename:    BaseApplication.h
+Filename:    BaseGame.h
 -----------------------------------------------------------------------------
 
 This source file is part of the
@@ -14,8 +14,8 @@ This source file is part of the
       http://www.ogre3d.org/tikiwiki/
 -----------------------------------------------------------------------------
 */
-#ifndef __BaseApplication_h_
-#define __BaseApplication_h_
+#ifndef __BaseGame_h_
+#define __BaseGame_h_
 
 #include <OgreCamera.h>
 #include <OgreEntity.h>
@@ -44,14 +44,14 @@ This source file is part of the
 #endif
 
 #ifdef OGRE_IS_IOS
-class BaseApplication : public Ogre::FrameListener, public Ogre::WindowEventListener, OIS::KeyListener, OIS::MultiTouchListener, OgreBites::SdkTrayListener
+class BaseGame : public Ogre::FrameListener, public Ogre::WindowEventListener, OIS::KeyListener, OIS::MultiTouchListener, OgreBites::SdkTrayListener
 #else
-class BaseApplication : public Ogre::FrameListener, public Ogre::WindowEventListener, public OIS::KeyListener, public OIS::MouseListener, OgreBites::SdkTrayListener
+class BaseGame : public Ogre::FrameListener, public Ogre::WindowEventListener, public OIS::KeyListener, public OIS::MouseListener, OgreBites::SdkTrayListener
 #endif
 {
 public:
-    BaseApplication(void);
-    virtual ~BaseApplication(void);
+    BaseGame(void);
+    virtual ~BaseGame(void);
 
     virtual void go(void);
 
@@ -105,4 +105,4 @@ protected:
     OIS::Keyboard* mKeyboard;
 };
 
-#endif // #ifndef __BaseApplication_h_
+#endif // #ifndef __BaseGame_h_
