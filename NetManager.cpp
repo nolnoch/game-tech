@@ -1,8 +1,12 @@
-/*
- * NetManager.cpp
+/**
+ * @file NetManager.cpp
+ * @date March 7, 2014
+ * @author Wade Burch (nolnoch@cs.utexas.edu)
  *
- *  Created on: Mar 7, 2014
- *      Author: nolnoch
+ * @brief Networking wrapper for SDL_net created for OGRE engine use in CS 354R
+ * at the University of Texas at Austin, taught by Don Fussell in Spring 2014.
+ *
+ * @copyright GNU Public License
  */
 
 #include "NetManager.h"
