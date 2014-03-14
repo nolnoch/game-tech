@@ -50,7 +50,7 @@ struct ConnectionInfo {
   short tcpDataIdx;                   //!< Index into the tcpClientData vector.
   short udpDataIdx;                   //!< Index into the udpClientData vector.
   short udpChannel;                   //!< The associated UDP channel.
-  short clientIdx;                 //!< Index into the tcpClients vector.
+  short clientIdx;                    //!< Index into the tcpClients vector.
   Protocol protocols;                 //!< Associated protocols.
   IPaddress address;                  //!< This connection's IPaddress.
 };
@@ -70,7 +70,13 @@ struct ClientData {
 
 static const std::string STR_DENY("TG_SERVER_DENY");
 static const std::string STR_OPEN("TG_SERVER_OPEN");
+static const std::string STR_ACPT("TG_SERVER_JOIN");
 static const std::string STR_BEGIN("TG_GAME_BEGIN");
+static const std::string STR_NXLVL("TG_NEXT_LEVEL");
+static const std::string STR_TLHIT("TG_NEXT_TILE");
+static const Uint32 UINT_ADDPL(0xFF000001);
+static const Uint32 UINT_UPDPL(0xFF000010);
+static const Uint32 UINT_UPDSV(0xFF000020);
 
 
 
@@ -122,7 +128,7 @@ public:
   bool startClient();
   bool scanForActivity();
   bool pollForActivity(Uint32 timeout_ms = 5000);
-  void messageClients(const char *buf = NULL, int len = 0);
+  void messageClients(Protocol protocol, const char *buf = NULL, int len = 0);
   void messageServer(Protocol protocol, const char *buf = NULL, int len = 0);
   void messageClient(Protocol protocol, int clientDataIdx, char *buf, int len);
   void dropClient(Protocol protocol, Uint32 host);
@@ -144,16 +150,18 @@ public:
   Uint32 getIPnbo();
   int getClients();
   int getUDPClients();
-  void accept();
-  void deny();
+  void acceptConnections();
+  void denyConnections();
   //! @}
 
-  /** @name Meta-functions.                                         *////@{
-  bool multiPlayerInit();
+  /** @name Game-functions.                                         *////@{
+  bool multiPlayerInit(int maskDepth = MASK_DEPTH);
+  bool broadcastUDPInvitation(int maskDepth = MASK_DEPTH);
+  bool joinMultiPlayer(std::string invitation);
   //! @}
 
   ClientData tcpServerData;
-  ClientData udpServerData;
+  ClientData udpServerData[10];
   std::vector<ClientData *> tcpClientData;
   std::vector<ClientData *> udpClientData;
 
@@ -186,7 +194,8 @@ private:
     SOCKET_ALL_MAX      = SOCKET_TCP_MAX + SOCKET_UDP_MAX,
     SOCKET_SELF         = SOCKET_ALL_MAX + 1,
     MESSAGE_COUNT       = 10,
-    MESSAGE_LENGTH      = 128
+    MESSAGE_LENGTH      = 128,
+    MASK_DEPTH          = 24
     ///@}
   };
 

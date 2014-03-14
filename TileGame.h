@@ -24,12 +24,21 @@ This source file is part of the
 #include "CameraMan.h"
 
 #include <vector>
+#include <string>
 
 const static int WALL_SIZE = 2400;
 const static int PLANE_DIST = WALL_SIZE / 2;                        // the initial offset from the center.
 const static int NUM_TILES_ROW = 5;                                 // number of tiles in each row of a wall.
 const static int NUM_TILES_WALL = NUM_TILES_ROW * NUM_TILES_ROW;    // number of total tiles on a wall.
 const static int TILE_WIDTH = WALL_SIZE / NUM_TILES_ROW;
+
+struct PlayerData {
+  Uint32 host;
+  Ogre::Vector3 newPos;
+  Ogre::Vector3 shotDir;
+  double shotForce;
+};
+
 
 class TileGame : public BaseGame
 {
@@ -52,7 +61,7 @@ protected:
   virtual bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
   virtual bool mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
 
-  Ogre::Timer *mTimer, timer;
+  Ogre::Timer *mTimer, timer, *netTimer;
   Ogre::SceneNode* headNode;
   Ogre::Light* panelLight;
   Ogre::Vector3 mDirection;
@@ -64,10 +73,14 @@ protected:
   std::deque<Ogre::SceneNode *> tileList;
   std::deque<Ogre::Entity *> tileEntities;
   std::deque<Ogre::SceneNode *> tileSceneNodes;
+  std::vector<Ogre::Entity *> playerEntities;
+  std::vector<Ogre::SceneNode *> playerNodes;
+  std::vector<PlayerData *> playerData;
 
-  OgreBites::ParamsPanel* scorePanel;
-  OgreBites::Label* congratsPanel;
-  OgreBites::Label* chargePanel;
+  OgreBites::ParamsPanel *scorePanel, *playersWaitingPanel;
+  OgreBites::Label *congratsPanel, *chargePanel, *clientAcceptDescPanel,
+  *clientAcceptOptPanel, *serverStartPanel;
+  Ogre::Overlay* crosshairOverlay;
 
   TileSimulator *sim;
   BallManager *ballMgr;
@@ -75,22 +88,26 @@ protected:
   NetManager *netMgr;
 
   SoundFile boing, gong, music;
-  bool paused, gameStart, gameDone, animDone, isCharging, connected, server;
-  bool netActive, invitePending, inviteAccepted;
-  int score, shotsFired, currLevel, currTile, winTimer, tileCounter, chargeShot;
+  bool paused, gameStart, gameDone, animDone, isCharging, connected, server,
+  netActive, invitePending, inviteAccepted, multiplayerStarted;
+  int score, shotsFired, currLevel, currTile, winTimer, tileCounter, chargeShot,
+  nPlayers;
   double slowdownval;
   std::string invite;
 
 
-  void joinServer() {
-    if (invitePending) {
-      std::string svrAddr = invite.substr(STR_OPEN.length());
-      netMgr->stopServer();
-      netMgr->initNetManager();
-      netMgr->addNetworkInfo(PROTOCOL_ALL, svrAddr.c_str());
-      netActive = netMgr->startClient();
-      connected = true;
-    }
+  void shootBall(int x, int y, int z, double force) {
+    Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
+    Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
+
+    if(ballMgr->isGlobalBall())
+      ballMgr->removeGlobalBall();
+
+    ballMeshpc->setCastShadows(true);
+    nodepc->attachObject(ballMeshpc);
+    ballMgr->setGlobalBall(ballMgr->addBall(nodepc, x, y, z, 100));
+    ballMgr->globalBall->applyForce(force, direction);
   }
 
   void ballSetup (int cubeSize) {
@@ -117,7 +134,10 @@ protected:
   void levelSetup(int num) {
     if(num > 50)
       num = 50;
-    srand(time(0));
+    if (!connected)
+      srand(time(0));
+    else
+      srand(1);
 
     Ogre::Plane wallTile = Ogre::Plane(Ogre::Vector3::UNIT_X, -PLANE_DIST +1);
 
@@ -261,13 +281,144 @@ protected:
   void setLevel(int num) {
     levelTearDown();
     currLevel = num;
+    score = 0;
+    shotsFired = 0;
     levelSetup(num);
+  }
 
-    // Set/reset scores and shotsFired here.
+  void drawPlayers() {
+    Ogre::SceneNode *ringNode;
+    Ogre::Entity *ringEnt;
+    std::ostringstream playerName;
+    int i;
+
+    for (i = 0; i < playerData.size(); i++) {
+      playerName << playerData[i]->host;
+      ringNode = mSceneMgr->getRootSceneNode()->createChildSceneNode(playerName.str());
+      ringEnt = mSceneMgr->createEntity("torus.mesh");
+      ringNode->attachObject(ringEnt);
+      ringNode->rotate(Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3::UNIT_X));
+      ringNode->setScale(100, 100, 100);
+      ringNode->setPosition(playerData[i]->newPos);
+
+      playerNodes.push_back(ringNode);
+      playerEntities.push_back(ringEnt);
+    }
+  }
+
+  void movePlayers() {
+    std::ostringstream playerName;
+    Ogre::Vector3 newPos;
+    int i;
+
+    for (i = 0; i < nPlayers; i++) {
+      // Update position.
+      newPos = playerData[i]->newPos;
+      playerName << playerData[i]->host;
+      mSceneMgr->getSceneNode(playerName.str())->setPosition(newPos);
+
+      // Did they launch a ball?
+      if (playerData[i]->shotForce)
+        shootBall(newPos.x, newPos.y, newPos.z, playerData[i]->shotForce);
+    }
+  }
+
+  void updatePlayers(double force = 0, Ogre::Vector3 dir = Ogre::Vector3::ZERO) {
+    PlayerData single;
+    int i, pdSize, tagSize;
+
+    pdSize = sizeof(PlayerData);
+    tagSize = sizeof(Uint32);
+
+    // Self
+    single.host = netMgr->getIPnbo();
+    single.newPos = mCamera->getPosition();
+    single.shotForce = force;
+    single.shotDir = dir;
+    memcpy(netMgr->udpServerData[0].input, &UINT_UPDPL, tagSize);
+    memcpy((netMgr->udpServerData[0].input + 4), &single, pdSize);
+    netMgr->udpServerData[0].updated = true;
+    netMgr->messageClients(PROTOCOL_UDP);
+
+    // Clients
+    for (i = 0; i < playerData.size() && !force; i++) {
+      memcpy(netMgr->udpServerData[i].input, &UINT_UPDPL, tagSize);
+      memcpy((netMgr->udpServerData[i].input + 4), playerData[i], pdSize);
+      netMgr->udpServerData[i].updated = true;
+    }
+    netMgr->messageClients(PROTOCOL_UDP);
+  }
+
+  void updateServer(double force = 0, Ogre::Vector3 dir = Ogre::Vector3::ZERO) {
+    PlayerData single;
+    int i, pdSize, tagSize;
+
+    pdSize = sizeof(PlayerData);
+    tagSize = sizeof(Uint32);
+
+    // Self
+    single.host = netMgr->getIPnbo();
+    single.newPos = mCamera->getPosition();
+    single.shotForce = force;
+    single.shotDir = dir;
+    memcpy(netMgr->udpServerData[0].input, &UINT_UPDPL, tagSize);
+    memcpy((netMgr->udpServerData[0].input + 4), &single, pdSize);
+    netMgr->messageServer(PROTOCOL_UDP);
   }
 
   void startMultiplayer() {
+    tileEntities.clear();
+    tileSceneNodes.clear();
+    sim->clearTiles();
+    gameDone = true;
+
     setLevel(1);
+    drawPlayers();
+
+    multiplayerStarted = true;
+  }
+
+  void notifyPlayers() {
+    PlayerData single;
+    int i, pdSize, tagSize;
+
+    pdSize = sizeof(PlayerData);
+    tagSize = sizeof(Uint32);
+
+    // Self
+    single.host = netMgr->getIPnbo();
+    single.newPos = mCamera->getPosition();
+    memcpy(netMgr->udpServerData[0].input, &UINT_ADDPL, tagSize);
+    memcpy((netMgr->udpServerData[0].input + 4), &single, pdSize);
+    netMgr->udpServerData[0].updated = true;
+    netMgr->messageClients(PROTOCOL_UDP);
+
+    std::cout << "Server sending " << single.host << std::endl;
+
+    // Clients
+    for (i = 0; i < playerData.size(); i++) {
+      memcpy(netMgr->udpServerData[i].input, &UINT_ADDPL, tagSize);
+      memcpy((netMgr->udpServerData[i].input + 4), playerData[i], pdSize);
+      netMgr->udpServerData[i].updated = true;
+    }
+    netMgr->messageClients(PROTOCOL_UDP);
+  }
+
+  void notifyServer() {
+    PlayerData single;
+    int pdSize, tagSize;
+
+    pdSize = sizeof(PlayerData);
+    tagSize = sizeof(Uint32);
+
+    // Self
+    single.host = netMgr->getIPnbo();
+    single.newPos = mCamera->getPosition();
+    memcpy(netMgr->udpServerData[0].input, &UINT_ADDPL, tagSize);
+    memcpy((netMgr->udpServerData[0].input + 4), &single, pdSize);
+    netMgr->messageServer(PROTOCOL_UDP);
+
+    std::cout << "Client sending " << single.host << std::endl;
   }
 
   void simonSaysAnim() {
