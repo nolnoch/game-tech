@@ -227,8 +227,6 @@ void TileGame::createFrameListener(void) {
 //-------------------------------------------------------------------------------------
 bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
   bool ret = BaseGame::frameRenderingQueued(evt);
-
-  int limiter = 0;
   int i, j;
 
   if (paused)
@@ -296,24 +294,28 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
   /* ***********************************************************************
    * Multiplayer Code
    */
-  if (netActive) {
+  int sweep_ms = 200;
+  int broad_ms = 10000;
+  int broad_ticks = (broad_ms / sweep_ms);
+  int ticks = 0;
+
+  if (netActive && (netTimer->getMilliseconds() > sweep_ms)) {
 
     /*  Received an update!  */
-    if (!(limiter % 500) && netMgr->scanForActivity()) {
+    if (netMgr->scanForActivity()) {
       std::string cmd, cmdArgs;
       std::ostringstream test;
       Uint32 *data;
 
+      //std::cout << "Following up in TileGame." << std::endl;
+
       if (!server) {
         if (!connected) {                       /* Running as single player. */
           if (!invitePending) {
-            std::cout << "1" << std::endl;
             // Accept only the first invitation received if spammed.
             if (netMgr->udpServerData[0].updated) {
-              std::cout << "2" << std::endl;
               invite = std::string(netMgr->udpServerData[0].output);
               if (std::string::npos != invite.find(STR_OPEN)) {
-                std::cout << "3" << std::endl;
                 mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->show();
                 mTrayMgr->getTrayContainer(OgreBites::TL_BOTTOMRIGHT)->show();
                 invitePending = true;
@@ -333,17 +335,12 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
                 memcpy(newPlayer, ++data, sizeof(PlayerData));
                 playerData.push_back(newPlayer);
                 nPlayers = playerData.size();
-
-                test << newPlayer->host;
-                std::cout << "Client reading " << test.str() << std::endl;
-                std::cout << "Player added." << std::endl;
-
               } else if ((data[0] == UINT_UPDPL) && (data[1] != netMgr->getIPnbo())) {
                 PlayerData *player;
-
                 for (i = 0; i < nPlayers; i++) {
-                  if (*data == playerData[i]->host)
+                  if (*data == playerData[i]->host) {
                     memcpy(player, ++data, sizeof(PlayerData));
+                  }
                 }
               }
 
@@ -354,7 +351,9 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
           if (netMgr->tcpServerData.updated) {
             cmd = std::string(netMgr->tcpServerData.output);
 
-            if (0 == cmd.compare(STR_BEGIN)) {
+            std::cout << "TCP message: " << cmd << std::endl;
+
+            if (0 == cmd.find(STR_BEGIN)) {
               mTrayMgr->destroyWidget("ServerStartPanel");
               mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
               startMultiplayer();
@@ -374,20 +373,15 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 
             for (i = 1; i <= newClients; i++) {
               data = (Uint32 *) netMgr->udpClientData[nPlayers-i]->output;
-              if (*data == UINT_ADDPL) {
+              if (data[0] == UINT_ADDPL) {
                 PlayerData *client = new PlayerData;
                 memcpy(client, ++data, sizeof(PlayerData));
                 playerData.push_back(client);
-
-                test << client->host;
-                std::cout << "Server reading " << test.str() << std::endl;
-                std::cout << "Player added." << std::endl;
                 notifyPlayers();
                 netMgr->udpClientData[nPlayers-i]->updated = false;
-              } else {
-                std::cout << "Failed to add player." << std::endl;
               }
             }
+            serverStartPanel->setCaption("Press (B) to start when ready.");
 
           }
 
@@ -396,6 +390,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
           for (i = 0; i < 10; i++) {
             if (netMgr->udpServerData[i].updated) {
               data = (Uint32 *) netMgr->udpServerData[i].output;
+
               if ((data[0] == UINT_UPDPL) && (data[1] != netMgr->getIPnbo())) {
                 PlayerData *player;
                 for (i = 0; i < nPlayers; i++) {
@@ -404,6 +399,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
                   }
                 }
               }
+
               netMgr->udpServerData[i].updated = false;
             }
           }
@@ -422,43 +418,41 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
     /* Independent of TCP/UDP update, we do these constantly. */
 
 
-    if (multiplayerStarted && !(limiter % 1000)) {
-      /* Message clients or server with global positions. */
+    if (multiplayerStarted) {                      /* In a multiplayer game. */
+      // Message clients or server with global positions.
       if (server)
         updatePlayers();
       else
         updateServer();
 
-      /* Update clients' positions locally. */
+      // Update clients' positions locally.
       movePlayers();
-    }
+    } else {                               /* Not yet in a multiplayer game. */
+      // Server will broadcast game invitation every 10 seconds until launch.
+      if (server && !connected && (ticks++ == broad_ticks)) {
+        if (!netMgr->broadcastUDPInvitation())
+          std::cout << "Failed to send broadcast." << std::endl;
+        ticks = 0;
+      }
 
-
-    // Server will broadcast game invitation every 10 seconds until launch.
-    if (server && !connected && (netTimer->getMilliseconds() > 10000)) {
-      if (!netMgr->broadcastUDPInvitation())
-        std::cout << "Failed to send broadcast." << std::endl;
-      netTimer->reset();
-    }
-
-    // Client triggers this to connect to server.
-    if (inviteAccepted && !connected) {
-      connected = netMgr->joinMultiPlayer(invite);
-      if (!connected) {
-        std::cout << "TileGame: Failed to join server." << std::endl;
-        netMgr->close();
-        netActive = false;
-        inviteAccepted = false;
-      } else {
-        notifyServer();
-        serverStartPanel = mTrayMgr->createLabel(OgreBites::TL_TOP,
-            "ServerStartPanel", "Waiting on server...", 300);
-        mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
+      // Client triggers this to connect to server.
+      if (inviteAccepted && !connected) {
+        connected = netMgr->joinMultiPlayer(invite);
+        if (!connected) {
+          std::cout << "TileGame: Failed to join server." << std::endl;
+          netMgr->close();
+          netActive = false;
+          inviteAccepted = false;
+        } else {
+          notifyServer();
+          serverStartPanel = mTrayMgr->createLabel(OgreBites::TL_TOP,
+              "ServerStartPanel", "Waiting on server...", 300);
+          mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
+        }
       }
     }
 
-    if (limiter++ > 10098)
-      limiter = 0;
+    netTimer->reset();
   }
 
   return ret;
@@ -506,9 +500,10 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
       if (!server) {
         if ((server = netMgr->multiPlayerInit())) {
           serverStartPanel = mTrayMgr->createLabel(OgreBites::TL_TOP,
-              "ServerStartPanel", "Press (B) to start when ready.", 300);
+              "ServerStartPanel", "Waiting for clients...", 300);
           mTrayMgr->getTrayContainer(OgreBites::TL_BOTTOMRIGHT)->show();
           mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
+          netTimer->reset();
         } else {
           std::cout << "TileGame: Failed to start multiplayer game. Resuming"
               " single player mode." << std::endl;
@@ -516,6 +511,7 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
       } else {
         if (!connected) {
           mTrayMgr->destroyWidget("ServerStartPanel");
+          mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
           netMgr->stopServer(PROTOCOL_TCP);
           server = false;
           std::cout << "TileGame: Canceling multiplayer game. Resuming single"
@@ -548,8 +544,7 @@ bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id 
     Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
     Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
     Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
-    // std::cout << chargeShot << std::endl;
-    double force = chargeShot * 0.8f;
+    double force = chargeShot * 0.85f;
     chargeShot = 0;
 
     if(ballMgr->isGlobalBall())

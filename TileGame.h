@@ -375,6 +375,7 @@ protected:
     setLevel(1);
     drawPlayers();
 
+    std::cout << "Multiplayer started." << std::endl;
     multiplayerStarted = true;
   }
 
@@ -392,8 +393,6 @@ protected:
     memcpy((netMgr->udpServerData[0].input + 4), &single, pdSize);
     netMgr->udpServerData[0].updated = true;
     netMgr->messageClients(PROTOCOL_UDP);
-
-    std::cout << "Server sending " << single.host << std::endl;
 
     // Clients
     for (i = 0; i < playerData.size(); i++) {
@@ -417,8 +416,6 @@ protected:
     memcpy(netMgr->udpServerData[0].input, &UINT_ADDPL, tagSize);
     memcpy((netMgr->udpServerData[0].input + 4), &single, pdSize);
     netMgr->messageServer(PROTOCOL_UDP);
-
-    std::cout << "Client sending " << single.host << std::endl;
   }
 
   void simonSaysAnim() {
