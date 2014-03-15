@@ -68,6 +68,7 @@ struct ClientData {
   char input[128];                    //!< Target for automatic data pulls.
 };
 
+
 static const std::string STR_DENY("TG_SERVER_DENY");
 static const std::string STR_OPEN("TG_SERVER_OPEN");
 static const std::string STR_ACPT("TG_SERVER_JOIN");
@@ -126,8 +127,8 @@ public:
   /** @name Control Functions.                                      *////@{
   bool startServer();
   bool startClient();
-  bool scanForActivity();
-  bool pollForActivity(Uint32 timeout_ms = 5000);
+  int scanForActivity();
+  int pollForActivity(Uint32 timeout_ms = 5000);
   void messageClients(Protocol protocol, const char *buf = NULL, int len = 0);
   void messageServer(Protocol protocol, const char *buf = NULL, int len = 0);
   void messageClient(Protocol protocol, int clientDataIdx, char *buf, int len);
@@ -234,9 +235,9 @@ private:
   void watchSocket(UDPsocket sock);
   void unwatchSocket(TCPsocket sock);
   void unwatchSocket(UDPsocket sock);
-  bool checkSockets(Uint32 timeout_ms);
+  int checkSockets(Uint32 timeout_ms);
   void readTCPSocket(int clientIdx);
-  void readUDPSocket(int clientIdx);
+  int readUDPSocket(int clientIdx);
   //! @}
 
   /** @name Client Manipulation.                                     *////@{

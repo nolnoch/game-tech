@@ -32,8 +32,13 @@ const static int NUM_TILES_ROW = 5;                                 // number of
 const static int NUM_TILES_WALL = NUM_TILES_ROW * NUM_TILES_ROW;    // number of total tiles on a wall.
 const static int TILE_WIDTH = WALL_SIZE / NUM_TILES_ROW;
 
+int ticks = 0;
+
+const Ogre::Quaternion RING_FLIP(Ogre::Degree(90), Ogre::Vector3::UNIT_X);
+
 struct PlayerData {
   Uint32 host;
+  Ogre::Vector3 newDir;
   Ogre::Vector3 newPos;
   Ogre::Vector3 shotDir;
   double shotForce;
@@ -297,7 +302,8 @@ protected:
       ringNode = mSceneMgr->getRootSceneNode()->createChildSceneNode(playerName.str());
       ringEnt = mSceneMgr->createEntity("torus.mesh");
       ringNode->attachObject(ringEnt);
-      ringNode->rotate(Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3::UNIT_X));
+      ringNode->rotate(RING_FLIP);
+      ringNode->setDirection(playerData[i]->newDir);
       ringNode->setScale(100, 100, 100);
       ringNode->setPosition(playerData[i]->newPos);
 
@@ -308,14 +314,17 @@ protected:
 
   void movePlayers() {
     std::ostringstream playerName;
-    Ogre::Vector3 newPos;
+    Ogre::Vector3 oldPos, newPos, delta;
+    Ogre::SceneNode *node;
     int i;
 
     for (i = 0; i < nPlayers; i++) {
       // Update position.
       newPos = playerData[i]->newPos;
       playerName << playerData[i]->host;
-      mSceneMgr->getSceneNode(playerName.str())->setPosition(newPos);
+      node = mSceneMgr->getSceneNode(playerName.str());
+      node->setDirection(playerData[i]->newDir);
+      node->setPosition(newPos);
 
       // Did they launch a ball?
       if (playerData[i]->shotForce)
@@ -333,25 +342,26 @@ protected:
     // Self
     single.host = netMgr->getIPnbo();
     single.newPos = mCamera->getPosition();
+    single.newDir = mCamera->getDirection();
     single.shotForce = force;
     single.shotDir = dir;
-    memcpy(netMgr->udpServerData[0].input, &UINT_UPDPL, tagSize);
-    memcpy((netMgr->udpServerData[0].input + 4), &single, pdSize);
-    netMgr->udpServerData[0].updated = true;
-    netMgr->messageClients(PROTOCOL_UDP);
+    memcpy(netMgr->udpServerData[nPlayers].input, &UINT_UPDPL, tagSize);
+    memcpy((netMgr->udpServerData[nPlayers].input + 4), &single, pdSize);
+    netMgr->udpServerData[nPlayers].updated = true;
 
     // Clients
-    for (i = 0; i < playerData.size() && !force; i++) {
+    for (i = 0; i < playerData.size(); i++) {
       memcpy(netMgr->udpServerData[i].input, &UINT_UPDPL, tagSize);
       memcpy((netMgr->udpServerData[i].input + 4), playerData[i], pdSize);
       netMgr->udpServerData[i].updated = true;
     }
+
     netMgr->messageClients(PROTOCOL_UDP);
   }
 
   void updateServer(double force = 0, Ogre::Vector3 dir = Ogre::Vector3::ZERO) {
     PlayerData single;
-    int i, pdSize, tagSize;
+    int pdSize, tagSize;
 
     pdSize = sizeof(PlayerData);
     tagSize = sizeof(Uint32);
@@ -359,10 +369,12 @@ protected:
     // Self
     single.host = netMgr->getIPnbo();
     single.newPos = mCamera->getPosition();
+    single.newDir = mCamera->getDirection();
     single.shotForce = force;
     single.shotDir = dir;
     memcpy(netMgr->udpServerData[0].input, &UINT_UPDPL, tagSize);
     memcpy((netMgr->udpServerData[0].input + 4), &single, pdSize);
+    netMgr->udpServerData[0].updated = true;
     netMgr->messageServer(PROTOCOL_UDP);
   }
 
@@ -375,7 +387,6 @@ protected:
     setLevel(1);
     drawPlayers();
 
-    std::cout << "Multiplayer started." << std::endl;
     multiplayerStarted = true;
   }
 
@@ -389,10 +400,14 @@ protected:
     // Self
     single.host = netMgr->getIPnbo();
     single.newPos = mCamera->getPosition();
-    memcpy(netMgr->udpServerData[0].input, &UINT_ADDPL, tagSize);
-    memcpy((netMgr->udpServerData[0].input + 4), &single, pdSize);
-    netMgr->udpServerData[0].updated = true;
-    netMgr->messageClients(PROTOCOL_UDP);
+    single.newDir = mCamera->getDirection();
+    single.shotForce = 0;
+    single.shotDir = Ogre::Vector3::ZERO;
+    memcpy(netMgr->udpServerData[nPlayers].input, &UINT_ADDPL, tagSize);
+    memcpy((netMgr->udpServerData[nPlayers].input + 4), &single, pdSize);
+    netMgr->udpServerData[nPlayers].updated = true;
+
+    std::cout << single.newPos << std::endl;
 
     // Clients
     for (i = 0; i < playerData.size(); i++) {
@@ -400,6 +415,7 @@ protected:
       memcpy((netMgr->udpServerData[i].input + 4), playerData[i], pdSize);
       netMgr->udpServerData[i].updated = true;
     }
+
     netMgr->messageClients(PROTOCOL_UDP);
   }
 
@@ -413,9 +429,15 @@ protected:
     // Self
     single.host = netMgr->getIPnbo();
     single.newPos = mCamera->getPosition();
+    single.newDir = mCamera->getDirection();
+    single.shotForce = 0;
+    single.shotDir = Ogre::Vector3::ZERO;
     memcpy(netMgr->udpServerData[0].input, &UINT_ADDPL, tagSize);
     memcpy((netMgr->udpServerData[0].input + 4), &single, pdSize);
+    netMgr->udpServerData[0].updated = true;
     netMgr->messageServer(PROTOCOL_UDP);
+
+    std::cout << single.newPos << std::endl;
   }
 
   void simonSaysAnim() {
