@@ -1,5 +1,5 @@
 AACLOCAL_AMFLAGS= -I m4
-noinst_HEADERS= BaseGame.h TileGame.h Simulator.h TileSimulator.h BallManager.h CameraMan.h Ball.h SoundManager.h NetManager.h
+noinst_HEADERS= BaseGame.h TileGame.h Simulator.h TileSimulator.h BallManager.h CameraMan.h Ball.h SoundManager.h NetManager.h Helper.h
 
 bin_PROGRAMS= OgreApp
 OgreApp_CPPFLAGS= -I$(top_srcdir)

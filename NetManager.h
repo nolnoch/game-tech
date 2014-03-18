@@ -19,7 +19,7 @@
 #include <iostream>
 #include <SDL/SDL_net.h>
 
-
+#include "Helper.h"
 
 /* ****************************************************************************
  * Global Structures

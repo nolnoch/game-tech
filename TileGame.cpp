@@ -40,8 +40,17 @@ playersWaitingPanel(0),
 crosshairOverlay(0),
 boing(0),
 music(0),
-gong(0)
+gong(0),
+noteSequence(5),
+noteIndex(0)
 {
+
+  /*for(int i =0; i < 5; i++)
+  {
+    SoundFile f(0);
+    noteSequence.push_back(f);
+  }
+*/
   gameDone = animDone = isCharging = paused = connected = server = netActive =
       invitePending = inviteAccepted = multiplayerStarted = false;
   gameStart = true;
@@ -68,8 +77,9 @@ bool TileGame::configure() {
   bool ret = BaseGame::configure();
 
   // Networking //
+  
   netMgr = new NetManager();
-  netMgr->initNetManager();
+  netMgr->initNetManager(); // check return value?
   netMgr->addNetworkInfo(PROTOCOL_UDP);
   netActive = netMgr->startServer();
 
@@ -88,6 +98,12 @@ bool TileGame::configure() {
   boing = soundMgr->loadSound("hit.wav");
   gong = soundMgr->loadSound("gong.wav");
   music = soundMgr->loadMusic("ambient.wav");
+ // note1 = soundMgr->loadSound("note1.wav");
+  noteSequence[0] = soundMgr->loadSound("note5.wav");
+   noteSequence[1] = soundMgr->loadSound("note4.wav");
+    noteSequence[2] = soundMgr->loadSound("note3.wav");
+     noteSequence[3] = soundMgr->loadSound("note2.wav");
+      noteSequence[4] = soundMgr->loadSound("note1.wav");
 
   soundMgr->playMusic();
   soundMgr->setVolume(.25);
@@ -235,10 +251,18 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
     bool hit = sim->simulateStep(slowdownval);
 
     if (hit && !gameDone) {
+      
+           
+
       soundMgr->playSound(boing);
       score++;
 
       if (!tileEntities.empty()) {
+        // Play the corresponding sound of that tile.
+        if(tileEntities.size() <= noteSequence.size()) {
+          soundMgr->playSound(noteSequence[tileEntities.size() - 1]);
+        }
+        // update texture
         tileEntities.back()->setMaterialName("Examples/BumpyMetal");
         tileEntities.pop_back();
         tileSceneNodes.pop_back();

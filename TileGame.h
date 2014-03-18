@@ -93,6 +93,8 @@ protected:
   NetManager *netMgr;
 
   SoundFile boing, gong, music;
+  std::vector<SoundFile> noteSequence;
+  int noteIndex;
   bool paused, gameStart, gameDone, animDone, isCharging, connected, server,
   netActive, invitePending, inviteAccepted, multiplayerStarted;
   int score, shotsFired, currLevel, currTile, winTimer, tileCounter, chargeShot,
@@ -458,6 +460,9 @@ protected:
 
     if(currTile >= -1) {
       if(currTime > animStart && currTime <= animEnd) {
+          if(currTile < noteSequence.size() && currTile >= 0) {
+            soundMgr->playSound(noteSequence[currTile]);
+          }
         // Revert previous tile to original texture
         if(currTile + 1 < tileEntities.size() && currTile >= -1) {
           tileEntities[currTile + 1]->setMaterialName("Examples/Chrome");
@@ -493,6 +498,7 @@ protected:
           panelLight->setPosition(0, 0, 0);
           panelLight->setSpotlightFalloff(0);
           panelLight->setAttenuation(4000, 0.0, 0.0001, 0.0000005);
+        
         } else {
           mSceneMgr->destroyLight(panelLight);
           panelLight = NULL;
@@ -500,7 +506,7 @@ protected:
 
         // moves on to the next tile.
         currTile--;
-        // std::cout << "c: " << currTile << "\n";
+       //std::cout << "c: " << currTile << "\n";
       }
     }
     else if (!animDone) {

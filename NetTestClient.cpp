@@ -31,7 +31,11 @@ int main(int argc, char **argv) {
   //------------------------------------------------------------------
 
   if (netMgr->scanForActivity()) {
-    std::string invite = std::string(netMgr->udpServerData.output);
+    //compiler error, instead of invite it should be clientData
+    ClientData *cData;
+
+
+    std::string invite = std::string(netMgr->udpServerData.output); 
     if (std::string::npos != invite.find(STR_OPEN)) {
       std::string svrAddr = invite.substr(STR_OPEN.length());
 

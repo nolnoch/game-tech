@@ -70,6 +70,7 @@ bool NetManager::initNetManager() {
     printError(SDLNet_GetError());
     ret = false;
   } else {
+    // Initializes our ConnectionInfo, netServer, to defaults
     netServer.tcpSocketIdx = -1;
     netServer.udpSocketIdx = -1;
     netServer.udpChannel = -1;
@@ -134,7 +135,7 @@ bool NetManager::startServer() {
         "start a server?");
   }
 
-  netStatus |= NET_SERVER;
+  netStatus |= NET_SERVER; 
 
   if ((netProtocol & PROTOCOL_TCP) && !(netStatus & NET_TCP_OPEN)){
     if ((retTCP = openServer(PROTOCOL_TCP, netPort)))
@@ -630,7 +631,7 @@ Uint32 NetManager::getIPnbo() {
   bool found = false;
 
   if (!netLocalHost) {
-    count = SDLNet_GetLocalAddresses(myIPs, 3);
+ //   count = SDLNet_getLocalAddresses(myIPs, 3);
 
     for (i = 0; i < count && !found; i++) {
       host = myIPs[i].host;
