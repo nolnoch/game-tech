@@ -56,7 +56,7 @@ noteIndex(0)
   gameStart = true;
 
   mSpeed = score = shotsFired = tileCounter = winTimer = chargeShot =
-      slowdownval = currTile = nPlayers = 0;
+      slowdownval = currTile = nPlayers = ballsounddelay = 0;
   currLevel = 1;
 
   mTimer = OGRE_NEW Ogre::Timer();
@@ -315,6 +315,19 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
         Ogre::StringConverter::toString(nPlayers + 1));
   }
 
+  if(ballsounddelay > 0)
+      ballsounddelay--;
+  else
+  {
+    int numCollisions = ballMgr->getNumberBallCollisions();
+    if(numCollisions > 0)
+    {
+        std::cout << "colls: " << numCollisions << "\n";
+        soundMgr->playSound(boing);
+        ballsounddelay = 5;
+    }
+  }
+
   /* ***********************************************************************
    * Multiplayer Code
    */
@@ -549,6 +562,12 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
     currTile = tileEntities.size() - 1;
     timer.reset();
     animDone = false;
+  }
+  else if (arg.key == OIS::KC_K) {
+    soundMgr->lowerVolume();
+  }
+  else if (arg.key == OIS::KC_L) {
+    soundMgr->raiseVolume();
   }
 
   return BaseGame::keyPressed(arg);

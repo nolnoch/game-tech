@@ -97,12 +97,14 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
+
 ACLOCAL = ${SHELL} /v/filer4b/v38q001/aaronv92/cs354r/assgn/game-tech/missing --run aclocal-1.11
 AMTAR = $${TAR-tar}
 AR = ar
 AUTOCONF = ${SHELL} /v/filer4b/v38q001/aaronv92/cs354r/assgn/game-tech/missing --run autoconf
 AUTOHEADER = ${SHELL} /v/filer4b/v38q001/aaronv92/cs354r/assgn/game-tech/missing --run autoheader
 AUTOMAKE = ${SHELL} /v/filer4b/v38q001/aaronv92/cs354r/assgn/game-tech/missing --run automake-1.11
+
 AWK = gawk
 BULLET_CFLAGS = 
 BULLET_LIBS = 
@@ -141,7 +143,10 @@ LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LIPO = 
 LN_S = ln -s
 LTLIBOBJS = 
+
 MAKEINFO = ${SHELL} /v/filer4b/v38q001/aaronv92/cs354r/assgn/game-tech/missing --run makeinfo
+
+
 MANIFEST_TOOL = :
 MKDIR_P = /bin/mkdir -p
 NM = /usr/bin/nm -B
@@ -173,10 +178,12 @@ SET_MAKE =
 SHELL = /bin/bash
 STRIP = strip
 VERSION = 0.1
+
 abs_builddir = /v/filer4b/v38q001/aaronv92/cs354r/assgn/game-tech
 abs_srcdir = /v/filer4b/v38q001/aaronv92/cs354r/assgn/game-tech
 abs_top_builddir = /v/filer4b/v38q001/aaronv92/cs354r/assgn/game-tech
 abs_top_srcdir = /v/filer4b/v38q001/aaronv92/cs354r/assgn/game-tech
+
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_CXX = g++
@@ -208,7 +215,9 @@ host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
+
 install_sh = ${SHELL} /v/filer4b/v38q001/aaronv92/cs354r/assgn/game-tech/install-sh
+
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
