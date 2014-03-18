@@ -100,6 +100,7 @@ protected:
   nPlayers;
   double slowdownval;
   std::string invite;
+  int ballsounddelay;
 
 
   void shootBall(int x, int y, int z, double force) {
