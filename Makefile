@@ -60,33 +60,10 @@ am_OgreApp_OBJECTS = OgreApp-BaseGame.$(OBJEXT) \
 OgreApp_OBJECTS = $(am_OgreApp_OBJECTS)
 am__DEPENDENCIES_1 =
 OgreApp_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-<<<<<<< HEAD
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
-AM_V_lt = $(am__v_lt_$(V))
-am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
-am__v_lt_0 = --silent
-am__v_lt_1 = 
-OgreApp_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(OgreApp_CXXFLAGS) \
-	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-AM_V_P = $(am__v_P_$(V))
-am__v_P_ = $(am__v_P_$(AM_DEFAULT_VERBOSITY))
-am__v_P_0 = false
-am__v_P_1 = :
-AM_V_GEN = $(am__v_GEN_$(V))
-am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
-am__v_GEN_0 = @echo "  GEN     " $@;
-am__v_GEN_1 = 
-AM_V_at = $(am__v_at_$(V))
-am__v_at_ = $(am__v_at_$(AM_DEFAULT_VERBOSITY))
-am__v_at_0 = @
-am__v_at_1 = 
-=======
-	$(am__DEPENDENCIES_1)
 OgreApp_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(OgreApp_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
->>>>>>> 50111ade872744cda53709483b4dd4bf904ef8dd
 DEFAULT_INCLUDES = -I.
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -395,63 +372,33 @@ include ./$(DEPDIR)/OgreApp-TileSimulator.Po
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(LTCXXCOMPILE) -c -o $@ $<
 
-<<<<<<< HEAD
 OgreApp-BaseGame.o: BaseGame.cpp
-	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-BaseGame.o -MD -MP -MF $(DEPDIR)/OgreApp-BaseGame.Tpo -c -o OgreApp-BaseGame.o `test -f 'BaseGame.cpp' || echo '$(srcdir)/'`BaseGame.cpp
-	$(AM_V_at)$(am__mv) $(DEPDIR)/OgreApp-BaseGame.Tpo $(DEPDIR)/OgreApp-BaseGame.Po
-#	$(AM_V_CXX)source='BaseGame.cpp' object='OgreApp-BaseGame.o' libtool=no \
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-BaseGame.o -MD -MP -MF $(DEPDIR)/OgreApp-BaseGame.Tpo -c -o OgreApp-BaseGame.o `test -f 'BaseGame.cpp' || echo '$(srcdir)/'`BaseGame.cpp
+	$(am__mv) $(DEPDIR)/OgreApp-BaseGame.Tpo $(DEPDIR)/OgreApp-BaseGame.Po
+#	source='BaseGame.cpp' object='OgreApp-BaseGame.o' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-BaseGame.o `test -f 'BaseGame.cpp' || echo '$(srcdir)/'`BaseGame.cpp
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-BaseGame.o `test -f 'BaseGame.cpp' || echo '$(srcdir)/'`BaseGame.cpp
 
 OgreApp-BaseGame.obj: BaseGame.cpp
-	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-BaseGame.obj -MD -MP -MF $(DEPDIR)/OgreApp-BaseGame.Tpo -c -o OgreApp-BaseGame.obj `if test -f 'BaseGame.cpp'; then $(CYGPATH_W) 'BaseGame.cpp'; else $(CYGPATH_W) '$(srcdir)/BaseGame.cpp'; fi`
-	$(AM_V_at)$(am__mv) $(DEPDIR)/OgreApp-BaseGame.Tpo $(DEPDIR)/OgreApp-BaseGame.Po
-#	$(AM_V_CXX)source='BaseGame.cpp' object='OgreApp-BaseGame.obj' libtool=no \
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-BaseGame.obj -MD -MP -MF $(DEPDIR)/OgreApp-BaseGame.Tpo -c -o OgreApp-BaseGame.obj `if test -f 'BaseGame.cpp'; then $(CYGPATH_W) 'BaseGame.cpp'; else $(CYGPATH_W) '$(srcdir)/BaseGame.cpp'; fi`
+	$(am__mv) $(DEPDIR)/OgreApp-BaseGame.Tpo $(DEPDIR)/OgreApp-BaseGame.Po
+#	source='BaseGame.cpp' object='OgreApp-BaseGame.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-BaseGame.obj `if test -f 'BaseGame.cpp'; then $(CYGPATH_W) 'BaseGame.cpp'; else $(CYGPATH_W) '$(srcdir)/BaseGame.cpp'; fi`
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-BaseGame.obj `if test -f 'BaseGame.cpp'; then $(CYGPATH_W) 'BaseGame.cpp'; else $(CYGPATH_W) '$(srcdir)/BaseGame.cpp'; fi`
 
 OgreApp-TileGame.o: TileGame.cpp
-	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-TileGame.o -MD -MP -MF $(DEPDIR)/OgreApp-TileGame.Tpo -c -o OgreApp-TileGame.o `test -f 'TileGame.cpp' || echo '$(srcdir)/'`TileGame.cpp
-	$(AM_V_at)$(am__mv) $(DEPDIR)/OgreApp-TileGame.Tpo $(DEPDIR)/OgreApp-TileGame.Po
-#	$(AM_V_CXX)source='TileGame.cpp' object='OgreApp-TileGame.o' libtool=no \
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-TileGame.o -MD -MP -MF $(DEPDIR)/OgreApp-TileGame.Tpo -c -o OgreApp-TileGame.o `test -f 'TileGame.cpp' || echo '$(srcdir)/'`TileGame.cpp
+	$(am__mv) $(DEPDIR)/OgreApp-TileGame.Tpo $(DEPDIR)/OgreApp-TileGame.Po
+#	source='TileGame.cpp' object='OgreApp-TileGame.o' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-TileGame.o `test -f 'TileGame.cpp' || echo '$(srcdir)/'`TileGame.cpp
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-TileGame.o `test -f 'TileGame.cpp' || echo '$(srcdir)/'`TileGame.cpp
 
 OgreApp-TileGame.obj: TileGame.cpp
-	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-TileGame.obj -MD -MP -MF $(DEPDIR)/OgreApp-TileGame.Tpo -c -o OgreApp-TileGame.obj `if test -f 'TileGame.cpp'; then $(CYGPATH_W) 'TileGame.cpp'; else $(CYGPATH_W) '$(srcdir)/TileGame.cpp'; fi`
-	$(AM_V_at)$(am__mv) $(DEPDIR)/OgreApp-TileGame.Tpo $(DEPDIR)/OgreApp-TileGame.Po
-#	$(AM_V_CXX)source='TileGame.cpp' object='OgreApp-TileGame.obj' libtool=no \
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-TileGame.obj -MD -MP -MF $(DEPDIR)/OgreApp-TileGame.Tpo -c -o OgreApp-TileGame.obj `if test -f 'TileGame.cpp'; then $(CYGPATH_W) 'TileGame.cpp'; else $(CYGPATH_W) '$(srcdir)/TileGame.cpp'; fi`
+	$(am__mv) $(DEPDIR)/OgreApp-TileGame.Tpo $(DEPDIR)/OgreApp-TileGame.Po
+#	source='TileGame.cpp' object='OgreApp-TileGame.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-TileGame.obj `if test -f 'TileGame.cpp'; then $(CYGPATH_W) 'TileGame.cpp'; else $(CYGPATH_W) '$(srcdir)/TileGame.cpp'; fi`
-=======
-OgreApp-BaseApplication.o: BaseApplication.cpp
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-BaseApplication.o -MD -MP -MF $(DEPDIR)/OgreApp-BaseApplication.Tpo -c -o OgreApp-BaseApplication.o `test -f 'BaseApplication.cpp' || echo '$(srcdir)/'`BaseApplication.cpp
-	$(am__mv) $(DEPDIR)/OgreApp-BaseApplication.Tpo $(DEPDIR)/OgreApp-BaseApplication.Po
-#	source='BaseApplication.cpp' object='OgreApp-BaseApplication.o' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-BaseApplication.o `test -f 'BaseApplication.cpp' || echo '$(srcdir)/'`BaseApplication.cpp
-
-OgreApp-BaseApplication.obj: BaseApplication.cpp
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-BaseApplication.obj -MD -MP -MF $(DEPDIR)/OgreApp-BaseApplication.Tpo -c -o OgreApp-BaseApplication.obj `if test -f 'BaseApplication.cpp'; then $(CYGPATH_W) 'BaseApplication.cpp'; else $(CYGPATH_W) '$(srcdir)/BaseApplication.cpp'; fi`
-	$(am__mv) $(DEPDIR)/OgreApp-BaseApplication.Tpo $(DEPDIR)/OgreApp-BaseApplication.Po
-#	source='BaseApplication.cpp' object='OgreApp-BaseApplication.obj' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-BaseApplication.obj `if test -f 'BaseApplication.cpp'; then $(CYGPATH_W) 'BaseApplication.cpp'; else $(CYGPATH_W) '$(srcdir)/BaseApplication.cpp'; fi`
-
-OgreApp-TutorialApplication.o: TutorialApplication.cpp
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-TutorialApplication.o -MD -MP -MF $(DEPDIR)/OgreApp-TutorialApplication.Tpo -c -o OgreApp-TutorialApplication.o `test -f 'TutorialApplication.cpp' || echo '$(srcdir)/'`TutorialApplication.cpp
-	$(am__mv) $(DEPDIR)/OgreApp-TutorialApplication.Tpo $(DEPDIR)/OgreApp-TutorialApplication.Po
-#	source='TutorialApplication.cpp' object='OgreApp-TutorialApplication.o' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-TutorialApplication.o `test -f 'TutorialApplication.cpp' || echo '$(srcdir)/'`TutorialApplication.cpp
-
-OgreApp-TutorialApplication.obj: TutorialApplication.cpp
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-TutorialApplication.obj -MD -MP -MF $(DEPDIR)/OgreApp-TutorialApplication.Tpo -c -o OgreApp-TutorialApplication.obj `if test -f 'TutorialApplication.cpp'; then $(CYGPATH_W) 'TutorialApplication.cpp'; else $(CYGPATH_W) '$(srcdir)/TutorialApplication.cpp'; fi`
-	$(am__mv) $(DEPDIR)/OgreApp-TutorialApplication.Tpo $(DEPDIR)/OgreApp-TutorialApplication.Po
-#	source='TutorialApplication.cpp' object='OgreApp-TutorialApplication.obj' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-TutorialApplication.obj `if test -f 'TutorialApplication.cpp'; then $(CYGPATH_W) 'TutorialApplication.cpp'; else $(CYGPATH_W) '$(srcdir)/TutorialApplication.cpp'; fi`
->>>>>>> 50111ade872744cda53709483b4dd4bf904ef8dd
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-TileGame.obj `if test -f 'TileGame.cpp'; then $(CYGPATH_W) 'TileGame.cpp'; else $(CYGPATH_W) '$(srcdir)/TileGame.cpp'; fi`
 
 OgreApp-Simulator.o: Simulator.cpp
 	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-Simulator.o -MD -MP -MF $(DEPDIR)/OgreApp-Simulator.Tpo -c -o OgreApp-Simulator.o `test -f 'Simulator.cpp' || echo '$(srcdir)/'`Simulator.cpp
@@ -496,32 +443,32 @@ OgreApp-BallManager.obj: BallManager.cpp
 #	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-BallManager.obj `if test -f 'BallManager.cpp'; then $(CYGPATH_W) 'BallManager.cpp'; else $(CYGPATH_W) '$(srcdir)/BallManager.cpp'; fi`
 
 OgreApp-SoundManager.o: SoundManager.cpp
-	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-SoundManager.o -MD -MP -MF $(DEPDIR)/OgreApp-SoundManager.Tpo -c -o OgreApp-SoundManager.o `test -f 'SoundManager.cpp' || echo '$(srcdir)/'`SoundManager.cpp
-	$(AM_V_at)$(am__mv) $(DEPDIR)/OgreApp-SoundManager.Tpo $(DEPDIR)/OgreApp-SoundManager.Po
-#	$(AM_V_CXX)source='SoundManager.cpp' object='OgreApp-SoundManager.o' libtool=no \
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-SoundManager.o -MD -MP -MF $(DEPDIR)/OgreApp-SoundManager.Tpo -c -o OgreApp-SoundManager.o `test -f 'SoundManager.cpp' || echo '$(srcdir)/'`SoundManager.cpp
+	$(am__mv) $(DEPDIR)/OgreApp-SoundManager.Tpo $(DEPDIR)/OgreApp-SoundManager.Po
+#	source='SoundManager.cpp' object='OgreApp-SoundManager.o' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-SoundManager.o `test -f 'SoundManager.cpp' || echo '$(srcdir)/'`SoundManager.cpp
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-SoundManager.o `test -f 'SoundManager.cpp' || echo '$(srcdir)/'`SoundManager.cpp
 
 OgreApp-SoundManager.obj: SoundManager.cpp
-	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-SoundManager.obj -MD -MP -MF $(DEPDIR)/OgreApp-SoundManager.Tpo -c -o OgreApp-SoundManager.obj `if test -f 'SoundManager.cpp'; then $(CYGPATH_W) 'SoundManager.cpp'; else $(CYGPATH_W) '$(srcdir)/SoundManager.cpp'; fi`
-	$(AM_V_at)$(am__mv) $(DEPDIR)/OgreApp-SoundManager.Tpo $(DEPDIR)/OgreApp-SoundManager.Po
-#	$(AM_V_CXX)source='SoundManager.cpp' object='OgreApp-SoundManager.obj' libtool=no \
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-SoundManager.obj -MD -MP -MF $(DEPDIR)/OgreApp-SoundManager.Tpo -c -o OgreApp-SoundManager.obj `if test -f 'SoundManager.cpp'; then $(CYGPATH_W) 'SoundManager.cpp'; else $(CYGPATH_W) '$(srcdir)/SoundManager.cpp'; fi`
+	$(am__mv) $(DEPDIR)/OgreApp-SoundManager.Tpo $(DEPDIR)/OgreApp-SoundManager.Po
+#	source='SoundManager.cpp' object='OgreApp-SoundManager.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-SoundManager.obj `if test -f 'SoundManager.cpp'; then $(CYGPATH_W) 'SoundManager.cpp'; else $(CYGPATH_W) '$(srcdir)/SoundManager.cpp'; fi`
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-SoundManager.obj `if test -f 'SoundManager.cpp'; then $(CYGPATH_W) 'SoundManager.cpp'; else $(CYGPATH_W) '$(srcdir)/SoundManager.cpp'; fi`
 
 OgreApp-NetManager.o: NetManager.cpp
-	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-NetManager.o -MD -MP -MF $(DEPDIR)/OgreApp-NetManager.Tpo -c -o OgreApp-NetManager.o `test -f 'NetManager.cpp' || echo '$(srcdir)/'`NetManager.cpp
-	$(AM_V_at)$(am__mv) $(DEPDIR)/OgreApp-NetManager.Tpo $(DEPDIR)/OgreApp-NetManager.Po
-#	$(AM_V_CXX)source='NetManager.cpp' object='OgreApp-NetManager.o' libtool=no \
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-NetManager.o -MD -MP -MF $(DEPDIR)/OgreApp-NetManager.Tpo -c -o OgreApp-NetManager.o `test -f 'NetManager.cpp' || echo '$(srcdir)/'`NetManager.cpp
+	$(am__mv) $(DEPDIR)/OgreApp-NetManager.Tpo $(DEPDIR)/OgreApp-NetManager.Po
+#	source='NetManager.cpp' object='OgreApp-NetManager.o' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-NetManager.o `test -f 'NetManager.cpp' || echo '$(srcdir)/'`NetManager.cpp
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-NetManager.o `test -f 'NetManager.cpp' || echo '$(srcdir)/'`NetManager.cpp
 
 OgreApp-NetManager.obj: NetManager.cpp
-	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-NetManager.obj -MD -MP -MF $(DEPDIR)/OgreApp-NetManager.Tpo -c -o OgreApp-NetManager.obj `if test -f 'NetManager.cpp'; then $(CYGPATH_W) 'NetManager.cpp'; else $(CYGPATH_W) '$(srcdir)/NetManager.cpp'; fi`
-	$(AM_V_at)$(am__mv) $(DEPDIR)/OgreApp-NetManager.Tpo $(DEPDIR)/OgreApp-NetManager.Po
-#	$(AM_V_CXX)source='NetManager.cpp' object='OgreApp-NetManager.obj' libtool=no \
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -MT OgreApp-NetManager.obj -MD -MP -MF $(DEPDIR)/OgreApp-NetManager.Tpo -c -o OgreApp-NetManager.obj `if test -f 'NetManager.cpp'; then $(CYGPATH_W) 'NetManager.cpp'; else $(CYGPATH_W) '$(srcdir)/NetManager.cpp'; fi`
+	$(am__mv) $(DEPDIR)/OgreApp-NetManager.Tpo $(DEPDIR)/OgreApp-NetManager.Po
+#	source='NetManager.cpp' object='OgreApp-NetManager.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-NetManager.obj `if test -f 'NetManager.cpp'; then $(CYGPATH_W) 'NetManager.cpp'; else $(CYGPATH_W) '$(srcdir)/NetManager.cpp'; fi`
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OgreApp_CPPFLAGS) $(CPPFLAGS) $(OgreApp_CXXFLAGS) $(CXXFLAGS) -c -o OgreApp-NetManager.obj `if test -f 'NetManager.cpp'; then $(CYGPATH_W) 'NetManager.cpp'; else $(CYGPATH_W) '$(srcdir)/NetManager.cpp'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

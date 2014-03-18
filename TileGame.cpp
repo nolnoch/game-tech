@@ -526,6 +526,12 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
     timer.reset();
     animDone = false;
   }
+  else if (arg.key == OIS::KC_K) {
+    soundMgr->lowerVolume();
+  }
+  else if (arg.key == OIS::KC_L) {
+    soundMgr->raiseVolume();
+  }
 
   return BaseGame::keyPressed(arg);
 }

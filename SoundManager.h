@@ -27,6 +27,8 @@ public:
   int loadSound(const char *name);
   int getVolume();
   void setVolume(double vol);
+  void raiseVolume();
+  void lowerVolume();
   void playMusic();
   void playSound(int chunk);
   void pauseMusic();

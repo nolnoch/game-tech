@@ -630,7 +630,7 @@ Uint32 NetManager::getIPnbo() {
   bool found = false;
 
   if (!netLocalHost) {
-    count = SDLNet_GetLocalAddresses(myIPs, 3);
+    //count = SDLNet_GetLocalAddresses(myIPs, 3);
 
     for (i = 0; i < count && !found; i++) {
       host = myIPs[i].host;
