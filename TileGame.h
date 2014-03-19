@@ -94,6 +94,7 @@ protected:
   NetManager *netMgr;
 
   SoundFile boing, gong, music;
+  SoundFile chirp;
   std::vector<SoundFile> noteSequence;
   int noteIndex;
   bool paused, gameStart, gameDone, animDone, isCharging, connected, server,

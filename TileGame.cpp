@@ -51,6 +51,7 @@ noteIndex(0)
     noteSequence.push_back(f);
   }
 */
+  chirp = 0;
   gameDone = animDone = isCharging = paused = connected = server = netActive =
       invitePending = inviteAccepted = multiplayerStarted = false;
   gameStart = true;
@@ -98,12 +99,14 @@ bool TileGame::configure() {
   boing = soundMgr->loadSound("hit.wav");
   gong = soundMgr->loadSound("gong.wav");
   music = soundMgr->loadMusic("ambient.wav");
- // note1 = soundMgr->loadSound("note1.wav");
+  
   noteSequence[0] = soundMgr->loadSound("note5.wav");
    noteSequence[1] = soundMgr->loadSound("note4.wav");
     noteSequence[2] = soundMgr->loadSound("note3.wav");
      noteSequence[3] = soundMgr->loadSound("note2.wav");
       noteSequence[4] = soundMgr->loadSound("note1.wav");
+
+  chirp = soundMgr->loadSound("chirp.wav");
 
   soundMgr->playMusic();
   soundMgr->setVolume(.25);
@@ -568,6 +571,9 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
   }
   else if (arg.key == OIS::KC_L) {
     soundMgr->raiseVolume();
+  }
+  else if(arg.key == OIS::KC_T) {
+    soundMgr->playSound(chirp, mCamera->getPosition(), Ogre::Vector3(0,0,0));
   }
 
   return BaseGame::keyPressed(arg);

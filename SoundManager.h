@@ -13,6 +13,7 @@
 #include <iostream>
 #include <SDL/SDL.h>
 #include <SDL/SDL_mixer.h>
+ #include "BaseGame.h"
 
 
 typedef int SoundFile;
@@ -31,6 +32,7 @@ public:
   void lowerVolume();
   void playMusic();
   void playSound(int chunk);
+  void playSound(int chunk, Ogre::Vector3 soundPosition, Ogre::Vector3 camPosition);
   void pauseMusic();
   void mute();
   void unmute();

@@ -137,6 +137,12 @@ void SoundManager::playSound(int chunkIdx) {
     Mix_PlayChannel(-1, chunks[chunkIdx], 0);
 }
 
+
+void SoundManager::playSound(int chunk, Ogre::Vector3 sound, Ogre::Vector3 camera) {
+
+}
+
+
 void SoundManager::pauseMusic() {
   if (!initialized || !musicPlaying) {
     std::cout << "SoundManager: No music playing." << std::endl;
