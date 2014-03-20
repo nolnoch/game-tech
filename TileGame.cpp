@@ -498,6 +498,7 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
     if (invitePending) {
       inviteAccepted = true;
       invitePending = false;
+      ticks = 0;
     }
   }
   else if (arg.key == OIS::KC_N) {

@@ -863,6 +863,7 @@ bool NetManager::openUDPSocket(Uint16 port) {
 
   if (!udpSock) {
     printError("SDL_net: Failed to open UDP socket!");
+    printError(SDLNet_GetError());
     ret = false;
   } else {
     udpSockets.push_back(udpSock);
