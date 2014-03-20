@@ -325,6 +325,7 @@ protected:
   void movePlayers() {
     std::ostringstream playerName;
     Ogre::Vector3 oldPos, newPos, drawPos;
+    Ogre::Quaternion newDir, oldDir, drawDir;
     Ogre::Vector3 velocity;
     Ogre::SceneNode *node;
     int i;
@@ -336,13 +337,16 @@ protected:
       double delta = playerOldData[i]->delta;
       playerOldData[i]->delta += 1;
       drawPos = newPos;
-      drawPos += playerData[i]->velocity * (delta / (60.0 * SWEEP_MS / 1000.0) );
-      
+      drawPos += playerData[i]->velocity * (delta) / 60.0;
+
+      oldDir = playerOldData[i]->oldDir;
+      newDir = playerData[i]->newDir;
+      drawDir = newDir + (newDir - oldDir) * (delta / 4.0);
 
       playerName << playerData[i]->host;
       node = mSceneMgr->getSceneNode(playerName.str());
 
-      node->setOrientation(playerData[i]->newDir);
+      node->setOrientation(drawDir);
       node->pitch(Ogre::Degree(90));
       node->setPosition(drawPos);
       //node->translate(delta);
