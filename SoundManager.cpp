@@ -8,9 +8,9 @@
 #include "SoundManager.h"
 
 std::vector<Sound> SoundManager::activeSounds(0);
-void channelEnd(int);
+void channelDoneWrapper(int);
 // Registers the callback
-void channelEnd(int channel) {
+void channelDoneWrapper(int channel) {
   std::cout << " callback! " << std::endl;
   SoundManager manager;
   manager.channelDone(channel);
@@ -42,11 +42,13 @@ SoundManager::~SoundManager() {
   chunks.clear();
 }
 
+// Don't call any sdl methods while in a callback
 void SoundManager::channelDone(int channel) {
   for(int i = 0; i < activeSounds.size(); i++) {
     Sound *s = &(activeSounds[i]);
     if(s->channel == channel) {
       std::cout << " channel " << channel << " array size " << activeSounds.size() <<  std::endl;
+      s->active = false;
     }
   }
 }
@@ -168,10 +170,8 @@ void SoundManager::playSound(int chunkIdx, Ogre::Vector3 sound, Ogre::Vector3 ca
     return;
   }
 
-
-
   if (sounding) {
-    Mix_ChannelFinished(channelEnd);
+    Mix_ChannelFinished(channelDoneWrapper);
     int channel = Mix_PlayChannel(-1, chunks[chunkIdx], 0);
     Ogre::Real distance = sound.distance(camera);
     if(distance > 1500)
@@ -185,6 +185,7 @@ void SoundManager::playSound(int chunkIdx, Ogre::Vector3 sound, Ogre::Vector3 ca
     s.chunk = chunks[chunkIdx];
     s.distance = dist;
     s.channel = channel;
+    s.active = true;
     activeSounds.push_back(s);
     // set the position of this sound to be at this angle and distance.
     Mix_SetPosition(channel, 0, dist);
@@ -207,7 +208,6 @@ void SoundManager::pauseMusic() {
 
 void SoundManager::mute() {
   sounding = false;
-
   if (initialized)
     pauseMusic();
 }
@@ -223,15 +223,34 @@ void SoundManager::toggleSound() {
   sounding ? mute() : unmute();
 }
 
-void SoundManager::updateSounds(Ogre::Vector3 camPosition) {
+
+void SoundManager::updateSounds(Ogre::Vector3 camPosition, Ogre::Vector3 camDirection) {
+
+  // Remove any sounds from our array that might not be active.
+  for(int i = 0; i < activeSounds.size(); i++) {
+    Sound *s = &(activeSounds[i]);
+    if(s->active == false) {
+      activeSounds.erase(activeSounds.begin() + i);
+    }
+  }
+
   for(int i = 0; i < activeSounds.size(); i++) {
     Sound *s = &(activeSounds[i]);
     Ogre::Real distance = camPosition.distance(s->soundPosition); //get the distance between sound and camera
     if(distance > 1500)
       distance = 1500;
-    s->distance = distance;
-    int dist = distance/1500 * 255; //1500 should be the max range.
-    Mix_SetPosition(s->channel, 0, dist);
+    int dist = 255 - distance/1500 * 255; //1500 should be the max range.
+    s->distance = dist;
+    // std::cout << " updating channel " << s->channel << "  volume " << dist << " distance " << distance << std::endl;
+    
+    // to figure out the angle, get the angle between the vector pointing forwards from the camera,
+    // and the vector that points to the sound source.
+    Ogre::Vector3 soundDir = s->soundPosition - camPosition;
+    Ogre::Quaternion q = camDirection.getRotationTo(soundDir);
+    Ogre::Radian radians = q.getYaw();
+    int degrees = radians.valueDegrees();
+    std::cout << " updating channel " << s->channel << " degrees " << degrees << std::endl;
+    Mix_SetPosition(s->channel, degrees, dist);
   }
 }
 

@@ -24,6 +24,7 @@ typedef struct {
    Mix_Chunk * chunk;
    int distance; // this is the volume, which is based on the distance it is from a vector
    int channel; // channel this sound is being played at.
+   bool active;
 } Sound;
 
 class SoundManager {
@@ -47,7 +48,7 @@ public:
   void mute();
   void unmute();
   void toggleSound();
-  void updateSounds(Ogre::Vector3 camPosition);
+  void updateSounds(Ogre::Vector3 camPosition, Ogre::Vector3 camDirection);
   void channelDone(int channel);
 private:
   bool sounding, initialized, musicPlaying;
