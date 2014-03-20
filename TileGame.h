@@ -478,7 +478,10 @@ protected:
     if(currTile >= -1) {
       if(currTime > animStart && currTime <= animEnd) {
           if(currTile < noteSequence.size() && currTile >= 0) {
-            soundMgr->playSound(noteSequence[currTile]);
+            //soundMgr->playSound(noteSequence[currTile]);
+
+            soundMgr->playSound(noteSequence[currTile], tileEntities.back()->getParentNode()->getPosition(), mCamera->getPosition());
+
           }
         // Revert previous tile to original texture
         if(currTile + 1 < tileEntities.size() && currTile >= -1) {
