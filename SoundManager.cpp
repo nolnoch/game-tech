@@ -7,6 +7,15 @@
 
 #include "SoundManager.h"
 
+std::vector<Sound> SoundManager::activeSounds(0);
+void channelEnd(int);
+// Registers the callback
+void channelEnd(int channel) {
+  std::cout << " callback! " << std::endl;
+  SoundManager manager;
+  manager.channelDone(channel);
+}
+
 SoundManager::SoundManager():
 sounding(true),
 initialized(false),
@@ -15,16 +24,31 @@ music(0)
 {
 }
 
+
+
+
 SoundManager::~SoundManager() {
   mute();
 
+
   Mix_FreeMusic(music);
+    // Register a callback for when a sound stops playing.
+
 
   std::vector<Mix_Chunk *>::iterator it;
   for (it = chunks.begin(); it != chunks.end(); it++) {
     Mix_FreeChunk(*it);
   }
   chunks.clear();
+}
+
+void SoundManager::channelDone(int channel) {
+  for(int i = 0; i < activeSounds.size(); i++) {
+    Sound *s = &(activeSounds[i]);
+    if(s->channel == channel) {
+      std::cout << " channel " << channel << " array size " << activeSounds.size() <<  std::endl;
+    }
+  }
 }
 
 bool SoundManager::initSoundManager() {
@@ -138,9 +162,36 @@ void SoundManager::playSound(int chunkIdx) {
 }
 
 
-void SoundManager::playSound(int chunk, Ogre::Vector3 sound, Ogre::Vector3 camera) {
+void SoundManager::playSound(int chunkIdx, Ogre::Vector3 sound, Ogre::Vector3 camera) {
+  if (!initialized) {
+    std::cout << "SoundManager: Manager not initialized." << std::endl;
+    return;
+  }
 
+
+
+  if (sounding) {
+    Mix_ChannelFinished(channelEnd);
+    int channel = Mix_PlayChannel(-1, chunks[chunkIdx], 0);
+    Ogre::Real distance = sound.distance(camera);
+    if(distance > 1500)
+      distance = 1500;
+    int dist = distance/1500 * 255; //10000 should be the max range.
+    std::cout << "Distance " << distance << " " << dist << " channel " << channel <<  std::endl;
+
+    // put this sound in our list of active sounds.
+    Sound s;
+    s.soundPosition = sound;
+    s.chunk = chunks[chunkIdx];
+    s.distance = dist;
+    s.channel = channel;
+    activeSounds.push_back(s);
+    // set the position of this sound to be at this angle and distance.
+    Mix_SetPosition(channel, 0, dist);
+  }
 }
+
+
 
 
 void SoundManager::pauseMusic() {
@@ -172,5 +223,25 @@ void SoundManager::toggleSound() {
   sounding ? mute() : unmute();
 }
 
+void SoundManager::updateSounds(Ogre::Vector3 camPosition) {
+  for(int i = 0; i < activeSounds.size(); i++) {
+    Sound *s = &(activeSounds[i]);
+    Ogre::Real distance = camPosition.distance(s->soundPosition); //get the distance between sound and camera
+    if(distance > 1500)
+      distance = 1500;
+    s->distance = distance;
+    int dist = distance/1500 * 255; //1500 should be the max range.
+    Mix_SetPosition(s->channel, 0, dist);
+  }
+}
 
 
+
+
+
+/*
+0 = directly in front.
+90 = directly to the right.
+180 = directly behind.
+270 = directly to the left.
+*/

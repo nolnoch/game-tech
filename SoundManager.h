@@ -16,12 +16,22 @@
  #include "BaseGame.h"
 
 
+
 typedef int SoundFile;
+
+typedef struct {
+   Ogre::Vector3 soundPosition;
+   Mix_Chunk * chunk;
+   int distance; // this is the volume, which is based on the distance it is from a vector
+   int channel; // channel this sound is being played at.
+} Sound;
 
 class SoundManager {
 public:
   SoundManager();
   virtual ~SoundManager();
+
+
 
   bool initSoundManager();
   bool loadMusic(const char *name);
@@ -37,11 +47,16 @@ public:
   void mute();
   void unmute();
   void toggleSound();
-
+  void updateSounds(Ogre::Vector3 camPosition);
+  void channelDone(int channel);
 private:
   bool sounding, initialized, musicPlaying;
   Mix_Music *music;
   std::vector<Mix_Chunk *> chunks;
+  static std::vector<Sound> activeSounds;
 };
+
+
+
 
 #endif /* SOUNDMANAGER_H_ */

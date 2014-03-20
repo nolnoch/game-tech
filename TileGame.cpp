@@ -573,7 +573,7 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
     soundMgr->raiseVolume();
   }
   else if(arg.key == OIS::KC_T) {
-    soundMgr->playSound(chirp, mCamera->getPosition(), Ogre::Vector3(0,0,0));
+    soundMgr->playSound(boing, mCamera->getPosition(), Ogre::Vector3(0,0,0));
   }
 
   return BaseGame::keyPressed(arg);
