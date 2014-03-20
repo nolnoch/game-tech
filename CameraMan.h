@@ -92,4 +92,9 @@ class CameraMan : public OgreBites::SdkCameraMan
         else if (evt.key == OIS::KC_LSHIFT) mGoingDown = false;
         else if (evt.key == OIS::KC_LCONTROL) mFastMove = false;
     }
+
+    Ogre::Vector3 getVelocity()
+    {
+        return mVelocity;
+    }
 };

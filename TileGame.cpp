@@ -229,6 +229,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
   bool ret = BaseGame::frameRenderingQueued(evt);
   int i, j;
 
+
   if (paused)
     slowdownval += 1/1800.f;
   else {
@@ -307,11 +308,15 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
   /* ***********************************************************************
    * Multiplayer Code
    */
-  int sweep_ms = 200;
-  int broad_ms = 8000;
-  int broad_ticks = (broad_ms / sweep_ms);
+  int broad_ticks = (BROAD_MS / SWEEP_MS);
 
-  if (netActive && (netTimer->getMilliseconds() > sweep_ms)) {
+  if(multiplayerStarted)
+  {
+      // Update players' positions locally.
+      movePlayers();
+  }
+
+  if (netActive && (netTimer->getMilliseconds() > SWEEP_MS)) {
     std::string cmd, cmdArgs;
     std::ostringstream test;
     Uint32 *data;
@@ -350,12 +355,16 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
                 memcpy(newPlayer, ++data, sizeof(PlayerData));
                 newOldPlayer->oldPos = newPlayer->newPos;
                 newOldPlayer->oldDir = newPlayer->newDir;
+                newOldPlayer->delta = 0;
                 playerData.push_back(newPlayer);
                 playerOldData.push_back(newOldPlayer);
                 nPlayers = playerData.size();
               } else if ((data[0] == UINT_UPDPL) && (data[1] != netMgr->getIPnbo())) {
                 for (j = 0; j < nPlayers; j++) {
                   if (data[1] == playerData[j]->host) {
+                    playerOldData[j]->oldPos = playerData[j]->newPos;
+                    playerOldData[j]->oldDir = playerData[j]->newDir;
+                    playerOldData[j]->delta = 0;
                     memcpy(playerData[j], ++data, sizeof(PlayerData));
                   }
                 }
@@ -394,6 +403,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
                 memcpy(player, ++data, sizeof(PlayerData));
                 playerold->oldPos = player->newPos;
                 playerold->oldDir = player->newDir;
+                playerold->delta = 0;
                 playerData.push_back(player);
                 playerOldData.push_back(playerold);
                 notifyPlayers();
@@ -412,6 +422,10 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
               if ((data[0] == UINT_UPDPL) && (data[1] != netMgr->getIPnbo())) {
                 for (j = 0; j < nPlayers; j++) {
                   if (data[1] == playerData[j]->host) {
+                    playerOldData[j]->oldPos = playerData[j]->newPos;
+                    playerOldData[j]->oldDir = playerData[j]->newDir;
+                    std::cout << playerOldData[j]->delta << "\n";
+                    playerOldData[j]->delta = 0;
                     memcpy(playerData[j], ++data, sizeof(PlayerData));
                   }
                 }
@@ -442,8 +456,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
         updateServer();
       }
 
-      // Update players' positions locally.
-      movePlayers();
+
 
     } else {                               /* Not yet in a multiplayer game. */
       // Server will broadcast game invitation every 8 seconds until launch.
