@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
   //------------------------------------------------------------------
 
   if (netMgr->scanForActivity()) {
-    std::string invite = std::string(netMgr->udpServerData.output);
+    std::string invite = std::string(netMgr->udpServerData[0].output);
     if (std::string::npos != invite.find(STR_OPEN)) {
       std::string svrAddr = invite.substr(STR_OPEN.length());
 
