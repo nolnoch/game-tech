@@ -346,8 +346,12 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 
               if ((data[0] == UINT_ADDPL) && (data[1] != netMgr->getIPnbo())) {
                 PlayerData *newPlayer = new PlayerData;
+                PlayerOldData *newOldPlayer = new PlayerOldData;
                 memcpy(newPlayer, ++data, sizeof(PlayerData));
+                newOldPlayer->oldPos = newPlayer->newPos;
+                newOldPlayer->oldDir = newPlayer->newDir;
                 playerData.push_back(newPlayer);
+                playerOldData.push_back(newOldPlayer);
                 nPlayers = playerData.size();
               } else if ((data[0] == UINT_UPDPL) && (data[1] != netMgr->getIPnbo())) {
                 for (j = 0; j < nPlayers; j++) {
@@ -386,8 +390,12 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
               data = (Uint32 *) netMgr->udpClientData[nPlayers-i]->output;
               if (data[0] == UINT_ADDPL) {
                 PlayerData *player = new PlayerData;
+                PlayerOldData *playerold = new PlayerOldData;
                 memcpy(player, ++data, sizeof(PlayerData));
+                playerold->oldPos = player->newPos;
+                playerold->oldDir = player->newDir;
                 playerData.push_back(player);
+                playerOldData.push_back(playerold);
                 notifyPlayers();
                 netMgr->udpClientData[nPlayers-i]->updated = false;
               }

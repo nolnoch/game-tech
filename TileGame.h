@@ -38,12 +38,17 @@ const Ogre::Quaternion RING_FLIP(Ogre::Degree(90), Ogre::Vector3::UNIT_X);
 
 struct PlayerData {
   Uint32 host;
-  Ogre::Vector3 newDir;
+  Ogre::Quaternion newDir;
   Ogre::Vector3 newPos;
   Ogre::Vector3 shotDir;
   double shotForce;
 };
 
+struct PlayerOldData {
+  Ogre::Quaternion oldDir;
+  Ogre::Vector3 oldPos;
+  int delta;
+};
 
 class TileGame : public BaseGame
 {
@@ -82,6 +87,7 @@ protected:
   std::vector<Ogre::Entity *> playerEntities;
   std::vector<Ogre::SceneNode *> playerNodes;
   std::vector<PlayerData *> playerData;
+  std::vector<PlayerOldData *> playerOldData;
 
   OgreBites::ParamsPanel *scorePanel, *playersWaitingPanel;
   OgreBites::Label *congratsPanel, *chargePanel, *clientAcceptDescPanel,
@@ -305,7 +311,7 @@ protected:
       ringEnt = mSceneMgr->createEntity("torus.mesh");
       ringNode->attachObject(ringEnt);
       ringNode->rotate(RING_FLIP);
-      ringNode->setDirection(playerData[i]->newDir);
+      ringNode->setOrientation(playerData[i]->newDir);
       ringNode->setScale(100, 100, 100);
       ringNode->setPosition(playerData[i]->newPos);
 
@@ -317,16 +323,24 @@ protected:
   void movePlayers() {
     std::ostringstream playerName;
     Ogre::Vector3 oldPos, newPos, delta;
+    Ogre::Vector3 velocity;
     Ogre::SceneNode *node;
     int i;
 
     for (i = 0; i < nPlayers; i++) {
       // Update position.
       newPos = playerData[i]->newPos;
+      oldPos = playerOldData[i]->oldPos;
+      delta = newPos - oldPos;
+      delta /= 200.0;
+      
+
       playerName << playerData[i]->host;
       node = mSceneMgr->getSceneNode(playerName.str());
-      node->setDirection(playerData[i]->newDir);
+
+      node->setOrientation(playerData[i]->newDir);
       node->setPosition(newPos);
+      //node->translate(delta);
 
       // Did they launch a ball?
       if (playerData[i]->shotForce)
@@ -344,7 +358,7 @@ protected:
     // Self
     single.host = netMgr->getIPnbo();
     single.newPos = mCamera->getPosition();
-    single.newDir = mCamera->getDirection();
+    single.newDir = mCamera->getOrientation();
     single.shotForce = force;
     single.shotDir = dir;
     memcpy(netMgr->udpServerData[nPlayers].input, &UINT_UPDPL, tagSize);
@@ -371,7 +385,7 @@ protected:
     // Self
     single.host = netMgr->getIPnbo();
     single.newPos = mCamera->getPosition();
-    single.newDir = mCamera->getDirection();
+    single.newDir = mCamera->getOrientation();
     single.shotForce = force;
     single.shotDir = dir;
     memcpy(netMgr->udpServerData[0].input, &UINT_UPDPL, tagSize);
@@ -402,7 +416,7 @@ protected:
     // Self
     single.host = netMgr->getIPnbo();
     single.newPos = mCamera->getPosition();
-    single.newDir = mCamera->getDirection();
+    single.newDir = mCamera->getOrientation();
     single.shotForce = 0;
     single.shotDir = Ogre::Vector3::ZERO;
     memcpy(netMgr->udpServerData[nPlayers].input, &UINT_ADDPL, tagSize);
@@ -429,7 +443,7 @@ protected:
     // Self
     single.host = netMgr->getIPnbo();
     single.newPos = mCamera->getPosition();
-    single.newDir = mCamera->getDirection();
+    single.newDir = mCamera->getOrientation();
     single.shotForce = 0;
     single.shotDir = Ogre::Vector3::ZERO;
     memcpy(netMgr->udpServerData[0].input, &UINT_ADDPL, tagSize);
