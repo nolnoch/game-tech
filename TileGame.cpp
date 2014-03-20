@@ -266,7 +266,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
       if (!tileEntities.empty()) {
         // Play the corresponding sound of that tile.
         if(tileEntities.size() <= noteSequence.size()) {
-          soundMgr->playSound(noteSequence[tileEntities.size() - 1], tileEntities.back()->getParentNode()->getPosition(), mCamera->getPosition());
+          soundMgr->playSound(noteSequence[tileEntities.size() - 1], tileEntities.back()->getParentNode()->_getDerivedPosition(), mCamera->getPosition());
         }
         // update texture
         tileEntities.back()->setMaterialName("Examples/BumpyMetal");
@@ -337,7 +337,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
   /* ***********************************************************************
    * Multiplayer Code
    */
-  int sweep_ms = 200;
+  int sweep_ms = 50;
   int broad_ms = 8000;
   int broad_ticks = (broad_ms / sweep_ms);
 

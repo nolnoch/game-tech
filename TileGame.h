@@ -480,7 +480,7 @@ protected:
           if(currTile < noteSequence.size() && currTile >= 0) {
             //soundMgr->playSound(noteSequence[currTile]);
 
-            soundMgr->playSound(noteSequence[currTile], tileEntities.back()->getParentNode()->getPosition(), mCamera->getPosition());
+            soundMgr->playSound(noteSequence[currTile], tileSceneNodes[currTile]->_getDerivedPosition() , mCamera->getPosition());
 
           }
         // Revert previous tile to original texture

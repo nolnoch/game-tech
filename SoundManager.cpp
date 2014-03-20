@@ -237,11 +237,11 @@ void SoundManager::updateSounds(Ogre::Vector3 camPosition, Ogre::Vector3 camDire
   for(int i = 0; i < activeSounds.size(); i++) {
     Sound *s = &(activeSounds[i]);
     Ogre::Real distance = camPosition.distance(s->soundPosition); //get the distance between sound and camera
-    if(distance > 1500)
-      distance = 1500;
-    int dist = 255 - distance/1500 * 255; //1500 should be the max range.
+    if(distance > 4000)
+      distance = 4000;
+    int dist = distance/4000 * 255; //1500 should be the max range.
     s->distance = dist;
-    // std::cout << " updating channel " << s->channel << "  volume " << dist << " distance " << distance << std::endl;
+    std::cout << " updating channel " << s->channel << "  volume " << dist << " distance " << distance << std::endl;
     
     // to figure out the angle, get the angle between the vector pointing forwards from the camera,
     // and the vector that points to the sound source.
@@ -249,8 +249,13 @@ void SoundManager::updateSounds(Ogre::Vector3 camPosition, Ogre::Vector3 camDire
     Ogre::Quaternion q = camDirection.getRotationTo(soundDir);
     Ogre::Radian radians = q.getYaw();
     int degrees = radians.valueDegrees();
+   // std::cout << " updating channel1212121 " << s->channel << " degrees " << degrees << std::endl;
+   // degrees += 45;
+    if(degrees < 0) {
+      degrees = 360 + degrees;
+    }
     std::cout << " updating channel " << s->channel << " degrees " << degrees << std::endl;
-    Mix_SetPosition(s->channel, degrees, dist);
+    Mix_SetPosition(s->channel, 360- degrees, dist);
   }
 }
 
