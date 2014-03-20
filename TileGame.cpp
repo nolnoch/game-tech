@@ -376,8 +376,12 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 
               if ((data[0] == UINT_ADDPL) && (data[1] != netMgr->getIPnbo())) {
                 PlayerData *newPlayer = new PlayerData;
+                PlayerOldData *newOldPlayer = new PlayerOldData;
                 memcpy(newPlayer, ++data, sizeof(PlayerData));
+                newOldPlayer->oldPos = newPlayer->newPos;
+                newOldPlayer->oldDir = newPlayer->newDir;
                 playerData.push_back(newPlayer);
+                playerOldData.push_back(newOldPlayer);
                 nPlayers = playerData.size();
               } else if ((data[0] == UINT_UPDPL) && (data[1] != netMgr->getIPnbo())) {
                 for (j = 0; j < nPlayers; j++) {
@@ -416,8 +420,12 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
               data = (Uint32 *) netMgr->udpClientData[nPlayers-i]->output;
               if (data[0] == UINT_ADDPL) {
                 PlayerData *player = new PlayerData;
+                PlayerOldData *playerold = new PlayerOldData;
                 memcpy(player, ++data, sizeof(PlayerData));
+                playerold->oldPos = player->newPos;
+                playerold->oldDir = player->newDir;
                 playerData.push_back(player);
+                playerOldData.push_back(playerold);
                 notifyPlayers();
                 netMgr->udpClientData[nPlayers-i]->updated = false;
               }
@@ -470,7 +478,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
     } else {                               /* Not yet in a multiplayer game. */
       // Server will broadcast game invitation every 8 seconds until launch.
       if (server && !connected && (ticks++ > broad_ticks)) {
-        if (!netMgr->broadcastUDPInvitation())
+        if (!netMgr->broadcastUDPInvitation(16))
           std::cout << "Failed to send broadcast." << std::endl;
         ticks = 0;
       }
@@ -535,10 +543,13 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
   else if (arg.key == OIS::KC_M) {
     soundMgr->toggleSound();
   }
+  else if (arg.key == OIS::KC_I) {
+    std::cout << netMgr->getIPstring() << std::endl;
+  }
   else if (arg.key == OIS::KC_O) {
     if (netActive) {
       if (!server) {
-        if ((server = netMgr->multiPlayerInit())) {
+        if ((server = netMgr->multiPlayerInit(16))) {
           serverStartPanel = mTrayMgr->createLabel(OgreBites::TL_TOP,
               "ServerStartPanel", "Waiting for clients...", 300);
           mTrayMgr->getTrayContainer(OgreBites::TL_BOTTOMRIGHT)->show();

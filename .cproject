@@ -27,6 +27,7 @@
 									<listOptionValue builtIn="false" value="/usr/include/bullet"/>
 									<listOptionValue builtIn="false" value="/usr/include/OIS"/>
 									<listOptionValue builtIn="false" value="/usr/include/SDL"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/game-tech/SDLnet}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1718442765" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
