@@ -164,7 +164,7 @@ void SoundManager::playSound(int chunkIdx) {
 }
 
 
-void SoundManager::playSound(int chunkIdx, Ogre::Vector3 sound, Ogre::Vector3 camera) {
+void SoundManager::playSound(int chunkIdx, Ogre::Vector3 soundPosition, Ogre::Camera* mCamera) {
   if (!initialized) {
     std::cout << "SoundManager: Manager not initialized." << std::endl;
     return;
@@ -173,22 +173,20 @@ void SoundManager::playSound(int chunkIdx, Ogre::Vector3 sound, Ogre::Vector3 ca
   if (sounding) {
     Mix_ChannelFinished(channelDoneWrapper);
     int channel = Mix_PlayChannel(-1, chunks[chunkIdx], 0);
-    Ogre::Real distance = sound.distance(camera);
-    if(distance > 1500)
-      distance = 1500;
-    int dist = distance/1500 * 255; //10000 should be the max range.
-    std::cout << "Distance " << distance << " " << dist << " channel " << channel <<  std::endl;
-
+    int dist = calcDistance(mCamera->getPosition(), soundPosition);
     // put this sound in our list of active sounds.
     Sound s;
-    s.soundPosition = sound;
+    s.soundPosition = soundPosition;
     s.chunk = chunks[chunkIdx];
     s.distance = dist;
     s.channel = channel;
     s.active = true;
     activeSounds.push_back(s);
-    // set the position of this sound to be at this angle and distance.
-    Mix_SetPosition(channel, 0, dist);
+
+    // Initialize sound position
+    int rightIntensity = calcPanning(mCamera, soundPosition);
+    Mix_SetPanning(s.channel, 254 - rightIntensity, rightIntensity);
+    Mix_SetDistance(s.channel, dist);
   }
 }
 
@@ -224,48 +222,84 @@ void SoundManager::toggleSound() {
 }
 
 
-void SoundManager::updateSounds(Ogre::Vector3 camPosition, Ogre::Vector3 camDirection) {
+void SoundManager::updateSounds(Ogre::Camera* mCamera) {
 
-  // Remove any sounds from our array that might not be active.
+  // Remove any sounds from our list of active sounds that might not be active.
   for(int i = 0; i < activeSounds.size(); i++) {
     Sound *s = &(activeSounds[i]);
     if(s->active == false) {
+      // Reset sound position on the given channel, and remove the sound
+      Mix_SetPanning(s->channel, 255, 255);
+      Mix_SetDistance(s->channel, 0);
       activeSounds.erase(activeSounds.begin() + i);
     }
   }
 
+  // update sound position for all active sounds
   for(int i = 0; i < activeSounds.size(); i++) {
     Sound *s = &(activeSounds[i]);
-    Ogre::Real distance = camPosition.distance(s->soundPosition); //get the distance between sound and camera
-    if(distance > 4000)
-      distance = 4000;
-    int dist = distance/4000 * 255; //1500 should be the max range.
+    int rightIntensity = calcPanning(mCamera, s->soundPosition);
+    Mix_SetPanning(s->channel, 254 - rightIntensity, rightIntensity);
+    int dist = calcDistance(mCamera->getPosition(), s->soundPosition);
     s->distance = dist;
-    std::cout << " updating channel " << s->channel << "  volume " << dist << " distance " << distance << std::endl;
-    
-
-    // Get the right ear of the camera.
-    Ogre::Vector3 rightEar = Ogre::Vector3(camPosition.x)
-
-    // to figure out the angle, get the angle between the vector pointing forwards from the camera,
-    // and the vector that points to the sound source.
-    Ogre::Vector3 soundDir = s->soundPosition - camPosition;
-    Ogre::Quaternion q = camDirection.getRotationTo(soundDir);
-    Ogre::Radian radians = q.getYaw();
-    int degrees = radians.valueDegrees();
-   // std::cout << " updating channel1212121 " << s->channel << " degrees " << degrees << std::endl;
-   // degrees += 45;
-    // convert from negative to positive
-    if(degrees < 0) {
-      degrees = 360 + degrees;
-    }
-    std::cout << " updating channel " << s->channel << " degrees " << degrees << std::endl;
-    if(Mix_SetPosition(s->channel, 360- degrees, dist) == 0) {
-      std::cout << "SDL ERROR SETTING POSITION -------------- \n";
-    }
+    Mix_SetDistance(s->channel, dist);
   }
+
 }
 
+/*
+ * Calculates sound level by getting the distance of two vectors and mapping it between 0 and 255
+ * using a given range (5000)
+ */
+int SoundManager::calcDistance(Ogre::Vector3 camPosition, Ogre::Vector3 soundPosition) {
+   Ogre::Real distance = camPosition.distance(soundPosition); //get the distance between sound and camera
+    if(distance > 5500)
+      distance = 5500;
+    int dist = distance/5500 * 255; //1500 should be the max range.
+    return dist;
+}
+
+// Returns volume for the right ear.
+// If the sound is directly to the right, that channel gets 254 of intensity.
+// If the sound is directly in front of us, each channel gets 254/2 of intensity.
+int SoundManager::calcPanning(Ogre::Camera* mCamera, Ogre::Vector3 soundPosition) {
+    Ogre::Vector3 camDirection = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
+    Ogre::Vector3 soundDir = soundPosition - mCamera->getPosition();
+    soundDir.normalise();
+    // Retrieve the angle made between the sound position and the camera's direction,
+    // which should be pointing forwards.
+    Ogre::Quaternion q = camDirection.getRotationTo(soundDir);
+    Ogre::Radian radians = q.getYaw();
+
+    // anything left of the camera returns positive degrees
+    float degrees = radians.valueDegrees();
+
+    int leftIntensity;
+    int rightIntensity;
+
+    // from 0 to -179 it's the right ear.
+    if(degrees <= 0) {
+      //std::cout << "degrees " << degrees << std::endl;
+      degrees *= -1;
+      if(degrees > 90)
+          degrees = 90 - (degrees - 90); // if 91, we subtract 1 and go back to 89
+      // Intensity can never be 255 because then the effect cancels out.
+      int intensity = (degrees / 90.0) * 254/2 + 254/2;
+      //std::cout << "intensity " << intensity << std::endl;
+      rightIntensity = intensity;
+      leftIntensity = 255 - (rightIntensity);
+    }
+    // from 0 to 179 it's the left ear.
+    else {
+      if(degrees > 90)
+          degrees = 90 - (degrees - 90); 
+      int intensity = (degrees / 90) * 254/2 + 254/2;
+      //std::cout << "intensity " << intensity << std::endl;
+      leftIntensity = intensity;
+      rightIntensity = 254 - (leftIntensity);
+    }
+    return rightIntensity;
+}
 
 
 

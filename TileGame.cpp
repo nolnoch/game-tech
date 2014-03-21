@@ -249,9 +249,10 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
   int i, j;
 
   // update the sounds
-  // Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
- // soundMgr->updateSounds(mCamera->getPosition(), direction);
+  Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
+  //soundMgr->updateSounds(mCamera->getPosition(), direction);
   soundMgr->updateSounds(mCamera);
+ // soundMgr->updateSounds(mCamera);
   if (paused)
     slowdownval += 1/1800.f;
   else {
@@ -267,7 +268,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
       if (!tileEntities.empty()) {
         // Play the corresponding sound of that tile.
         if(tileEntities.size() <= noteSequence.size()) {
-          soundMgr->playSound(noteSequence[tileEntities.size() - 1], tileEntities.back()->getParentNode()->_getDerivedPosition(), mCamera->getPosition());
+          soundMgr->playSound(noteSequence[tileEntities.size() - 1], tileEntities.back()->getParentNode()->_getDerivedPosition(), mCamera);
         }
         // update texture
         tileEntities.back()->setMaterialName("Examples/BumpyMetal");
@@ -604,7 +605,7 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
     soundMgr->raiseVolume();
   }
   else if(arg.key == OIS::KC_T) {
-    soundMgr->playSound(chirp, mCamera->getPosition(), Ogre::Vector3(0,0,0));
+   // soundMgr->playSound(chirp, mCamera->getPosition(), Ogre::Vector3(0,0,0));
   }
 
   return BaseGame::keyPressed(arg);

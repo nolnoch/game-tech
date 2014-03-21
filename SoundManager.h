@@ -40,18 +40,23 @@ public:
   void lowerVolume();
   void playMusic();
   void playSound(int chunk);
-  void playSound(int chunk, Ogre::Vector3 soundPosition, Ogre::Vector3 camPosition);
+  void playSound(int chunk, Ogre::Vector3 soundPosition, Ogre::Camera* mCamera);
   void pauseMusic();
   void mute();
   void unmute();
   void toggleSound();
-  void updateSounds(Ogre::Vector3 camPosition, Ogre::Vector3 camDirection);
+  void updateSounds(Ogre::Camera* mCamera);
+//  void updatesounds(Ogre::Vector3 camPosition);
   void channelDone(int channel);
 private:
   bool sounding, initialized, musicPlaying;
   Mix_Music *music;
   std::vector<Mix_Chunk *> chunks;
   static std::vector<Sound> activeSounds;
+  // Calculates sound attenuation using the distance of two vectors
+  int calcDistance(Ogre::Vector3 camPosition, Ogre::Vector3 soundPosition);
+  // Calculates sound orientation
+  int calcPanning(Ogre::Camera* mCamera, Ogre::Vector3 soundPosition);
 };
 
 
