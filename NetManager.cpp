@@ -372,6 +372,8 @@ void NetManager::dropClient(Protocol protocol, Uint32 host) {
     printError("NetManager: No server running, and thus no clients to drop.");
     return;
   }
+  std::vector<ConnectionInfo *>::iterator it;
+  bool found = false;
 
   ConnectionInfo *cInfo = lookupClient(host, false);
 
@@ -387,6 +389,14 @@ void NetManager::dropClient(Protocol protocol, Uint32 host) {
     unbindUDPSocket(client, cInfo->udpChannel);
 
     // TODO Implement reclaimable channels through bitmap or 2d array?
+  }
+  if (cInfo) {
+    for (it = netClients.begin(); it != netClients.end() && !found; it++) {
+      if ((*it) == cInfo) {
+        netClients.erase(it);
+        found = true;
+      }
+    }
   }
 }
 
@@ -854,6 +864,7 @@ bool NetManager::openUDPSocket(Uint16 port) {
 
   if (!udpSock) {
     printError("SDL_net: Failed to open UDP socket!");
+    printError(SDLNet_GetError());
     ret = false;
   } else {
     udpSockets.push_back(udpSock);
@@ -987,16 +998,7 @@ bool NetManager::bindUDPSocket (UDPsocket sock, int channel, IPaddress *addr) {
  * @param channel The channel to be unbound.
  */
 void NetManager::unbindUDPSocket(UDPsocket sock, int channel) {
-  bool found;
-  std::vector<ConnectionInfo *>::iterator it;
-
   SDLNet_UDP_Unbind(sock, channel);
-
-  for (it = netClients.begin(); it != netClients.end() && !found; it++) {
-    if ((*it)->udpChannel == channel) {
-      netClients.erase(it);
-    }
-  }
 }
 
 /**
@@ -1393,13 +1395,13 @@ void NetManager::unwatchSocket(UDPsocket sock) {
  */
 int NetManager::checkSockets(Uint32 timeout_ms) {
   int ret, nReadySockets;
+  ret = 0;
 
   nReadySockets = SDLNet_CheckSockets(socketNursery, timeout_ms);
 
   if (nReadySockets == -1) {
     printError("SDL_net: System error in CheckSockets.");
     printError(SDLNet_GetError());
-    ret = 0;
   } else if (nReadySockets) {
     int i, udp;
     ret = nReadySockets;

@@ -459,7 +459,6 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
                   if (data[1] == playerData[j]->host) {
                     playerOldData[j]->oldPos = playerData[j]->newPos;
                     playerOldData[j]->oldDir = playerData[j]->newDir;
-                    std::cout << playerOldData[j]->delta << "\n";
                     playerOldData[j]->delta = 0;
                     memcpy(playerData[j], ++data, sizeof(PlayerData));
                   }
@@ -534,6 +533,7 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
     if (invitePending) {
       inviteAccepted = true;
       invitePending = false;
+      ticks = 0;
     }
   }
   else if (arg.key == OIS::KC_N) {

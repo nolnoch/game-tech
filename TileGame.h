@@ -30,7 +30,7 @@ const static int PLANE_DIST = WALL_SIZE / 2;                        // the initi
 const static int NUM_TILES_ROW = 5;                                 // number of tiles in each row of a wall.
 const static int NUM_TILES_WALL = NUM_TILES_ROW * NUM_TILES_ROW;    // number of total tiles on a wall.
 const static int TILE_WIDTH = WALL_SIZE / NUM_TILES_ROW;
-const static int SWEEP_MS = 50;
+const static int SWEEP_MS = 150;
 const static int BROAD_MS = 8000;
 
 int ticks = 0;
@@ -328,6 +328,7 @@ protected:
   void movePlayers() {
     std::ostringstream playerName;
     Ogre::Vector3 oldPos, newPos, drawPos;
+    Ogre::Quaternion newDir, oldDir, drawDir;
     Ogre::Vector3 velocity;
     Ogre::SceneNode *node;
     int i;
@@ -339,13 +340,16 @@ protected:
       double delta = playerOldData[i]->delta;
       playerOldData[i]->delta += 1;
       drawPos = newPos;
-      drawPos += playerData[i]->velocity * (delta / (60.0 * SWEEP_MS / 1000.0) );
-      
+      drawPos += playerData[i]->velocity * (delta) / 60.0;
+
+      oldDir = playerOldData[i]->oldDir;
+      newDir = playerData[i]->newDir;
+      drawDir = newDir + (newDir - oldDir) * (delta / 10.0);
 
       playerName << playerData[i]->host;
       node = mSceneMgr->getSceneNode(playerName.str());
 
-      node->setOrientation(playerData[i]->newDir);
+      node->setOrientation(drawDir);
       node->pitch(Ogre::Degree(90));
       node->setPosition(drawPos);
       //node->translate(delta);
