@@ -243,6 +243,10 @@ void SoundManager::updateSounds(Ogre::Vector3 camPosition, Ogre::Vector3 camDire
     s->distance = dist;
     std::cout << " updating channel " << s->channel << "  volume " << dist << " distance " << distance << std::endl;
     
+
+    // Get the right ear of the camera.
+    Ogre::Vector3 rightEar = Ogre::Vector3(camPosition.x)
+
     // to figure out the angle, get the angle between the vector pointing forwards from the camera,
     // and the vector that points to the sound source.
     Ogre::Vector3 soundDir = s->soundPosition - camPosition;
@@ -251,11 +255,14 @@ void SoundManager::updateSounds(Ogre::Vector3 camPosition, Ogre::Vector3 camDire
     int degrees = radians.valueDegrees();
    // std::cout << " updating channel1212121 " << s->channel << " degrees " << degrees << std::endl;
    // degrees += 45;
+    // convert from negative to positive
     if(degrees < 0) {
       degrees = 360 + degrees;
     }
     std::cout << " updating channel " << s->channel << " degrees " << degrees << std::endl;
-    Mix_SetPosition(s->channel, 360- degrees, dist);
+    if(Mix_SetPosition(s->channel, 360- degrees, dist) == 0) {
+      std::cout << "SDL ERROR SETTING POSITION -------------- \n";
+    }
   }
 }
 

@@ -31,9 +31,6 @@ class SoundManager {
 public:
   SoundManager();
   virtual ~SoundManager();
-
-
-
   bool initSoundManager();
   bool loadMusic(const char *name);
   int loadSound(const char *name);
