@@ -70,7 +70,6 @@ bool NetManager::initNetManager() {
     printError(SDLNet_GetError());
     ret = false;
   } else {
-    // Initializes our ConnectionInfo, netServer, to defaults
     netServer.tcpSocketIdx = -1;
     netServer.udpSocketIdx = -1;
     netServer.udpChannel = -1;
@@ -135,7 +134,7 @@ bool NetManager::startServer() {
         "start a server?");
   }
 
-  netStatus |= NET_SERVER; 
+  netStatus |= NET_SERVER;
 
   if ((netProtocol & PROTOCOL_TCP) && !(netStatus & NET_TCP_OPEN)){
     if ((retTCP = openServer(PROTOCOL_TCP, netPort)))
@@ -221,6 +220,7 @@ int NetManager::scanForActivity() {
  *
  * Must be running as a server to call this function. If no arguments are given,
  * it will pull from each client's ClientData \b input field.
+ * @param protocol TCP, UDP, or ALL as given by PROTOCOL_XXX enum value.
  * @param buf Manually given data buffer. Default: NULL.
  * @param len Length of given buffer. Default: 0.
  */
@@ -243,7 +243,7 @@ void NetManager::messageClients(Protocol protocol, const char *buf, int len) {
       if (protocol & (netClients[i]->protocols & PROTOCOL_TCP)) {
         sendTCP(tcpSockets[netClients[i]->tcpSocketIdx], buf, len);
       }
-      if (protocol & (netClients[i]->protocols & PROTOCOL_UDP)) {
+      if (protocol & netClients[i]->protocols & PROTOCOL_UDP) {
         UDPpacket *pack = craftUDPpacket(buf, len);
         if (pack) {
           sendUDP(udpSockets[netClients[i]->udpSocketIdx],
@@ -256,11 +256,12 @@ void NetManager::messageClients(Protocol protocol, const char *buf, int len) {
     UDPpacket *pack;
 
     for (i = 0; i < netClients.size(); i++) {
-      if (protocol & (netClients[i]->protocols & PROTOCOL_TCP)) {
+      if (protocol & netClients[i]->protocols & PROTOCOL_TCP) {
         data = tcpServerData.input;
         sendTCP(tcpSockets[netClients[i]->tcpSocketIdx], data, length);
+        tcpServerData.updated = false;
       }
-      if (protocol & (netClients[i]->protocols & PROTOCOL_UDP)) {
+      if (protocol & netClients[i]->protocols & PROTOCOL_UDP) {
         for (j = 0; j < MESSAGE_COUNT; j++) {
           if (udpServerData[j].updated) {
             data = udpServerData[j].input;
@@ -282,6 +283,7 @@ void NetManager::messageClients(Protocol protocol, const char *buf, int len) {
  *
  * Must be running as a client to call this function. If no arguments are given,
  * it will pull from the server's ClientData \b input field.
+ * @param protocol TCP, UDP, or ALL as given by PROTOCOL_XXX enum value.
  * @param buf Manually given data buffer. Default: NULL.
  * @param len Length of given buffer. Default: 0.
  */
@@ -315,6 +317,7 @@ void NetManager::messageServer(Protocol protocol, const char *buf, int len) {
     if (protocol & PROTOCOL_TCP) {
       data = tcpServerData.input;
       sendTCP(tcpSockets[netServer.tcpSocketIdx], data, length);
+      tcpServerData.updated = false;
     }
     if (protocol & PROTOCOL_UDP) {
       data = udpServerData[0].input;
@@ -350,12 +353,15 @@ void NetManager::messageClient(Protocol protocol, int clientDataIdx, char *buf, 
     cInfo = lookupClient(tcpClientData[clientDataIdx]->host, false);
     TCPsocket client = tcpSockets[cInfo->tcpSocketIdx];
     sendTCP(client, buf, len);
+    tcpClientData[clientDataIdx]->updated = false;
   } else if (protocol & PROTOCOL_UDP) {
     cInfo = lookupClient(udpClientData[clientDataIdx]->host, false);
     UDPpacket *pack = craftUDPpacket(buf, len);
     UDPsocket client = udpSockets[cInfo->udpSocketIdx];
-    if (pack)
+    if (pack) {
       sendUDP(client, cInfo->udpChannel, pack);
+      udpClientData[clientDataIdx]->updated = false;
+    }
   }
 }
 
@@ -684,6 +690,7 @@ void NetManager::denyConnections() {
  * Adds the TCP protocol to this instance and enables acceptance of new clients.
  * Then the local IP address is retrieved and broadcasted to a /24 mask of
  * itself. The clients will respond and register automatically on the server.
+ * @param maskDepth The depth of subnet bits to preserve.
  * @return Success of the broadcast: true if the server receives its own packet.
  */
 bool NetManager::multiPlayerInit(int maskDepth) {
@@ -698,6 +705,14 @@ bool NetManager::multiPlayerInit(int maskDepth) {
   return broadcastUDPInvitation(maskDepth);
 }
 
+/**
+ * @brief Broadcasts the host address via UDP.
+ *
+ * Isolates the UDP broadcast from multiPlayerInit() so that it can be called
+ * on a loop for continuous invitation.
+ * @param maskDepth The depth of subnet bits to preserve.
+ * @return Success of the broadcast: true if the server receives its own packet.
+ */
 bool NetManager::broadcastUDPInvitation(int maskDepth) {
   std::ostringstream broadcast;
   std::string data;
@@ -717,6 +732,13 @@ bool NetManager::broadcastUDPInvitation(int maskDepth) {
   return scanForActivity();
 }
 
+/**
+ * @brief Accepts a host's broadcasted invitation.
+ *
+ * Stops the dummy server and reinitializes as a client against the target host.
+ * @param invitation The host's IP address from the UDP packet.
+ * @return Success of starting the client against the target host.
+ */
 bool NetManager::joinMultiPlayer(std::string invitation) {
   std::string svrAddr = invitation.substr(STR_OPEN.length());
   stopServer();
@@ -864,7 +886,6 @@ bool NetManager::openUDPSocket(Uint16 port) {
 
   if (!udpSock) {
     printError("SDL_net: Failed to open UDP socket!");
-    printError(SDLNet_GetError());
     ret = false;
   } else {
     udpSockets.push_back(udpSock);
@@ -1481,7 +1502,6 @@ void NetManager::readTCPSocket(int clientIdx) {
       dropClient(PROTOCOL_ALL, cData->host);
     }
   } else {
-    std::cout << "Received TCP packet from server." << std::endl;
     cData->updated = true;
   }
 }
@@ -1611,7 +1631,7 @@ void NetManager::rejectTCPClient(TCPsocket sock) {
  * @brief Rejects a prospective UDP client.
  *
  * Sends a rejection message and frees the socket.
- * @param sock The rejectee's associated packet.
+ * @param pack The rejectee's associated packet.
  */
 void NetManager::rejectUDPClient(UDPpacket *pack) {
   UDPpacket *packet;
