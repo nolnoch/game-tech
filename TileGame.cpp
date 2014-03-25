@@ -262,7 +262,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
     if (hit && !gameDone) {
       
            
-     // soundMgr->playSound(hit2, ballMgr->getCollisionPosition(), mCamera);
+      soundMgr->playSound(hit2, ballMgr->getCollisionPosition(), mCamera);
       //soundMgr->playSound(boing);
       score++;
 
