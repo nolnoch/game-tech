@@ -392,6 +392,9 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
                   }
                 }
               }
+              else if ((data[0] == UINT_UPDBL)) {
+                modifyBalls(++data);
+              }
               netMgr->udpServerData[i].updated = false;
             }
           }
