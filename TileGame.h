@@ -42,14 +42,46 @@ struct PlayerData {
   Ogre::Quaternion newDir;
   Ogre::Vector3 newPos;
   Ogre::Vector3 shotDir;
-  double shotForce;
   Ogre::Vector3 velocity;
+  double shotForce;
 };
 
 struct PlayerOldData {
   Ogre::Quaternion oldDir;
   Ogre::Vector3 oldPos;
   double delta;
+};
+
+/* Since we should not have the physics sim running on clients, the server needs
+ * to keep track of and distribute all ball locations and velocities. This
+ * struct theoretically can handle up to 27 balls at one time by using 64 bits
+ * per ball and keeping track of how many balls/64-bit fields should be read.
+ *
+ * Per ball:
+ *  11 bits - x position interpreted as integer (max 2048)
+ *  11 bits - y position interpreted as integer (max 2048)
+ *  11 bits - z position interpreted as integer (max 2048)
+ *  10 bits - x velocity interpreted as integer (max 1024)
+ *  10 bits - y velocity interpreted as integer (max 1024)
+ *  10 bits - z velocity interpreted as integer (max 1024)
+ *   1 bit  - padding
+ *
+ * This is very low-level and slightly hacky, but it could allow us to update
+ * all balls with only 220 bytes every single network update. It is possible
+ * to update all balls with full Vector3s, but it would require 652 bytes per
+ * update (for 27 balls).
+ *
+ * The current network buffer size is 128 bytes. This can change but must be
+ * lower than the MTU (maximum transmission unit) set by the hardware and the
+ * network. This is commonly 1500 bytes but can be as low as 500. Size also
+ * slows down the transmission. We can discuss and/or test.
+ */
+struct BallData {
+  int numBalls;                     //   4 bytes
+  Uint64 posAndVel[27];             // 216 bytes
+
+  // Alternate
+  // Ogre::Vector3 posAndVel[54];   // 648 bytes
 };
 
 class TileGame : public BaseGame
@@ -79,8 +111,6 @@ protected:
   Ogre::Light* panelLight;
   Ogre::Vector3 mDirection;
   Ogre::Real mSpeed;
-  Ogre::PlaneBoundedVolume boxBound;
-  Ogre::Plane wallUp, wallDown, wallBack, wallFront, wallLeft, wallRight;
 
   std::deque<Ogre::Entity *> allTileEntities;
   std::deque<Ogre::SceneNode *> tileList;
@@ -114,18 +144,18 @@ protected:
   int ballsounddelay;
 
 
-  void shootBall(int x, int y, int z, double force) {
-    Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
+  void shootBall(int idx, int x, int y, int z, double force) {
+    Ogre::Vector3 direction = playerData[idx]->shotDir;
     Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
     Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
 
-    if(ballMgr->isGlobalBall())
-      ballMgr->removeGlobalBall();
+    if (ballMgr->isPlayerBall(idx))
+      ballMgr->removePlayerBall(idx);
 
     ballMeshpc->setCastShadows(true);
     nodepc->attachObject(ballMeshpc);
-    ballMgr->setGlobalBall(ballMgr->addBall(nodepc, x, y, z, 100));
-    ballMgr->globalBall->applyForce(force, direction);
+    ballMgr->setPlayerBall(ballMgr->addBall(nodepc, x, y, z, 100), idx);
+    ballMgr->playerBalls[idx]->applyForce(force, direction);
   }
 
   void ballSetup (int cubeSize) {
@@ -334,17 +364,21 @@ protected:
     int i;
 
     for (i = 0; i < nPlayers; i++) {
+      double delta;
+
       // Update position.
       newPos = playerData[i]->newPos;
       oldPos = playerOldData[i]->oldPos;
-      double delta = playerOldData[i]->delta;
+      delta = playerOldData[i]->delta;
       playerOldData[i]->delta += 1;
+
       drawPos = newPos;
-      drawPos += playerData[i]->velocity * (delta) / 60.0;
+      drawPos += playerData[i]->velocity * delta / 60.0;
 
       oldDir = playerOldData[i]->oldDir;
       newDir = playerData[i]->newDir;
-      drawDir = newDir + (newDir - oldDir) * (delta / 10.0);
+      // drawDir = newDir + (newDir - oldDir) * (delta / 10.0);
+      drawDir = Ogre::Quaternion::Slerp(delta * 0.1f, oldDir, newDir);
 
       playerName << playerData[i]->host;
       node = mSceneMgr->getSceneNode(playerName.str());
@@ -353,10 +387,6 @@ protected:
       node->pitch(Ogre::Degree(90));
       node->setPosition(drawPos);
       //node->translate(delta);
-
-      // Did they launch a ball?
-      if (playerData[i]->shotForce)
-        shootBall(newPos.x, newPos.y, newPos.z, playerData[i]->shotForce);
     }
   }
 
@@ -402,10 +432,18 @@ protected:
     single.shotForce = force;
     single.shotDir = dir;
     single.velocity = mCameraMan->getVelocity();
-    memcpy(netMgr->udpServerData[0].input, &UINT_UPDPL, tagSize);
-    memcpy((netMgr->udpServerData[0].input + 4), &single, pdSize);
-    netMgr->udpServerData[0].updated = true;
-    netMgr->messageServer(PROTOCOL_UDP);
+
+    if (force) {
+      memcpy(netMgr->tcpServerData.input, &UINT_BLSHT, tagSize);
+      memcpy((netMgr->tcpServerData.input + 4), &single, pdSize);
+      netMgr->tcpServerData.updated = true;
+      netMgr->messageServer(PROTOCOL_TCP);
+    } else {
+      memcpy(netMgr->udpServerData[0].input, &UINT_UPDSV, tagSize);
+      memcpy((netMgr->udpServerData[0].input + 4), &single, pdSize);
+      netMgr->udpServerData[0].updated = true;
+      netMgr->messageServer(PROTOCOL_UDP);
+    }
   }
 
   void startMultiplayer() {
@@ -416,8 +454,39 @@ protected:
 
     setLevel(1);
     drawPlayers();
+    ballMgr->initMultiplayer(nPlayers);
 
     multiplayerStarted = true;
+  }
+
+  void addPlayer(Uint32 *data) {
+    PlayerData *newPlayer = new PlayerData;
+    PlayerOldData *newOldPlayer = new PlayerOldData;
+
+    memcpy(newPlayer, data, sizeof(PlayerData));
+
+    newOldPlayer->oldPos = newPlayer->newPos;
+    newOldPlayer->oldDir = newPlayer->newDir;
+    newOldPlayer->delta = 0;
+
+    playerData.push_back(newPlayer);
+    playerOldData.push_back(newOldPlayer);
+  }
+
+  void modifyPlayer(int j, Uint32 *data) {
+    playerOldData[j]->oldPos = playerData[j]->newPos;
+    playerOldData[j]->oldDir = playerData[j]->newDir;
+    playerOldData[j]->delta = 0;
+
+    memcpy(playerData[j], data, sizeof(PlayerData));
+
+    // Did they launch a ball?  Trigger now before buffer overwritten!
+    if (playerData[j]->shotForce) {
+      std::cout << "Shot fired." << std::endl;
+      Ogre::Vector3 newPos = playerData[j]->newPos;
+      shootBall(j, newPos.x, newPos.y, newPos.z, playerData[j]->shotForce);
+      playerData[j]->shotForce = 0;
+    }
   }
 
   void notifyPlayers() {
@@ -488,12 +557,12 @@ protected:
 
     if(currTile >= -1) {
       if(currTime > animStart && currTime <= animEnd) {
-          if(currTile < noteSequence.size() && currTile >= 0) {
-            //soundMgr->playSound(noteSequence[currTile]);
+        if(currTile < noteSequence.size() && currTile >= 0) {
+          //soundMgr->playSound(noteSequence[currTile]);
 
-            soundMgr->playSound(noteSequence[currTile], tileSceneNodes[currTile]->_getDerivedPosition() , mCamera);
+          soundMgr->playSound(noteSequence[currTile], tileSceneNodes[currTile]->_getDerivedPosition() , mCamera);
 
-          }
+        }
         // Revert previous tile to original texture
         if(currTile + 1 < tileEntities.size() && currTile >= -1) {
           tileEntities[currTile + 1]->setMaterialName("Examples/Chrome");
@@ -529,7 +598,7 @@ protected:
           panelLight->setPosition(0, 0, 0);
           panelLight->setSpotlightFalloff(0);
           panelLight->setAttenuation(4000, 0.0, 0.0001, 0.0000005);
-        
+
         } else {
           mSceneMgr->destroyLight(panelLight);
           panelLight = NULL;
@@ -537,7 +606,7 @@ protected:
 
         // moves on to the next tile.
         currTile--;
-       //std::cout << "c: " << currTile << "\n";
+        //std::cout << "c: " << currTile << "\n";
       }
     }
     else if (!animDone) {

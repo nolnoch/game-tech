@@ -44,13 +44,6 @@ gong(0),
 noteSequence(5),
 noteIndex(0)
 {
-
-  /*for(int i =0; i < 5; i++)
-  {
-    SoundFile f(0);
-    noteSequence.push_back(f);
-  }
-*/
   chirp = 0;
   hit2 = 0;
   gameDone = animDone = isCharging = paused = connected = server = netActive =
@@ -79,11 +72,11 @@ bool TileGame::configure() {
   bool ret = BaseGame::configure();
 
   // Networking //
-  
   netMgr = new NetManager();
-  netMgr->initNetManager(); // check return value?
-  netMgr->addNetworkInfo(PROTOCOL_UDP);
-  netActive = netMgr->startServer();
+  if (netMgr->initNetManager()) {
+    netMgr->addNetworkInfo(PROTOCOL_UDP);
+    netActive = netMgr->startServer();
+  }
 
   // Physics //
   sim = new TileSimulator();
@@ -100,12 +93,12 @@ bool TileGame::configure() {
   boing = soundMgr->loadSound("hit.wav");
   gong = soundMgr->loadSound("gong.wav");
   music = soundMgr->loadMusic("ambient.wav");
-  
+
   noteSequence[0] = soundMgr->loadSound("note5.wav");
-   noteSequence[1] = soundMgr->loadSound("note4.wav");
-    noteSequence[2] = soundMgr->loadSound("note3.wav");
-     noteSequence[3] = soundMgr->loadSound("note2.wav");
-      noteSequence[4] = soundMgr->loadSound("note1.wav");
+  noteSequence[1] = soundMgr->loadSound("note4.wav");
+  noteSequence[2] = soundMgr->loadSound("note3.wav");
+  noteSequence[3] = soundMgr->loadSound("note2.wav");
+  noteSequence[4] = soundMgr->loadSound("note1.wav");
 
   chirp = soundMgr->loadSound("chirp.wav");
   hit2= soundMgr->loadSound("hit2.wav");
@@ -121,13 +114,12 @@ void TileGame::createCamera(void) {
 }
 //-------------------------------------------------------------------------------------
 void TileGame::createScene(void) {
-  boxBound = Ogre::PlaneBoundedVolume(Ogre::Plane::NEGATIVE_SIDE);
-  boxBound.planes.push_back(wallBack = Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_Z, 0));
-  boxBound.planes.push_back(wallFront = Ogre::Plane(Ogre::Vector3::UNIT_Z,0));
-  boxBound.planes.push_back(wallDown = Ogre::Plane(Ogre::Vector3::UNIT_Y,0));
-  boxBound.planes.push_back(wallUp = Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_Y,0));
-  boxBound.planes.push_back(wallLeft = Ogre::Plane(Ogre::Vector3::UNIT_X, 0));
-  boxBound.planes.push_back(wallRight = Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_X,0));
+  Ogre::Plane wallBack(Ogre::Vector3::NEGATIVE_UNIT_Z, 0);
+  Ogre::Plane wallFront(Ogre::Vector3::UNIT_Z,0);
+  Ogre::Plane wallDown(Ogre::Vector3::UNIT_Y,0);
+  Ogre::Plane wallUp(Ogre::Vector3::NEGATIVE_UNIT_Y,0);
+  Ogre::Plane wallLeft(Ogre::Vector3::UNIT_X, 0);
+  Ogre::Plane wallRight(Ogre::Vector3::NEGATIVE_UNIT_X,0);
 
   // Use the planes from above to generate new meshes for walls.
   Ogre::MeshManager::getSingleton().createPlane("ground",
@@ -253,17 +245,17 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
   Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
   //soundMgr->updateSounds(mCamera->getPosition(), direction);
   soundMgr->updateSounds(mCamera);
- // soundMgr->updateSounds(mCamera);
+  // soundMgr->updateSounds(mCamera);
   if (paused)
     slowdownval += 1/1800.f;
   else {
     bool hit = sim->simulateStep(slowdownval);
 
     if (hit && !gameDone) {
-      
-           
+  
       soundMgr->playSound(hit2, ballMgr->getCollisionPosition(), mCamera);
       //soundMgr->playSound(boing);
+
       score++;
 
       if (!tileEntities.empty()) {
@@ -325,13 +317,12 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
   }
 
   if(ballsounddelay > 0)
-      ballsounddelay--;
+    ballsounddelay--;
   else
   {
     int numCollisions = ballMgr->getNumberBallCollisions();
     if(numCollisions > 0)
     {
-        std::cout << "colls: " << numCollisions << "\n";
         soundMgr->playSound(hit2, ballMgr->getCollisionPosition(), mCamera);
         ballsounddelay = 5;
     }
@@ -344,12 +335,9 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 
   int broad_ticks = (BROAD_MS / SWEEP_MS);
 
-
-
-  if(multiplayerStarted)
-  {
-      // Update players' positions locally.
-      movePlayers();
+  if (multiplayerStarted) {
+    // Update players' positions locally.
+    movePlayers();
   }
 
   if (netActive && (netTimer->getMilliseconds() > SWEEP_MS)) {
@@ -360,8 +348,6 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 
     /*  Received an update!  */
     if ((nUp = netMgr->scanForActivity())) {
-
-      //std::cout << "Following up in TileGame." << std::endl;
 
       if (!server) {  /* **************      CLIENT      ******************* */
 
@@ -386,22 +372,17 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
               data = (Uint32 *) netMgr->udpServerData[i].output;
 
               if ((data[0] == UINT_ADDPL) && (data[1] != netMgr->getIPnbo())) {
-                PlayerData *newPlayer = new PlayerData;
-                PlayerOldData *newOldPlayer = new PlayerOldData;
-                memcpy(newPlayer, ++data, sizeof(PlayerData));
-                newOldPlayer->oldPos = newPlayer->newPos;
-                newOldPlayer->oldDir = newPlayer->newDir;
-                newOldPlayer->delta = 0;
-                playerData.push_back(newPlayer);
-                playerOldData.push_back(newOldPlayer);
-                nPlayers = playerData.size();
+                j = 0;
+                while (j < nPlayers && (data[1] != playerData[j]->host))
+                  j++;
+                if (j == nPlayers) {
+                  addPlayer(++data);
+                  nPlayers = playerData.size();
+                }
               } else if ((data[0] == UINT_UPDPL) && (data[1] != netMgr->getIPnbo())) {
                 for (j = 0; j < nPlayers; j++) {
                   if (data[1] == playerData[j]->host) {
-                    playerOldData[j]->oldPos = playerData[j]->newPos;
-                    playerOldData[j]->oldDir = playerData[j]->newDir;
-                    playerOldData[j]->delta = 0;
-                    memcpy(playerData[j], ++data, sizeof(PlayerData));
+                    modifyPlayer(j, ++data);
                   }
                 }
               }
@@ -434,14 +415,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
             for (i = 1; i <= newClients; i++) {
               data = (Uint32 *) netMgr->udpClientData[nPlayers-i]->output;
               if (data[0] == UINT_ADDPL) {
-                PlayerData *player = new PlayerData;
-                PlayerOldData *playerold = new PlayerOldData;
-                memcpy(player, ++data, sizeof(PlayerData));
-                playerold->oldPos = player->newPos;
-                playerold->oldDir = player->newDir;
-                playerold->delta = 0;
-                playerData.push_back(player);
-                playerOldData.push_back(playerold);
+                addPlayer(++data);
                 notifyPlayers();
                 netMgr->udpClientData[nPlayers-i]->updated = false;
               }
@@ -455,13 +429,10 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
             // Process UDP messages.
             if (netMgr->udpClientData[i]->updated) {
               data = (Uint32 *) netMgr->udpClientData[i]->output;
-              if ((data[0] == UINT_UPDPL) && (data[1] != netMgr->getIPnbo())) {
+              if ((data[0] == UINT_UPDSV) && (data[1] != netMgr->getIPnbo())) {
                 for (j = 0; j < nPlayers; j++) {
                   if (data[1] == playerData[j]->host) {
-                    playerOldData[j]->oldPos = playerData[j]->newPos;
-                    playerOldData[j]->oldDir = playerData[j]->newDir;
-                    playerOldData[j]->delta = 0;
-                    memcpy(playerData[j], ++data, sizeof(PlayerData));
+                    modifyPlayer(j, ++data);
                   }
                 }
               }
@@ -471,7 +442,15 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
             // Process TCP messages.
             if (netMgr->tcpClientData[i]->updated) {
               cmd = std::string(netMgr->tcpClientData[i]->output);
-              // Compare cmd to command tag or use raw data.
+              data = (Uint32 *) netMgr->tcpClientData[i]->output;
+
+              if ((data[0] == UINT_BLSHT) && (data[1] != netMgr->getIPnbo())) {
+                for (j = 0; j < nPlayers; j++) {
+                  if (data[1] == playerData[j]->host) {
+                    modifyPlayer(j, ++data);
+                  }
+                }
+              }
 
               netMgr->tcpClientData[i]->updated = false;
             }
@@ -606,7 +585,7 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
     soundMgr->raiseVolume();
   }
   else if(arg.key == OIS::KC_T) {
-   // soundMgr->playSound(chirp, mCamera->getPosition(), Ogre::Vector3(0,0,0));
+    // soundMgr->playSound(chirp, mCamera->getPosition(), Ogre::Vector3(0,0,0));
   }
 
   return BaseGame::keyPressed(arg);
@@ -628,7 +607,7 @@ bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id 
     double force = chargeShot * 0.85f;
     chargeShot = 0;
 
-    if(ballMgr->isGlobalBall())
+    if (ballMgr->isGlobalBall())
       ballMgr->removeGlobalBall();
 
     int x = mCamera->getPosition().x;
@@ -643,9 +622,9 @@ bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id 
 
     if (multiplayerStarted && connected) {
       if (!server)
-        updateServer(force, Ogre::Vector3(x, y, z));
+        updateServer(force, direction);
       else
-        updatePlayers(force, Ogre::Vector3(x, y, z));
+        updatePlayers(force, direction);
     }
   }
 
