@@ -166,7 +166,7 @@ protected:
       for (int y = 0; y < cubeSize; y++) {
         for (int z = 0; z < cubeSize; z++) {
           Ogre::Entity* ballMesh = mSceneMgr->createEntity("sphere.mesh");
-          ballMesh->setMaterialName("Examples/SphereMappedRustySteel");
+          ballMesh->setMaterialName("Examples/shinyball2");
           ballMesh->setCastShadows(true);
 
           // Attach the node.

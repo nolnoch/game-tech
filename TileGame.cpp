@@ -69,6 +69,7 @@ TileGame::~TileGame(void) {
 }
 //-------------------------------------------------------------------------------------
 bool TileGame::configure() {
+
   bool ret = BaseGame::configure();
 
   // Networking //
@@ -114,6 +115,8 @@ void TileGame::createCamera(void) {
 }
 //-------------------------------------------------------------------------------------
 void TileGame::createScene(void) {
+
+
   Ogre::Plane wallBack(Ogre::Vector3::NEGATIVE_UNIT_Z, 0);
   Ogre::Plane wallFront(Ogre::Vector3::UNIT_Z,0);
   Ogre::Plane wallDown(Ogre::Vector3::UNIT_Y,0);
@@ -121,12 +124,14 @@ void TileGame::createScene(void) {
   Ogre::Plane wallLeft(Ogre::Vector3::UNIT_X, 0);
   Ogre::Plane wallRight(Ogre::Vector3::NEGATIVE_UNIT_X,0);
 
+  std::string wallMaterialName = "Examples/wallBlend";
+  float mapping = 2;
   // Use the planes from above to generate new meshes for walls.
   Ogre::MeshManager::getSingleton().createPlane("ground",
       Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, wallDown,
       WALL_SIZE, WALL_SIZE, 20, 20, true, 1, 1, 1, Ogre::Vector3::UNIT_Z);
   Ogre::Entity* entGround = mSceneMgr->createEntity("GroundEntity", "ground");
-  entGround->setMaterialName("Custom/texture_blend");
+  entGround->setMaterialName("Examples/floor");
   entGround->setCastShadows(false);
   Ogre::SceneNode* nodeGround = mSceneMgr->getRootSceneNode()->createChildSceneNode();
   nodeGround->setPosition(0 , -PLANE_DIST, 0);
@@ -144,9 +149,9 @@ void TileGame::createScene(void) {
 
   Ogre::MeshManager::getSingleton().createPlane("back",
       Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, wallBack,
-      WALL_SIZE, WALL_SIZE, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Y);
+      WALL_SIZE, WALL_SIZE, 20, 20, true, 1, mapping, mapping, Ogre::Vector3::UNIT_Y);
   Ogre::Entity* entBack = mSceneMgr->createEntity("BackEntity", "back");
-  entBack->setMaterialName("Examples/Rockwall");
+  entBack->setMaterialName(wallMaterialName);
   entBack->setCastShadows(false);
   Ogre::SceneNode* nodeBack = mSceneMgr->getRootSceneNode()->createChildSceneNode("backNode");
   nodeBack->setPosition(0 , 0, PLANE_DIST);
@@ -154,9 +159,9 @@ void TileGame::createScene(void) {
 
   Ogre::MeshManager::getSingleton().createPlane("front",
       Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, wallFront,
-      WALL_SIZE, WALL_SIZE, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Y);
+      WALL_SIZE, WALL_SIZE, 20, 20, true, 1, mapping, mapping, Ogre::Vector3::UNIT_Y);
   Ogre::Entity* entFront = mSceneMgr->createEntity("FrontEntity", "front");
-  entFront->setMaterialName("Examples/Rockwall");
+  entFront->setMaterialName(wallMaterialName);
   entFront->setCastShadows(false);
   Ogre::SceneNode* nodeFront = mSceneMgr->getRootSceneNode()->createChildSceneNode("frontNode");
   nodeFront->setPosition(0 , 0, -PLANE_DIST);
@@ -164,9 +169,9 @@ void TileGame::createScene(void) {
 
   Ogre::MeshManager::getSingleton().createPlane("left",
       Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, wallLeft,
-      WALL_SIZE, WALL_SIZE, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Y);
+      WALL_SIZE, WALL_SIZE, 20, 20, true, 1, mapping, mapping, Ogre::Vector3::UNIT_Y);
   Ogre::Entity* entLeft = mSceneMgr->createEntity("LeftEntity", "left");
-  entLeft->setMaterialName("Examples/Rockwall");
+  entLeft->setMaterialName(wallMaterialName);
   entLeft->setCastShadows(false);
   Ogre::SceneNode* nodeLeft = mSceneMgr->getRootSceneNode()->createChildSceneNode("leftNode");
   nodeLeft->setPosition(-PLANE_DIST , 0, 0);
@@ -174,23 +179,45 @@ void TileGame::createScene(void) {
 
   Ogre::MeshManager::getSingleton().createPlane("right",
       Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, wallRight,
-      WALL_SIZE, WALL_SIZE, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Y);
+      WALL_SIZE, WALL_SIZE, 20, 20, true, 1, mapping, mapping, Ogre::Vector3::UNIT_Y);
   Ogre::Entity* entRight = mSceneMgr->createEntity("RightEntity", "right");
-  entRight->setMaterialName("Examples/Rockwall");
+  entRight->setMaterialName(wallMaterialName);
   entRight->setCastShadows(false);
   Ogre::SceneNode* nodeRight = mSceneMgr->getRootSceneNode()->createChildSceneNode("rightNode");
   nodeRight->setPosition(PLANE_DIST, 0, 0);
   nodeRight->attachObject(entRight);
 
   // Set ambient light
-  mSceneMgr->setAmbientLight(Ogre::ColourValue(0.35, 0.35, 0.35));
+  mSceneMgr->setAmbientLight(Ogre::ColourValue(0.40, 0.40, 0.40));
+
+   mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
 
   // Create a light
   Ogre::Light* lSun = mSceneMgr->createLight("SunLight");
   lSun->setType(Ogre::Light::LT_POINT);
   lSun->setDiffuseColour(0.95, 0.95, 1.00);
-  lSun->setPosition(0,1400,0);
-  lSun->setAttenuation(3250, 1.0, 0.0000000001, 0.000001);
+  lSun->setPosition(-500,1600,-500);
+  lSun->setSpecularColour(1.0,1.0,1.0);
+//  lSun->setAttenuation(3250, 1.0, 0.0000000001, 0.000001);
+  lSun->setAttenuation(5250, 1.0, 0.00000001, 0.00000010);
+
+   // //   Directional light
+   // Ogre::Light* light = mSceneMgr->createLight("Light1");
+   // light->setType(Ogre::Light::LT_DIRECTIONAL);
+   // light->setDiffuseColour(Ogre::ColourValue(.6, .6, .6));
+   // light->setSpecularColour(Ogre::ColourValue(.7, .7, .7));
+   // light->setDirection(Ogre::Vector3(-1, -1, 1));
+
+   // //   Spot light
+   // light = mSceneMgr->createLight("Light2");
+   // light->setType(Ogre::Light::LT_SPOTLIGHT);
+   // light->setDiffuseColour(Ogre::ColourValue(0.8, 0.8, 0.8));
+   // light->setSpecularColour(Ogre::ColourValue(1, 1, 1));
+   // light->setDirection(Ogre::Vector3(0, -1, 0));
+   // light->setPosition( Ogre::Vector3(0, 1000, 0) );
+   // light->setSpotlightRange( Ogre::Degree(35), Ogre::Degree(50) );
+
+
 
   sim->createBounds(PLANE_DIST);
 
@@ -613,8 +640,9 @@ bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id 
     int x = mCamera->getPosition().x;
     int y = mCamera->getPosition().y;
     int z = mCamera->getPosition().z;
-
+    ballMeshpc->setMaterialName("Examples/shinyball");
     ballMeshpc->setCastShadows(true);
+
     nodepc->attachObject(ballMeshpc);
     ballMgr->setGlobalBall(ballMgr->addBall(nodepc, x, y, z, 100));
     ballMgr->globalBall->applyForce(force, direction);

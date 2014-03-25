@@ -20,6 +20,71 @@ material Examples/SphereMappedRustySteel
 	}
 }
 
+material Examples/shinyball
+{
+	receive_shadows on
+	technique
+	{
+		pass
+		{
+			shading phong
+			ambient 1 1 1
+      			diffuse  1.0 1.0 1.0
+        		specular 1.0 1.0 1.0 1 90
+      			emissive .0 .0 .0 0
+			
+		}
+	}
+}
+
+material Examples/shinyball2
+{
+	technique
+	{
+		pass
+		{
+			ambient 1 1 1
+			specular 1.0 1.0 1.0 1 90
+			texture_unit
+			{
+				texture shiny2.jpg
+				env_map spherical
+			}
+		}
+	}
+}
+
+material Examples/floor
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.65 0.65 0.65
+			texture_unit
+			{
+				texture foursquares.jpg
+			}
+		}
+	}
+}
+
+material Examples/wallBlend
+{
+   technique
+	{
+		pass
+		{
+			
+			ambient .55 .55 .55
+			texture_unit
+			{
+				texture brick2.jpg
+			}
+		}
+	}
+}
+
 material Examples/OgreLogo
 {
 	technique
