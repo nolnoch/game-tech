@@ -27,3 +27,6 @@
 /OgreApp-NetManager.o
 /OgreApp-SoundManager.o
 /.deps
+/config.log
+/Makefile.am
+/plugins.cfg

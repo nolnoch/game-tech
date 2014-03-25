@@ -57,8 +57,8 @@
                         '_m4_warn' => 1,
                         'AC_LIBTOOL_OBJDIR' => 1,
                         'gl_FUNC_ARGZ' => 1,
-                        'AM_SANITY_CHECK' => 1,
                         'LTOBSOLETE_VERSION' => 1,
+                        'AM_SANITY_CHECK' => 1,
                         'AC_LIBTOOL_LANG_GCJ_CONFIG' => 1,
                         'AC_LIBTOOL_PROG_COMPILER_PIC' => 1,
                         'LT_LIB_M' => 1,
@@ -72,12 +72,9 @@
                         '_LT_WITH_SYSROOT' => 1,
                         'LT_FUNC_DLSYM_USCORE' => 1,
                         'LT_SYS_DLOPEN_DEPLIBS' => 1,
-                        'AC_LIBTOOL_CONFIG' => 1,
-<<<<<<< HEAD
-                        'AC_CONFIG_MACRO_DIR' => 1,
-=======
                         '_LT_AC_LANG_F77' => 1,
->>>>>>> a83a5f1c916341b1a558fc1452d649c916471a0c
+                        'AC_LIBTOOL_CONFIG' => 1,
+                        'AC_CONFIG_MACRO_DIR' => 1,
                         '_AM_SUBST_NOTMAKE' => 1,
                         'AC_LTDL_DLLIB' => 1,
                         '_AM_AUTOCONF_VERSION' => 1,
@@ -89,10 +86,7 @@
                         'AC_LIB_LTDL' => 1,
                         '_LT_AC_FILE_LTDLL_C' => 1,
                         'AM_PROG_LD' => 1,
-<<<<<<< HEAD
                         'fp_C_PROTOTYPES' => 1,
-=======
->>>>>>> a83a5f1c916341b1a558fc1452d649c916471a0c
                         'AU_DEFUN' => 1,
                         'AC_PROG_NM' => 1,
                         'AC_LIBTOOL_DLOPEN' => 1,
@@ -128,10 +122,7 @@
                         'LTDL_INSTALLABLE' => 1,
                         '_LT_AC_LANG_GCJ_CONFIG' => 1,
                         'AC_ENABLE_SHARED' => 1,
-<<<<<<< HEAD
                         'AM_C_PROTOTYPES' => 1,
-=======
->>>>>>> a83a5f1c916341b1a558fc1452d649c916471a0c
                         'AC_ENABLE_STATIC' => 1,
                         'AC_LIBTOOL_SYS_HARD_LINK_LOCKS' => 1,
                         '_LT_REQUIRED_DARWIN_CHECKS' => 1,
@@ -179,16 +170,11 @@
                         'LT_AC_PROG_GCJ' => 1,
                         'LT_SYS_DLOPEN_SELF' => 1,
                         'AM_DISABLE_STATIC' => 1,
-<<<<<<< HEAD
                         'AM_DEP_TRACK' => 1,
                         '_LT_AC_PROG_CXXCPP' => 1,
                         'AM_CONFIG_HEADER' => 1,
                         '_AC_PROG_LIBTOOL' => 1,
                         'AM_PROG_CC_STDC' => 1,
-=======
-                        '_AC_PROG_LIBTOOL' => 1,
-                        'AM_CONFIG_HEADER' => 1,
->>>>>>> a83a5f1c916341b1a558fc1452d649c916471a0c
                         '_AM_IF_OPTION' => 1,
                         'AC_PATH_TOOL_PREFIX' => 1,
                         'AC_LIBTOOL_F77' => 1,
@@ -236,10 +222,7 @@
                         '_AM_MANGLE_OPTION' => 1,
                         'AC_LTDL_SYMBOL_USCORE' => 1,
                         'AC_LIBTOOL_SYS_MAX_CMD_LEN' => 1,
-<<<<<<< HEAD
                         'AC_CONFIG_MACRO_DIR_TRACE' => 1,
-=======
->>>>>>> a83a5f1c916341b1a558fc1452d649c916471a0c
                         'AM_SET_DEPDIR' => 1,
                         '_LT_CC_BASENAME' => 1,
                         'PKG_PROG_PKG_CONFIG' => 1,
@@ -267,7 +250,6 @@
                         'AC_SUBST' => 1,
                         'AC_CONFIG_LIBOBJ_DIR' => 1,
                         'AM_EXTRA_RECURSIVE_TARGETS' => 1,
-
                         'AC_FC_SRCEXT' => 1,
                         'AC_CANONICAL_HOST' => 1,
                         'AC_PROG_LIBTOOL' => 1,
@@ -303,10 +285,7 @@
                         'AC_CANONICAL_BUILD' => 1,
                         'AC_FC_FREEFORM' => 1,
                         'AH_OUTPUT' => 1,
-<<<<<<< HEAD
                         'AC_FC_PP_SRCEXT' => 1,
-=======
->>>>>>> a83a5f1c916341b1a558fc1452d649c916471a0c
                         '_AM_SUBST_NOTMAKE' => 1,
                         'AC_CONFIG_AUX_DIR' => 1,
                         'sinclude' => 1,
