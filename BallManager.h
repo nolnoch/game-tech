@@ -18,6 +18,7 @@ class TileSimulator;
 class BallManager {
 public:
   Ball *globalBall;
+  Ogre::Vector3 collisionPosition;
 
   BallManager(TileSimulator *sim);
   virtual ~BallManager();
@@ -32,6 +33,8 @@ public:
   bool isGlobalBall();
   void clearBalls();
   int getNumberBallCollisions();
+  Ogre::Vector3 getCollisionPosition();
+
 
   TileSimulator* getSimulator();
 

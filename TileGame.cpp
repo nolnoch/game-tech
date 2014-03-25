@@ -52,6 +52,7 @@ noteIndex(0)
   }
 */
   chirp = 0;
+  hit2 = 0;
   gameDone = animDone = isCharging = paused = connected = server = netActive =
       invitePending = inviteAccepted = multiplayerStarted = false;
   gameStart = true;
@@ -107,7 +108,7 @@ bool TileGame::configure() {
       noteSequence[4] = soundMgr->loadSound("note1.wav");
 
   chirp = soundMgr->loadSound("chirp.wav");
-
+  hit2= soundMgr->loadSound("hit2.wav");
   soundMgr->playMusic();
   soundMgr->setVolume(.25);
 
@@ -261,8 +262,8 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
     if (hit && !gameDone) {
       
            
-
-      soundMgr->playSound(boing);
+      soundMgr->playSound(hit2, ballMgr->getCollisionPosition(), mCamera);
+      //soundMgr->playSound(boing);
       score++;
 
       if (!tileEntities.empty()) {
@@ -331,7 +332,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
     if(numCollisions > 0)
     {
         std::cout << "colls: " << numCollisions << "\n";
-        soundMgr->playSound(boing);
+        soundMgr->playSound(hit2, ballMgr->getCollisionPosition(), mCamera);
         ballsounddelay = 5;
     }
   }

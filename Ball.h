@@ -74,6 +74,7 @@ class Ball {
       return node;
     }
 
+
   private:
     Ogre::SceneNode* node;
     btScalar mass;

@@ -102,7 +102,7 @@ protected:
   NetManager *netMgr;
 
   SoundFile boing, gong, music;
-  SoundFile chirp;
+  SoundFile chirp, hit2;
   std::vector<SoundFile> noteSequence;
   int noteIndex;
   bool paused, gameStart, gameDone, animDone, isCharging, connected, server,

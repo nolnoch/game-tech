@@ -110,6 +110,7 @@ bool BallManager::checkCollisions(btRigidBody *aTile, void *body0, void *body1) 
         (aTile == body1 && mball->checkRigidBody((btRigidBody*)body0))) {
       mball->lockPosition();
       hit = true;
+      collisionPosition = (mball->getSceneNode())->_getDerivedPosition();
     }
     if(mball->checkRigidBody((btRigidBody*)body0))
     {
@@ -133,3 +134,10 @@ int BallManager::getNumberBallCollisions()
     ballCollisions = 0;
     return buf;
 }
+
+Ogre::Vector3 BallManager::getCollisionPosition() {
+	return collisionPosition;
+}
+
+
+
