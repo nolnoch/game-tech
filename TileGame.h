@@ -42,14 +42,15 @@ struct PlayerData {
   Ogre::Quaternion newDir;
   Ogre::Vector3 newPos;
   Ogre::Vector3 shotDir;
-  Ogre::Vector3 velocity;
   double shotForce;
 };
 
 struct PlayerOldData {
   Ogre::Quaternion oldDir;
-  Ogre::Vector3 oldPos;
+  Ogre::Vector3 lastDistance;
   double delta;
+  Ogre::Vector3 drawPos;
+  
 };
 
 /* Since we should not have the physics sim running on clients, the server needs
@@ -357,9 +358,8 @@ protected:
 
   void movePlayers() {
     std::ostringstream playerName;
-    Ogre::Vector3 oldPos, newPos, drawPos;
+    Ogre::Vector3 newPos, drawPos;
     Ogre::Quaternion newDir, oldDir, drawDir;
-    Ogre::Vector3 velocity;
     Ogre::SceneNode *node;
     int i;
 
@@ -368,12 +368,15 @@ protected:
 
       // Update position.
       newPos = playerData[i]->newPos;
-      oldPos = playerOldData[i]->oldPos;
       delta = playerOldData[i]->delta;
       playerOldData[i]->delta += 1;
 
-      drawPos = newPos;
-      drawPos += playerData[i]->velocity * delta / 60.0;
+      drawPos = playerOldData[i]->drawPos;
+      drawPos += (playerOldData[i]->lastDistance) / 10.0;
+      // Use of 10 is arbitrary- for SWEEP_MS = 150, it is the number of
+      // frames drawn between network updates. It doesn't seem to matter
+      // much if it's off.
+      playerOldData[i]->drawPos = drawPos;
 
       oldDir = playerOldData[i]->oldDir;
       newDir = playerData[i]->newDir;
@@ -403,7 +406,6 @@ protected:
     single.newDir = mCamera->getOrientation();
     single.shotForce = force;
     single.shotDir = dir;
-    single.velocity = mCameraMan->getVelocity();
     memcpy(netMgr->udpServerData[nPlayers].input, &UINT_UPDPL, tagSize);
     memcpy((netMgr->udpServerData[nPlayers].input + 4), &single, pdSize);
     netMgr->udpServerData[nPlayers].updated = true;
@@ -431,7 +433,6 @@ protected:
     single.newDir = mCamera->getOrientation();
     single.shotForce = force;
     single.shotDir = dir;
-    single.velocity = mCameraMan->getVelocity();
 
     if (force) {
       memcpy(netMgr->tcpServerData.input, &UINT_BLSHT, tagSize);
@@ -465,7 +466,8 @@ protected:
 
     memcpy(newPlayer, data, sizeof(PlayerData));
 
-    newOldPlayer->oldPos = newPlayer->newPos;
+    newOldPlayer->lastDistance = Ogre::Vector3(0, 0, 0);
+    newOldPlayer->drawPos = newPlayer->newPos;
     newOldPlayer->oldDir = newPlayer->newDir;
     newOldPlayer->delta = 0;
 
@@ -474,8 +476,8 @@ protected:
   }
 
   void modifyPlayer(int j, Uint32 *data) {
-    playerOldData[j]->oldPos = playerData[j]->newPos;
     playerOldData[j]->oldDir = playerData[j]->newDir;
+    std::cout << playerOldData[j]->delta << "\n";
     playerOldData[j]->delta = 0;
 
     memcpy(playerData[j], data, sizeof(PlayerData));
@@ -487,6 +489,8 @@ protected:
       shootBall(j, newPos.x, newPos.y, newPos.z, playerData[j]->shotForce);
       playerData[j]->shotForce = 0;
     }
+
+    playerOldData[j]->lastDistance = playerData[j]->newPos - playerOldData[j]->drawPos;
   }
 
   void notifyPlayers() {
