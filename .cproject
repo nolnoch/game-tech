@@ -22,11 +22,11 @@
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1762468120" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.449857940" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<option id="gnu.cpp.compiler.option.include.paths.1159383676" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/home/nolnoch/ogre3d/ogre_src_v1-7-4/OgreMain/include"/>
-									<listOptionValue builtIn="false" value="/home/nolnoch/ogre3d/ogre_src_v1-7-4/Samples/Common/include"/>
 									<listOptionValue builtIn="false" value="/usr/include/bullet"/>
 									<listOptionValue builtIn="false" value="/usr/include/OIS"/>
 									<listOptionValue builtIn="false" value="/usr/include/SDL"/>
+									<listOptionValue builtIn="false" value="&quot;${OGRE_LOC}/OgreMain/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${OGRE_LOC}/Samples/Common/include&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1718442765" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
