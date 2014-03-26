@@ -94,6 +94,7 @@ void BallManager::removePlayerBall(int idx) {
   playerBallsActive[idx] = false;
 }
 
+//TODO use a btTransform to move the ball.
 void BallManager::moveBall(int id, Ogre::SceneNode* nodepc, Ogre::Entity* ballmeshpc, Ogre::Vector3 velocity)
 {
     Ogre::Vector3 direction = velocity.normalisedCopy();

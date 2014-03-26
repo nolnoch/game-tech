@@ -413,7 +413,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
                   }
                 }
               }
-              else if ((data[0] == UINT_UPDBL)) {
+              else if ((data[0] == UINT_UPDBL)) { //moves the ball to where server says so.
                 modifyBalls(++data);
               }
               netMgr->udpServerData[i].updated = false;
