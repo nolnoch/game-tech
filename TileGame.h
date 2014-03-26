@@ -78,15 +78,14 @@ struct PlayerOldData {
  * slows down the transmission. We can discuss and/or test.
  */
 struct BallData {
-  int numBalls;                     //   4 bytes
-  int x;
-  int y;
-  int z;
-  int dx;
-  int dy;
-  int dz;
-  //TODO: make this less stupid. I just wanted to make sure networking would work.
-  //Uint64 posAndVel[8];            //  64 bytes
+  //int numBalls;                     //   4 bytes
+
+  //Side note: if we interpolate with the same logic as players, velocity isn't needed.
+  //We instead use the distance between last-drawn and last-heard locations to get velocity.
+  //This cuts down the overhead by a decent amount. Too bad position is still 33 bytes.
+  //NOTE to note: our playing field is slightly larger than 2200 so we need 36 bytes.
+
+  Uint64 posAndVel[8];              //  64 bytes
   //Uint64 posAndVel[27];           // 216 bytes
 
   // Alternate
@@ -442,9 +441,21 @@ protected:
       memcpy((netMgr->udpServerData[i].input + 4), playerData[i], pdSize);
       netMgr->udpServerData[i].updated = true;
     }
-    ballData.x = ballMgr->ballList[0]->getSceneNode()->getPosition().x;
-    ballData.y = ballMgr->ballList[0]->getSceneNode()->getPosition().y;
-    ballData.z = ballMgr->ballList[0]->getSceneNode()->getPosition().z;
+    // Balls
+    for(int i = 0; i < 1; i++)
+    {
+      Uint64& ball = ballData.posAndVel[i];
+      Uint64 x = ballMgr->ballList[0]->getSceneNode()->getPosition().x + 1500;
+      Uint64 y = ballMgr->ballList[0]->getSceneNode()->getPosition().y + 1500;
+      Uint64 z = ballMgr->ballList[0]->getSceneNode()->getPosition().z + 1500;
+      std::cout << "Sending:\n";
+      std::cout << "  x: " << x << "\n";
+      std::cout << "  y: " << y << "\n";
+      std::cout << "  z: " << z << "\n";
+      y = y << 12;
+      z = z << 24;
+      ball = x | y | z;
+    }
     memcpy((netMgr->udpServerData[nPlayers+1].input), &UINT_UPDBL, tagSize);
     memcpy((netMgr->udpServerData[nPlayers+1].input + 4), &ballData, bdSize);
     netMgr->udpServerData[nPlayers+1].updated = true;
@@ -533,7 +544,21 @@ protected:
 
   void modifyBalls(Uint32 *data) {
     memcpy(&ballData, data, sizeof(BallData));
-    moveBall(0, ballData.x, ballData.y, ballData.z, Ogre::Vector3(0, 0, 0));
+    for(int i = 0; i < 1; i++)
+    {
+      Uint64& ball = ballData.posAndVel[i];
+      Uint64 xmask = 0x0000000000000fff;
+      Uint64 ymask = 0x0000000000fff000;
+      Uint64 zmask = 0x0000000fff000000;
+      Uint64 x = (ball & xmask)         - 1500;
+      Uint64 y = ((ball & ymask) >> 12) - 1500;
+      Uint64 z = ((ball & zmask) >> 24) - 1500;
+      std::cout << "Recieved:\n";
+      std::cout << "  x: " << x << "\n";
+      std::cout << "  y: " << y << "\n";
+      std::cout << "  z: " << z << "\n";
+      moveBall(i, x, y, z, Ogre::Vector3(0, 0, 0));
+    }
   }
 
   void notifyPlayers() {
