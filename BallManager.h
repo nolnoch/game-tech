@@ -22,6 +22,7 @@ public:
   Ogre::Vector3 collisionPosition;
 
   std::vector<Ball *> playerBalls;
+  std::vector<Ball *> ballList;
 
 
   BallManager(TileSimulator *sim);
@@ -44,12 +45,13 @@ public:
   Ogre::Vector3 getCollisionPosition();
 
 
+  void moveBall(int id, Ogre::SceneNode* nodepc, Ogre::Entity* ballmeshpc, Ogre::Vector3 velocity);
+
   TileSimulator* getSimulator();
 
   bool checkCollisions(btRigidBody *aTile, void *body0, void *body1);
 
 private:
-  std::vector<Ball *> ballList;
   std::vector<Ball *> mainBalls;
   std::vector<bool> playerBallsActive;
   TileSimulator *sim;
