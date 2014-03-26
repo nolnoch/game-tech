@@ -20,6 +20,7 @@ public:
   Ball *globalBall;
   std::vector<Ball *> playerBalls;
   std::vector<Ball *> ballList;
+  std::vector<Ball *> mainBalls;
 
   BallManager(TileSimulator *sim);
   virtual ~BallManager();
@@ -38,14 +39,13 @@ public:
   bool isPlayerBall(int idx);
   void clearBalls();
   int getNumberBallCollisions();
-  void moveBall(int id, Ogre::SceneNode* nodepc, Ogre::Entity* ballmeshpc, Ogre::Vector3 velocity);
+  void moveOrAddBall(int id, Ogre::SceneNode* nodepc, Ogre::Entity* ballmeshpc, Ogre::Vector3 velocity);
 
   TileSimulator* getSimulator();
 
   bool checkCollisions(btRigidBody *aTile, void *body0, void *body1);
 
 private:
-  std::vector<Ball *> mainBalls;
   std::vector<bool> playerBallsActive;
   TileSimulator *sim;
   bool globalBallActive;

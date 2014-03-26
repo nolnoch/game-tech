@@ -284,7 +284,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
     }
   }
 
-  if (gameDone && !paused && winTimer++ > 320) {
+  if (gameDone && !paused && winTimer++ > 320 && server) {
     levelTearDown();
     levelSetup(currLevel);
     congratsPanel->hide();

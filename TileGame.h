@@ -78,7 +78,7 @@ struct PlayerOldData {
  * slows down the transmission. We can discuss and/or test.
  */
 struct BallData {
-  //int numBalls;                     //   4 bytes
+  int numBalls;                     //   4 bytes
 
   //Side note: if we interpolate with the same logic as players, velocity isn't needed.
   //We instead use the distance between last-drawn and last-heard locations to get velocity.
@@ -175,7 +175,7 @@ protected:
     ballMeshpc->setCastShadows(true);
 
     nodepc->attachObject(ballMeshpc);
-    ballMgr->moveBall(id, nodepc, ballMeshpc, velocity);
+    ballMgr->moveOrAddBall(id, nodepc, ballMeshpc, velocity);
   }
 
   void ballSetup (int cubeSize) {
@@ -442,16 +442,18 @@ protected:
       netMgr->udpServerData[i].updated = true;
     }
     // Balls
-    for(int i = 0; i < 1; i++)
+    int numBalls = ballMgr->mainBalls.size();
+    ballData.numBalls = numBalls;
+    for(int i = 0; i < numBalls; i++)
     {
       Uint64& ball = ballData.posAndVel[i];
-      Uint64 x = ballMgr->ballList[0]->getSceneNode()->getPosition().x + 1500;
-      Uint64 y = ballMgr->ballList[0]->getSceneNode()->getPosition().y + 1500;
-      Uint64 z = ballMgr->ballList[0]->getSceneNode()->getPosition().z + 1500;
-      std::cout << "Sending:\n";
-      std::cout << "  x: " << x << "\n";
-      std::cout << "  y: " << y << "\n";
-      std::cout << "  z: " << z << "\n";
+      Uint64 x = ballMgr->mainBalls[i]->getSceneNode()->getPosition().x + 1500;
+      Uint64 y = ballMgr->mainBalls[i]->getSceneNode()->getPosition().y + 1500;
+      Uint64 z = ballMgr->mainBalls[i]->getSceneNode()->getPosition().z + 1500;
+      //std::cout << "Sending:\n";
+      //std::cout << "  x: " << x << "\n";
+      //std::cout << "  y: " << y << "\n";
+      //std::cout << "  z: " << z << "\n";
       y = y << 12;
       z = z << 24;
       ball = x | y | z;
@@ -537,6 +539,7 @@ protected:
       Ogre::Vector3 newPos = playerData[j]->newPos;
       shootBall(j, newPos.x, newPos.y, newPos.z, playerData[j]->shotForce);
       playerData[j]->shotForce = 0;
+      std::cout << "Shot fired done." << std::endl;
     }
 
     playerOldData[j]->lastDistance = playerData[j]->newPos - playerOldData[j]->drawPos;
@@ -544,7 +547,8 @@ protected:
 
   void modifyBalls(Uint32 *data) {
     memcpy(&ballData, data, sizeof(BallData));
-    for(int i = 0; i < 1; i++)
+    int numBalls = ballData.numBalls;
+    for(int i = 0; i < numBalls; i++)
     {
       Uint64& ball = ballData.posAndVel[i];
       Uint64 xmask = 0x0000000000000fff;
