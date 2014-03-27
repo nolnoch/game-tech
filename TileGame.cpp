@@ -53,7 +53,7 @@ noteIndex(0)
    */
   chirp = 0;
   gameDone = animDone = isCharging = paused = connected = server = netActive =
-      invitePending = inviteAccepted = multiplayerStarted = false;
+      invitePending = inviteAccepted = multiplayerStarted = tileHit = false;
   gameStart = true;
 
   mSpeed = score = shotsFired = tileCounter = winTimer = chargeShot =
@@ -255,11 +255,11 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
   if (paused)
     slowdownval += 1/1800.f;
   else {
-    bool hit = sim->simulateStep(slowdownval);
+    if(server || !multiplayerStarted)
+      tileHit = sim->simulateStep(slowdownval);
 
-    if (hit && !gameDone) {
-
-
+    if (tileHit && !gameDone) {
+      tileHit = false;
 
       soundMgr->playSound(boing);
       score++;
@@ -281,10 +281,14 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
         congratsPanel->show();
         ballMgr->enableGravity();
       }
+      
+      if(server && multiplayerStarted) {
+        netMgr->messageClients(PROTOCOL_TCP, STR_TLHIT.c_str(), STR_TLHIT.length());
+      }
     }
   }
 
-  if (gameDone && !paused && winTimer++ > 320 && server) {
+  if (gameDone && !paused && winTimer++ > 320) {
     levelTearDown();
     levelSetup(currLevel);
     congratsPanel->hide();
@@ -407,6 +411,9 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
               mTrayMgr->destroyWidget("ServerStartPanel");
               mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
               startMultiplayer();
+            }
+            if (0 == cmd.find(STR_TLHIT)) {
+              tileHit = true;
             }
 
             netMgr->tcpServerData.updated = false;

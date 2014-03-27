@@ -40,6 +40,7 @@ public:
   void clearBalls();
   int getNumberBallCollisions();
   void moveOrAddBall(int id, Ogre::SceneNode* nodepc, Ogre::Entity* ballmeshpc, Ogre::Vector3 velocity);
+  void moveOrAddPlayerBall(int id, Ogre::SceneNode* nodepc, Ogre::Entity* ballmeshpc, Ogre::Vector3 velocity);
 
   TileSimulator* getSimulator();
 
