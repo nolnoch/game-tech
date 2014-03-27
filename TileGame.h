@@ -58,38 +58,21 @@ struct PlayerOldData {
  * struct theoretically can handle up to 27 balls at one time by using 64 bits
  * per ball and keeping track of how many balls/64-bit fields should be read.
  *
- * Per ball:
- *  11 bits - x position interpreted as integer (max 2048)
- *  11 bits - y position interpreted as integer (max 2048)
- *  11 bits - z position interpreted as integer (max 2048)
- *  10 bits - x velocity interpreted as integer (max 1024)
- *  10 bits - y velocity interpreted as integer (max 1024)
- *  10 bits - z velocity interpreted as integer (max 1024)
- *   1 bit  - padding
- *
- * This is very low-level and slightly hacky, but it could allow us to update
- * all balls with only 220 bytes every single network update. It is possible
- * to update all balls with full Vector3s, but it would require 652 bytes per
- * update (for 27 balls).
- *
- * The current network buffer size is 128 bytes. This can change but must be
- * lower than the MTU (maximum transmission unit) set by the hardware and the
- * network. This is commonly 1500 bytes but can be as low as 500. Size also
- * slows down the transmission. We can discuss and/or test.
+ * Per ball (Uint16 or short int):
+ *  16 bits - owner (host)
+ *  16 bits - x position interpreted as integer
+ *  16 bits - y position interpreted as integer
+ *  16 bits - z position interpreted as integer
  */
-struct BallData {
-  int numBalls;                     //   4 bytes
+struct BallNetworkData {
+  int numBalls;
+  Uint64 ball[64];              //  64 bytes
+};
 
-  //Side note: if we interpolate with the same logic as players, velocity isn't needed.
-  //We instead use the distance between last-drawn and last-heard locations to get velocity.
-  //This cuts down the overhead by a decent amount. Too bad position is still 33 bytes.
-  //NOTE to note: our playing field is slightly larger than 2200 so we need 36 bytes.
-
-  Uint64 posAndVel[8];              //  64 bytes
-  //Uint64 posAndVel[27];           // 216 bytes
-
-  // Alternate
-  // Ogre::Vector3 posAndVel[54];   // 648 bytes
+struct BallLocalData {
+  Vector3 lastDistance;
+  Vector3 newPos;
+  Vector3 drawPos;
 };
 
 class TileGame : public BaseGame
@@ -128,7 +111,8 @@ protected:
   std::vector<Ogre::SceneNode *> playerNodes;
   std::vector<PlayerData *> playerData;
   std::vector<PlayerOldData *> playerOldData;
-  BallData ballData;
+  BallNetworkData ballNetworkData;
+  BallLocalData ballLocalData[64];
 
   OgreBites::ParamsPanel *scorePanel, *playersWaitingPanel;
   OgreBites::Label *congratsPanel, *chargePanel, *clientAcceptDescPanel,
@@ -167,15 +151,29 @@ protected:
     ballMgr->playerBalls[idx]->applyForce(force, direction);
   }
 
-  void moveBall(int id, int x, int y, int z, Ogre::Vector3 velocity) {
-    Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    nodepc->setPosition(x, y, z);
-    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
-    ballMeshpc->setMaterialName("Examples/SphereMappedRustySteel");
-    ballMeshpc->setCastShadows(true);
+  void moveBalls() {
+    // Updating each ball's position.
+    int numBalls = ballData.numBalls;
+    Uint16 x, y, z, host;
+    Uint64 mask = 0xFFFF;
 
-    nodepc->attachObject(ballMeshpc);
-    ballMgr->moveOrAddBall(id, nodepc, ballMeshpc, velocity);
+    for (int i = 0; i < numBalls; i++) {
+      Uint64 ball = ballData.ball[i];
+      
+      host = ball & mask;
+      x = ball & (mask << 16);
+      y = ball & (mask << 32);
+      z = ball & (mask << 48);
+
+      std::cout << "Recieved:\n";
+      std::cout << "host: " << host << std::endl;
+      std::cout << "  x: " << x << std::endl;
+      std::cout << "  y: " << y << std::endl;
+      std::cout << "  z: " << z << std::endl;
+
+      // Move the ball to (x,y,z)
+
+    }
   }
 
   void ballSetup (int cubeSize) {
@@ -546,23 +544,9 @@ protected:
   }
 
   void modifyBalls(Uint32 *data) {
+    // Copies over the new positions.
     memcpy(&ballData, data, sizeof(BallData));
-    int numBalls = ballData.numBalls;
-    for(int i = 0; i < numBalls; i++)
-    {
-      Uint64& ball = ballData.posAndVel[i];
-      Uint64 xmask = 0x0000000000000fff;
-      Uint64 ymask = 0x0000000000fff000;
-      Uint64 zmask = 0x0000000fff000000;
-      Uint64 x = (ball & xmask)         - 1500;
-      Uint64 y = ((ball & ymask) >> 12) - 1500;
-      Uint64 z = ((ball & zmask) >> 24) - 1500;
-      std::cout << "Recieved:\n";
-      std::cout << "  x: " << x << "\n";
-      std::cout << "  y: " << y << "\n";
-      std::cout << "  z: " << z << "\n";
-      moveBall(i, x, y, z, Ogre::Vector3(0, 0, 0));
-    }
+    BallOldData[j]->lastDistance = BallData[j]->newPos - playerOldData[j]->drawPos;
   }
 
   void notifyPlayers() {
