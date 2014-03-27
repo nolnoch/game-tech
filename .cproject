@@ -27,7 +27,6 @@
 									<listOptionValue builtIn="false" value="&quot;${OGRE_LOC}/OgreMain/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${OGRE_LOC}/Samples/Common/include&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/include/SDL"/>
-									
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1718442765" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -85,4 +84,5 @@
 		</scannerConfigBuildInfo>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cproject>

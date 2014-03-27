@@ -44,7 +44,6 @@ gong(0),
 noteSequence(5),
 noteIndex(0)
 {
-  chirp = 0;
   hit2 = 0;
   gameDone = animDone = isCharging = paused = connected = server = netActive =
       invitePending = inviteAccepted = multiplayerStarted = false;
@@ -101,7 +100,6 @@ bool TileGame::configure() {
   noteSequence[3] = soundMgr->loadSound("note2.wav");
   noteSequence[4] = soundMgr->loadSound("note1.wav");
 
-  chirp = soundMgr->loadSound("chirp.wav");
   hit2= soundMgr->loadSound("hit2.wav");
   soundMgr->playMusic();
   soundMgr->setVolume(.25);
@@ -115,7 +113,9 @@ void TileGame::createCamera(void) {
 }
 //-------------------------------------------------------------------------------------
 void TileGame::createScene(void) {
-
+//  std::string postFilter = "Gaussian Blur";
+//  Ogre::CompositorManager::getSingleton().addCompositor(mCamera->getViewport(), postFilter);
+//  Ogre::CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), postFilter, true);
 
   Ogre::Plane wallBack(Ogre::Vector3::NEGATIVE_UNIT_Z, 0);
   Ogre::Plane wallFront(Ogre::Vector3::UNIT_Z,0);
@@ -305,7 +305,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
     }
   }
 
-  if (gameDone && !paused && winTimer++ > 320 && server) {
+  if (gameDone && !paused && winTimer++ > 320) { // && server) {
     levelTearDown();
     levelSetup(currLevel);
     congratsPanel->hide();

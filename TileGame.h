@@ -21,6 +21,7 @@ This source file is part of the
 #include "BallManager.h"
 #include "SoundManager.h"
 #include "NetManager.h"
+#include <OgreCompositorManager.h>
 
 #include <vector>
 #include <string>
@@ -141,7 +142,7 @@ protected:
   NetManager *netMgr;
 
   SoundFile boing, gong, music;
-  SoundFile chirp, hit2;
+  SoundFile hit2;
   std::vector<SoundFile> noteSequence;
   int noteIndex;
   bool paused, gameStart, gameDone, animDone, isCharging, connected, server,
