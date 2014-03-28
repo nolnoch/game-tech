@@ -32,7 +32,9 @@ sim(0),
 panelLight(0),
 scorePanel(0),
 congratsPanel(0),
+winnerPanel(0),
 chargePanel(0),
+multiScorePanel(0),
 clientAcceptDescPanel(0),
 clientAcceptOptPanel(0),
 serverStartPanel(0),
@@ -225,11 +227,14 @@ void TileGame::createFrameListener(void) {
       "ClientAcceptOptPanel", "(Y)es or (N)o", 160);
   playersWaitingPanel = mTrayMgr->createParamsPanel(OgreBites::TL_BOTTOMRIGHT,
       "PlayersWaitingPanel", 200, playerCountTag);
+  winnerPanel = mTrayMgr->createLabel(OgreBites::TL_CENTER,
+      "WinnerPanel", "NULL", 300);
 
   mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
   mTrayMgr->getTrayContainer(OgreBites::TL_BOTTOMRIGHT)->hide();
 
   congratsPanel->hide();
+  winnerPanel->hide();
 
   Ogre::OverlayManager& overlayMgr = Ogre::OverlayManager::getSingleton();
   crosshairOverlay = overlayMgr.create("Crosshair");
@@ -251,7 +256,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
   Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
   //soundMgr->updateSounds(mCamera->getPosition(), direction);
   soundMgr->updateSounds(mCamera);
-  // soundMgr->updateSounds(mCamera);
+
   if (paused)
     slowdownval += 1/1800.f;
   else {
@@ -262,7 +267,6 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
       tileHit = false;
 
       soundMgr->playSound(boing);
-      score++;
 
       if (!tileEntities.empty()) {
         // Play the corresponding sound of that tile.
@@ -278,20 +282,66 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
       if (tileEntities.empty()) {
         gameDone = true;
         winTimer = 0;
-        congratsPanel->show();
-        ballMgr->enableGravity();
       }
-      
-      if(server && multiplayerStarted) {
-        netMgr->messageClients(PROTOCOL_TCP, STR_TLHIT.c_str(), STR_TLHIT.length());
+
+      if (server && multiplayerStarted) {
+        Uint32 scoringHost = ballMgr->popScoringHost();
+
+        if (scoringHost != (netMgr->getIPnbo() & BallManager::HOST_MASK)) {
+          bool found;
+          for (i = 0; i < nPlayers && !found; i++) {
+            if (scoringHost == (playerData[i]->host & BallManager::HOST_MASK)) {
+              playerData[i]->score++;
+              found = true;
+            }
+          }
+        } else {
+          score++;
+        }
+
+        netMgr->messageClients(PROTOCOL_TCP, STR_TLHIT.c_str());
       }
     }
   }
 
-  if (gameDone && !paused && winTimer++ > 320) {
-    levelTearDown();
-    levelSetup(currLevel);
-    congratsPanel->hide();
+  if (gameDone && !paused) {
+    if (winTimer == 0) {
+      std::ostringstream win;
+      int winner;
+
+      congratsPanel->show();
+      ballMgr->enableGravity();
+
+      if (multiplayerStarted) {
+        if (server) {
+          updatePlayers();
+          netMgr->messageClients(PROTOCOL_TCP, STR_NXLVL.c_str());
+        }
+
+        if (-1 != (winner = findRoundWinner())) {
+          if (server)
+            playerData[winner]->wins++;
+
+          win << "Player ";
+          win << winner;
+          win << " wins round ";
+          win << currLevel;
+          win << " !";
+        } else {
+          win << "It's a tie for round ";
+          win << currLevel;
+          win << " !";
+        }
+        winnerPanel->setCaption(win.str());
+        winnerPanel->show();
+      }
+    } else if (winTimer++ > 320) {
+      levelTearDown();
+      levelSetup(currLevel);
+      congratsPanel->hide();
+      if (multiplayerStarted)
+        winnerPanel->hide();
+    }
   }
 
   if (!animDone)
@@ -303,9 +353,18 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
   /* Update SDKTrays panels. */
   if (!mTrayMgr->isDialogVisible()) {
     // ScorePanel
-    scorePanel->setParamValue(0, Ogre::StringConverter::toString(score));
-    scorePanel->setParamValue(1, Ogre::StringConverter::toString(shotsFired));
-    scorePanel->setParamValue(2, Ogre::StringConverter::toString(currLevel));
+    if (!multiplayerStarted) {
+      scorePanel->setParamValue(0, Ogre::StringConverter::toString(score));
+      scorePanel->setParamValue(1, Ogre::StringConverter::toString(shotsFired));
+      scorePanel->setParamValue(2, Ogre::StringConverter::toString(currLevel));
+    } else {
+      multiScorePanel->setParamValue(0, Ogre::StringConverter::toString(score));
+      for (i = 0; i < nPlayers; i++) {
+        multiScorePanel->setParamValue(i + 1, Ogre::StringConverter::toString(playerData[i]->score));
+      }
+      scorePanel->setParamValue(nPlayers + 1, Ogre::StringConverter::toString(shotsFired));
+      scorePanel->setParamValue(nPlayers + 2, Ogre::StringConverter::toString(currLevel));
+    }
 
     // Level complete notification.
     std::stringstream grats;
@@ -411,9 +470,10 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
               mTrayMgr->destroyWidget("ServerStartPanel");
               mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
               startMultiplayer();
-            }
-            if (0 == cmd.find(STR_TLHIT)) {
+            } else if (0 == cmd.find(STR_TLHIT)) {
               tileHit = true;
+            } else if (0 == cmd.find(STR_NXLVL)) {
+              gameDone = true;
             }
 
             netMgr->tcpServerData.updated = false;
@@ -634,7 +694,7 @@ bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id 
 
     ballMeshpc->setCastShadows(true);
     nodepc->attachObject(ballMeshpc);
-    ballMgr->setGlobalBall(ballMgr->addBall(nodepc, x, y, z, 100));
+    ballMgr->setGlobalBall(ballMgr->addBall(nodepc, x, y, z, 100), netMgr->getIPnbo());
     ballMgr->globalBall->applyForce(force, direction);
     shotsFired++;
 

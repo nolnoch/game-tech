@@ -19,6 +19,7 @@ class Ball {
   public:
     Ball(btRigidBody *rB, Ogre::SceneNode *n, int x, int y, int z):
       rigidBody(rB),
+      host(0),
       node(n),
       mass(1)
   {
@@ -73,6 +74,9 @@ class Ball {
     Ogre::SceneNode* getSceneNode() {
       return node;
     }
+
+
+    Uint16 host;
 
   private:
     Ogre::SceneNode* node;

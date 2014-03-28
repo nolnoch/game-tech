@@ -10,6 +10,7 @@
 BallManager::BallManager(TileSimulator *sim):
 sim(sim),
 globalBall(0),
+scoringHost(0),
 ballCollisions(0),
 globalBallActive(false)
 {
@@ -30,12 +31,14 @@ void BallManager::initMultiplayer(int nPlayers) {
   playerBallsActive.assign(nPlayers, false);
 }
 
-void BallManager::setGlobalBall(Ball *ball) {
+void BallManager::setGlobalBall(Ball *ball, Uint32 host) {
+  ball->host = host & HOST_MASK;
   globalBall = ball;
   globalBallActive = true;
 }
 
-void BallManager::setPlayerBall(Ball *ball, int idx) {
+void BallManager::setPlayerBall(Ball *ball, int idx, Uint32 host) {
+  ball->host = host & HOST_MASK;
   playerBalls[idx] = ball;
   playerBallsActive[idx] = true;
 }
@@ -166,6 +169,13 @@ TileSimulator* BallManager::getSimulator() {
   return sim;
 }
 
+Uint32 BallManager::popScoringHost() {
+  Uint32 ret = scoringHost;
+  scoringHost = 0;
+
+  return ret;
+}
+
 bool BallManager::checkCollisions(btRigidBody *aTile, void *body0, void *body1) {
   bool hit = false;
 
@@ -175,16 +185,29 @@ bool BallManager::checkCollisions(btRigidBody *aTile, void *body0, void *body1) 
 
     if ((aTile == body0 && mball->checkRigidBody((btRigidBody*)body1)) ||
         (aTile == body1 && mball->checkRigidBody((btRigidBody*)body0))) {
+      scoringHost = mball->host;
       mball->lockPosition();
       hit = true;
     }
-    if(mball->checkRigidBody((btRigidBody*)body0))
-    {
+    if (mball->checkRigidBody((btRigidBody*)body0)) {
       std::vector<Ball *>::iterator it2;
-      for(it2 = mainBalls.begin(); it2 != mainBalls.end(); it2++)
-      {
-        if((*it2) != mball && (*it2)->checkRigidBody((btRigidBody*)body1))
-        {
+      for(it2 = mainBalls.begin(); it2 != mainBalls.end(); it2++) {
+
+        if((*it2) != mball && (*it2)->checkRigidBody((btRigidBody*)body1)) {
+          if (mball->host || (*it2)->host) {
+            if (mball->host && (*it2)->host) {
+              if (mball->rigidBody->getLinearVelocity() >
+                  (*it2)->rigidBody->getLinearVelocity()) {
+                (*it2)->host = mball->host;
+              } else {
+                mball->host = (*it2)->host;
+              }
+            } else if (mball->host) {
+              (*it2)->host = mball->host;
+            } else {
+              mball->host = (*it2)->host;
+            }
+          }
           ballCollisions++;
         }
       }
