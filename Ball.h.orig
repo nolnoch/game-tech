@@ -76,8 +76,11 @@ class Ball {
     }
 
 
+<<<<<<< HEAD
+=======
     unsigned short int host;
 
+>>>>>>> temp
   private:
     Ogre::SceneNode* node;
     btScalar mass;

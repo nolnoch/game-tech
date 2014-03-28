@@ -10,6 +10,7 @@
 BallManager::BallManager(TileSimulator *sim):
 sim(sim),
 globalBall(0),
+scoringHost(0),
 ballCollisions(0),
 globalBallActive(false)
 {
@@ -30,12 +31,14 @@ void BallManager::initMultiplayer(int nPlayers) {
   playerBallsActive.assign(nPlayers, false);
 }
 
-void BallManager::setGlobalBall(Ball *ball) {
+void BallManager::setGlobalBall(Ball *ball, unsigned int host) {
+  ball->host = host & HOST_MASK;
   globalBall = ball;
   globalBallActive = true;
 }
 
-void BallManager::setPlayerBall(Ball *ball, int idx) {
+void BallManager::setPlayerBall(Ball *ball, int idx, unsigned int host) {
+  ball->host = host & HOST_MASK;
   playerBalls[idx] = ball;
   playerBallsActive[idx] = true;
 }
@@ -103,21 +106,39 @@ void BallManager::moveOrAddBall(int id, Ogre::SceneNode* nodepc, Ogre::Entity* b
 
     if(id < mainBalls.size())
     {
-      std::cout << "move ball\n";
       Ball* rmBall = mainBalls[id];
-      std::cout << "move ball 1\n";
 
       removeBall(rmBall);
-      std::cout << "move ball 2\n";
 
       mainBalls[id] = new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z);
       ballList.push_back(mainBalls[id]);
-      std::cout << "move ball 3\n";
     }
     else
     {
       std::cout << "add ball\n";
       mainBalls.push_back(new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z));
+    }
+}
+
+void BallManager::moveOrAddPlayerBall(int id, Ogre::SceneNode* nodepc, Ogre::Entity* ballmeshpc, Ogre::Vector3 velocity)
+{
+    double x = nodepc->getPosition().x;
+    double y = nodepc->getPosition().y;
+    double z = nodepc->getPosition().z;
+
+    if(id < mainBalls.size())
+    {
+      Ball* rmBall = mainBalls[id];
+
+      removeBall(rmBall);
+
+      playerBalls[id] = new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z);
+      ballList.push_back(mainBalls[id]);
+    }
+    else
+    {
+      std::cout << "add ball\n";
+      playerBalls.push_back(new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z));
     }
 }
 
@@ -149,6 +170,13 @@ TileSimulator* BallManager::getSimulator() {
   return sim;
 }
 
+unsigned int BallManager::popScoringHost() {
+  unsigned int ret = scoringHost;
+  scoringHost = 0;
+
+  return ret;
+}
+
 bool BallManager::checkCollisions(btRigidBody *aTile, void *body0, void *body1) {
   bool hit = false;
 
@@ -158,17 +186,30 @@ bool BallManager::checkCollisions(btRigidBody *aTile, void *body0, void *body1) 
 
     if ((aTile == body0 && mball->checkRigidBody((btRigidBody*)body1)) ||
         (aTile == body1 && mball->checkRigidBody((btRigidBody*)body0))) {
+      scoringHost = mball->host;
       mball->lockPosition();
       hit = true;
       collisionPosition = (mball->getSceneNode())->_getDerivedPosition();
     }
-    if(mball->checkRigidBody((btRigidBody*)body0))
-    {
+    if (mball->checkRigidBody((btRigidBody*)body0)) {
       std::vector<Ball *>::iterator it2;
-      for(it2 = mainBalls.begin(); it2 != mainBalls.end(); it2++)
-      {
-        if((*it2) != mball && (*it2)->checkRigidBody((btRigidBody*)body1))
-        {
+      for(it2 = mainBalls.begin(); it2 != mainBalls.end(); it2++) {
+
+        if((*it2) != mball && (*it2)->checkRigidBody((btRigidBody*)body1)) {
+          if (mball->host || (*it2)->host) {
+            if (mball->host && (*it2)->host) {
+              if (mball->getRigidBody()->getLinearVelocity() >
+                  (*it2)->getRigidBody()->getLinearVelocity()) {
+                (*it2)->host = mball->host;
+              } else {
+                mball->host = (*it2)->host;
+              }
+            } else if (mball->host) {
+              (*it2)->host = mball->host;
+            } else {
+              mball->host = (*it2)->host;
+            }
+          }
           ballCollisions++;
         }
       }

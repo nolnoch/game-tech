@@ -238,7 +238,9 @@ void NetManager::messageClients(Protocol protocol, const char *buf, int len) {
     return;
   }
 
-  if (buf && (0 < len) && (len < MESSAGE_LENGTH)) {
+  if (buf && (0 <= len) && (len < MESSAGE_LENGTH)) {
+    length = len ? : strlen(buf);
+
     for (i = 0; i < netClients.size(); i++) {
       if (protocol & (netClients[i]->protocols & PROTOCOL_TCP)) {
         sendTCP(tcpSockets[netClients[i]->tcpSocketIdx], buf, len);
