@@ -442,7 +442,10 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
     // Update players' positions locally.
     movePlayers();
     if (!server)
+    {
       moveBalls();
+      movePlayerBalls();
+    }
   }
 
   if (netActive && (netTimer->getMilliseconds() > SWEEP_MS)) {
@@ -732,7 +735,8 @@ bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id 
     ballMeshpc->setCastShadows(true);
 
     nodepc->attachObject(ballMeshpc);
-    ballMgr->setGlobalBall(ballMgr->addBall(nodepc, x, y, z, 100), netMgr->getIPnbo());
+    Ball* ball = ballMgr->addBall(nodepc, x, y, z, 100);
+    ballMgr->setGlobalBall(ball, netMgr->getIPnbo());
     ballMgr->globalBall->applyForce(force, direction);
     shotsFired++;
 
@@ -740,7 +744,10 @@ bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id 
       if (!server)
         updateServer(force, direction);
       else
+      {
+        ballMgr->setPlayerBall(ball, nPlayers, netMgr->getIPnbo());
         updatePlayers(force, direction);
+      }
     }
   }
 

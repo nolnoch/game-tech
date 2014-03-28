@@ -27,8 +27,8 @@ bool BallManager::initBallManager() {
 }
 
 void BallManager::initMultiplayer(int nPlayers) {
-  playerBalls.assign(nPlayers, NULL);
-  playerBallsActive.assign(nPlayers, false);
+  playerBalls.assign(nPlayers + 1, NULL);
+  playerBallsActive.assign(nPlayers + 1, false);
 }
 
 void BallManager::setGlobalBall(Ball *ball, unsigned int host) {
@@ -126,20 +126,12 @@ void BallManager::moveOrAddPlayerBall(int id, Ogre::SceneNode* nodepc, Ogre::Ent
     double y = nodepc->getPosition().y;
     double z = nodepc->getPosition().z;
 
-    if(id < mainBalls.size())
-    {
-      Ball* rmBall = mainBalls[id];
+    if(playerBallsActive[id])
+      removePlayerBall(id);
 
-      removeBall(rmBall);
-
-      playerBalls[id] = new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z);
-      ballList.push_back(mainBalls[id]);
-    }
-    else
-    {
-      std::cout << "add ball\n";
-      playerBalls.push_back(new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z));
-    }
+    playerBalls[id] = new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z);
+    playerBallsActive[id] = true;
+    ballList.push_back(playerBalls[id]);
 }
 
 bool BallManager::isGlobalBall() {
