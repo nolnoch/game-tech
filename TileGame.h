@@ -428,12 +428,14 @@ protected:
   }
 
   void movePlayerBalls() {
-    for(int i = 0; i < nPlayers; i++) {
-      Ogre::Vector3 drawPos = playerBallLocalData[i].drawPos;
-      drawPos += (playerBallLocalData[i].lastDistance) / 10.0;
-      playerBallLocalData[i].drawPos = drawPos;
+    for (int i = 0; i <= nPlayers; i++) {
+      if (playerBallLocalData[i].active) {
+        Ogre::Vector3 drawPos = playerBallLocalData[i].drawPos;
+        drawPos += (playerBallLocalData[i].lastDistance) / 10.0;
+        playerBallLocalData[i].drawPos = drawPos;
 
-      ballMgr->playerBalls[i]->getSceneNode()->setPosition(drawPos.x, drawPos.y, drawPos.z);
+        ballMgr->playerBalls[i]->getSceneNode()->setPosition(drawPos.x, drawPos.y, drawPos.z);
+      }
       /*
       Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
       nodepc->setPosition(drawPos.x, drawPos.y, drawPos.z);
@@ -508,11 +510,11 @@ protected:
     // Player Balls
     bdSize = sizeof(PlayerBallNetworkData);
     for (i = 0; i < nPlayers; i++) {
-      playerBallNetworkData.ballsActive[i] = ballMgr->isPlayerBall(i);
-      playerBallNetworkData.ballPositions[i] = ballMgr->playerBalls[i]->getSceneNode()->getPosition();
+      if ((playerBallNetworkData.ballsActive[i] = ballMgr->isPlayerBall(i)))
+        playerBallNetworkData.ballPositions[i] = ballMgr->playerBalls[i]->getSceneNode()->getPosition();
     }
-    playerBallNetworkData.ballsActive[i] = ballMgr->isGlobalBall();
-    playerBallNetworkData.ballPositions[i] = ballMgr->globalBall->getSceneNode()->getPosition();
+    if ((playerBallNetworkData.ballsActive[i] = ballMgr->isGlobalBall()))
+      playerBallNetworkData.ballPositions[i] = ballMgr->globalBall->getSceneNode()->getPosition();
 
     memcpy((netMgr->udpServerData[nPlayers+1].input), &UINT_UPDPB, tagSize);
     memcpy((netMgr->udpServerData[nPlayers+1].input + 4), &playerBallNetworkData, bdSize);

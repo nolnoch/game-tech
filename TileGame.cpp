@@ -440,8 +440,10 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
   if (multiplayerStarted) {
     // Update players' positions locally.
     movePlayers();
-    if (!server)
+    if (!server) {
       moveBalls();
+      movePlayerBalls();
+    }
   }
 
   if (netActive && (netTimer->getMilliseconds() > SWEEP_MS)) {
@@ -491,6 +493,8 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
                 }
               } else if (data[0] == UINT_UPDBL) {
                 modifyBalls(++data);
+              } else if (data[0] == UINT_UPDPB) {
+                modifyPlayerBalls(++data);
               }
               netMgr->udpServerData[i].updated = false;
             }
