@@ -247,7 +247,7 @@ void TileGame::createFrameListener(void) {
       "ClientAcceptOptPanel", "(Y)es or (N)o", 160);
   playersWaitingPanel = mTrayMgr->createParamsPanel(OgreBites::TL_BOTTOMRIGHT,
       "PlayersWaitingPanel", 200, playerCountTag);
-  winnerPanel = mTrayMgr->createLabel(OgreBites::TL_TOP,
+  winnerPanel = mTrayMgr->createLabel(OgreBites::TL_CENTER,
       "WinnerPanel", "NULL", 300);
 
   mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
@@ -316,7 +316,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
           score++;
         }
 
-        netMgr->messageClients(PROTOCOL_TCP, STR_TLHIT.c_str(), STR_TLHIT.length());
+        netMgr->messageClients(PROTOCOL_TCP, STR_TLHIT.c_str());
       }
       if (!multiplayerStarted) {
         score++;
@@ -365,7 +365,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
             win << " !";
           }
           winnerPanel->setCaption(win.str());
-          winnerPanel->show();
+          mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->show();
         }
       }
     } else if (winTimer++ > 320) {
@@ -506,13 +506,13 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
             if (0 == cmd.find(STR_BEGIN)) {
               mTrayMgr->destroyWidget("ServerStartPanel");
               mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
+              mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->hide();
               startMultiplayer();
             } else if (0 == cmd.find(STR_TLHIT)) {
               std::cout << "TCP - Tile hit\n";
               tileHit = true;
             } else if (0 == cmd.find(STR_NXLVL)) {
               std::cout << "TCP - Next level\n";
-              tileHit = true;
               gameDone = true;
             }
 
@@ -611,6 +611,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
           serverStartPanel = mTrayMgr->createLabel(OgreBites::TL_TOP,
               "ServerStartPanel", "Waiting on server...", 300);
           mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
+          mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->hide();
         }
       }
     }
@@ -638,6 +639,7 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
     if (invitePending) {
       mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
       mTrayMgr->getTrayContainer(OgreBites::TL_BOTTOMRIGHT)->hide();
+      mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->hide();
       invitePending = false;
     }
   } else if (arg.key == OIS::KC_B) {
@@ -647,6 +649,7 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
       netMgr->denyConnections();
       mTrayMgr->destroyWidget("ServerStartPanel");
       mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
+      mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->hide();
 
       startMultiplayer();
     }
@@ -670,6 +673,7 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
               "ServerStartPanel", "Waiting for clients...", 300);
           mTrayMgr->getTrayContainer(OgreBites::TL_BOTTOMRIGHT)->show();
           mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
+          mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->hide();
           netTimer->reset();
           ticks = 0;
         } else {
@@ -681,6 +685,7 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
           mTrayMgr->destroyWidget("ServerStartPanel");
           mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
           mTrayMgr->getTrayContainer(OgreBites::TL_BOTTOMRIGHT)->hide();
+          mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->hide();
           netMgr->stopServer(PROTOCOL_TCP);
           server = false;
           std::cout << "TileGame: Canceling multiplayer game. Resuming single"
