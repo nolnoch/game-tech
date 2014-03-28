@@ -94,6 +94,33 @@ void BallManager::removePlayerBall(int idx) {
   playerBallsActive[idx] = false;
 }
 
+
+void BallManager::moveOrAddBall(int id, Ogre::SceneNode* nodepc, Ogre::Entity* ballmeshpc, Ogre::Vector3 velocity)
+{
+    double x = nodepc->getPosition().x;
+    double y = nodepc->getPosition().y;
+    double z = nodepc->getPosition().z;
+
+    if(id < mainBalls.size())
+    {
+      std::cout << "move ball\n";
+      Ball* rmBall = mainBalls[id];
+      std::cout << "move ball 1\n";
+
+      removeBall(rmBall);
+      std::cout << "move ball 2\n";
+
+      mainBalls[id] = new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z);
+      ballList.push_back(mainBalls[id]);
+      std::cout << "move ball 3\n";
+    }
+    else
+    {
+      std::cout << "add ball\n";
+      mainBalls.push_back(new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z));
+    }
+}
+
 bool BallManager::isGlobalBall() {
   return globalBallActive;
 }

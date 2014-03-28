@@ -47,7 +47,7 @@ material Examples/shinyball2
 			specular 1.0 1.0 1.0 1 90
 			texture_unit
 			{
-				texture shiny2.jpg
+				texture spheretexture2.jpg
 				env_map spherical
 			}
 		}
