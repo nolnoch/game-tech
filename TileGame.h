@@ -553,6 +553,7 @@ protected:
     mTrayMgr->destroyWidget(scorePanel);
 
     mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
+    mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->hide();
 
     multiplayerStarted = true;
   }
