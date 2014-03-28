@@ -42,7 +42,6 @@ struct PlayerData {
   Uint32 host;
   Ogre::Quaternion newDir;
   Ogre::Vector3 newPos;
-  Ogre::Vector3 newBallPos;
   Ogre::Vector3 shotDir;
   double shotForce;
   int score;
@@ -54,8 +53,6 @@ struct PlayerOldData {
   double delta;
   Ogre::Vector3 lastDistance;
   Ogre::Vector3 drawPos;
-  Ogre::Vector3 lastBallDistance;
-  Ogre::Vector3 drawBallPos;
 };
 
 /* Since we should not have the physics sim running on clients, the server needs
@@ -71,12 +68,25 @@ struct PlayerOldData {
  */
 struct BallNetworkData {
   int numBalls;
-  Uint64 ball[64];              //  64 bytes
+  Uint64 ball[27];              //  216 bytes
+};
+
+struct PlayerBallNetworkData {
+  bool ballsActive[10];
+  Ogre::Vector3 ballPositions[10];
 };
 
 struct BallLocalData {
   Ogre::Vector3 lastDistance;
   Ogre::Vector3 newPos;
+  Ogre::Vector3 drawPos;
+};
+
+struct PlayerBallLocalData {
+  bool active;
+  Ogre::Vector3 lastDistance;
+  Ogre::Vector3 newPos;
+  Ogre::Vector3 oldPos;
   Ogre::Vector3 drawPos;
 };
 
@@ -117,7 +127,9 @@ protected:
   std::vector<PlayerData *> playerData;
   std::vector<PlayerOldData *> playerOldData;
   BallNetworkData ballNetworkData;
-  BallLocalData ballLocalData[64];
+  BallLocalData ballLocalData[27];
+  PlayerBallNetworkData playerBallNetworkData;
+  PlayerBallLocalData playerBallLocalData[10];
 
   OgreBites::ParamsPanel *scorePanel, *playersWaitingPanel, *multiScorePanel;
   OgreBites::Label *congratsPanel, *chargePanel, *clientAcceptDescPanel,
@@ -356,7 +368,6 @@ protected:
   void movePlayers() {
     //Used by both client and server.
     //Purely graphical, interpolates player positions to draw them smoothly.
-    //TODO: make something else update balls.
     std::ostringstream playerName;
     Ogre::Vector3 newPos, drawPos;
     Ogre::Quaternion newDir, oldDir, drawDir;
@@ -397,11 +408,13 @@ protected:
     // Updating each ball's position.
     int numBalls = ballNetworkData.numBalls;
 
-    for(int i = 0; i < numBalls; i++) {
+    for (int i = 0; i < numBalls; i++) {
       Ogre::Vector3 drawPos = ballLocalData[i].drawPos;
       drawPos += (ballLocalData[i].lastDistance) / 10.0;
       ballLocalData[i].drawPos = drawPos;
 
+      ballMgr->mainBalls[i]->getSceneNode()->setPosition(drawPos.x, drawPos.y, drawPos.z);
+      /*
       Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
       nodepc->setPosition(drawPos.x, drawPos.y, drawPos.z);
       Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
@@ -410,15 +423,18 @@ protected:
 
       nodepc->attachObject(ballMeshpc);
       ballMgr->moveOrAddBall(i, nodepc, ballMeshpc, Ogre::Vector3(0, 0, 0));
+       */
     }
   }
 
   void movePlayerBalls() {
     for(int i = 0; i < nPlayers; i++) {
-      Ogre::Vector3 drawPos = playerOldData[i]->drawBallPos;
-      drawPos += (playerOldData[i]->lastBallDistance) / 10.0;
-      playerOldData[i]->drawBallPos = drawPos;
+      Ogre::Vector3 drawPos = playerBallLocalData[i].drawPos;
+      drawPos += (playerBallLocalData[i].lastDistance) / 10.0;
+      playerBallLocalData[i].drawPos = drawPos;
 
+      ballMgr->playerBalls[i]->getSceneNode()->setPosition(drawPos.x, drawPos.y, drawPos.z);
+      /*
       Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
       nodepc->setPosition(drawPos.x, drawPos.y, drawPos.z);
       Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
@@ -427,6 +443,7 @@ protected:
 
       nodepc->attachObject(ballMeshpc);
       ballMgr->moveOrAddPlayerBall(i, nodepc, ballMeshpc, Ogre::Vector3(0, 0, 0));
+       */
     }
   }
 
@@ -472,19 +489,11 @@ protected:
     // Balls
     int numBalls = ballMgr->mainBalls.size();
     ballNetworkData.numBalls = numBalls;
-    for(int i = 0; i < numBalls; i++) {
+    for (i = 0; i < numBalls; i++) {
       Uint64 host = ballMgr->mainBalls[i]->host;
       Uint64 x = ballMgr->mainBalls[i]->getSceneNode()->getPosition().x + 1500;
       Uint64 y = ballMgr->mainBalls[i]->getSceneNode()->getPosition().y + 1500;
       Uint64 z = ballMgr->mainBalls[i]->getSceneNode()->getPosition().z + 1500;
-
-      /*
-      std::cout << "Sending:\n";
-      std::cout << "host: " << host << std::endl;
-      std::cout << "  x: " << x << std::endl;
-      std::cout << "  y: " << y << std::endl;
-      std::cout << "  z: " << z << std::endl;
-      */
 
       x = x << 16;
       y = y << 32;
@@ -494,7 +503,20 @@ protected:
     memcpy((netMgr->udpServerData[nPlayers+1].input), &UINT_UPDBL, tagSize);
     memcpy((netMgr->udpServerData[nPlayers+1].input + 4), &ballNetworkData, bdSize);
     netMgr->udpServerData[nPlayers+1].updated = true;
+    netMgr->messageClients(PROTOCOL_UDP);
 
+    // Player Balls
+    bdSize = sizeof(PlayerBallNetworkData);
+    for (i = 0; i < nPlayers; i++) {
+      playerBallNetworkData.ballsActive[i] = ballMgr->isPlayerBall(i);
+      playerBallNetworkData.ballPositions[i] = ballMgr->playerBalls[i]->getSceneNode()->getPosition();
+    }
+    playerBallNetworkData.ballsActive[i] = ballMgr->isGlobalBall;
+    playerBallNetworkData.ballPositions[i] = ballMgr->globalBall->getSceneNode()->getPosition();
+
+    memcpy((netMgr->udpServerData[nPlayers+1].input), &UINT_UPDPB, tagSize);
+    memcpy((netMgr->udpServerData[nPlayers+1].input + 4), &playerBallNetworkData, bdSize);
+    netMgr->udpServerData[nPlayers+1].updated = true;
     netMgr->messageClients(PROTOCOL_UDP);
   }
 
@@ -549,7 +571,7 @@ protected:
     scorelist.push_back("Shots Fired");
     scorelist.push_back("Current Level");
     multiScorePanel = mTrayMgr->createParamsPanel(OgreBites::TL_TOPLEFT,
-          "MultiScorePanel", 200, scorelist);
+        "MultiScorePanel", 200, scorelist);
     mTrayMgr->destroyWidget(scorePanel);
 
     mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
@@ -583,7 +605,7 @@ protected:
     memcpy(playerData[j], data, sizeof(PlayerData));
 
     // Did they launch a ball?  Trigger now before buffer overwritten!
-    if (playerData[j]->shotForce) {
+    if (server && playerData[j]->shotForce) {
       std::cout << "Shot fired." << std::endl;
       Ogre::Vector3 newPos = playerData[j]->newPos;
       shootBall(j, newPos.x, newPos.y, newPos.z, playerData[j]->shotForce);
@@ -605,7 +627,7 @@ protected:
     for (int i = 0; i < numBalls; i++) {
       Uint64 ball = ballNetworkData.ball[i];
       Uint16 *field;
-      
+
       host = ball & mask;
       x = ((ball & (mask << 16)) >> 16);
       y = ((ball & (mask << 32)) >> 32);
@@ -621,7 +643,7 @@ protected:
       y = *field++ - 1500;
       x = *field++ - 1500;
       host = *field;
-      */
+       */
 
       /*
       std::cout << "Recieved:\n";
@@ -629,11 +651,38 @@ protected:
       std::cout << "  x: " << x << std::endl;
       std::cout << "  y: " << y << std::endl;
       std::cout << "  z: " << z << std::endl;
-      */
+       */
 
       ballLocalData[i].newPos = Ogre::Vector3(x, y, z);
       ballLocalData[i].lastDistance = ballLocalData[i].newPos - ballLocalData[i].drawPos;
-      // Move the ball to (x,y,z)
+    }
+  }
+
+  void modifyPlayerBalls(Uint32 *data) {
+    for (int i = 0; i < nPlayers; i++) {
+      playerBallLocalData[i].oldPos = playerBallLocalData[i].newPos;
+    }
+
+    memcpy(&playerBallNetworkData, data, sizeof(PlayerBallNetworkData));
+
+    for (int i = 0; i < nPlayers; i++) {
+      if (playerBallNetworkData.ballsActive[i]) {
+        if (!playerBallLocalData[i].active) {
+          Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+          Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
+
+          int x = playerBallNetworkData.ballPositions[i].x;
+          int y = playerBallNetworkData.ballPositions[i].y;
+          int z = playerBallNetworkData.ballPositions[i].z;
+
+          ballMeshpc->setCastShadows(true);
+          nodepc->attachObject(ballMeshpc);
+          ballMgr->setPlayerBall(ballMgr->addBall(nodepc, x, y, z, 100), i, 0);
+        }
+
+        playerBallLocalData[i].newPos = playerBallNetworkData.ballPositions[i];
+        playerBallLocalData[i].lastDistance = ballLocalData[i].newPos - ballLocalData[i].drawPos;
+      }
     }
   }
 

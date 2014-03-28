@@ -255,7 +255,6 @@ void TileGame::createFrameListener(void) {
   mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->hide();
 
   congratsPanel->hide();
-  winnerPanel->hide();
 
   Ogre::OverlayManager& overlayMgr = Ogre::OverlayManager::getSingleton();
   crosshairOverlay = overlayMgr.create("Crosshair");
@@ -720,12 +719,23 @@ bool TileGame::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 //-------------------------------------------------------------------------------------
 bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) {
   isCharging = false;
-  if(chargeShot >= 1000 && !gameDone) {
+  if (chargeShot >= 1000 && !gameDone) {
     Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
-    Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
     double force = chargeShot * 0.85f;
     chargeShot = 0;
+
+    if (multiplayerStarted && connected) {
+      if (!server)
+        updateServer(force, direction);
+      else
+        updatePlayers(force, direction);
+      shotsFired++;
+
+      return BaseGame::mouseReleased(arg, id);
+    }
+
+    Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
 
     if (ballMgr->isGlobalBall())
       ballMgr->removeGlobalBall();
@@ -740,13 +750,6 @@ bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id 
     ballMgr->setGlobalBall(ballMgr->addBall(nodepc, x, y, z, 100), netMgr->getIPnbo());
     ballMgr->globalBall->applyForce(force, direction);
     shotsFired++;
-
-    if (multiplayerStarted && connected) {
-      if (!server)
-        updateServer(force, direction);
-      else
-        updatePlayers(force, direction);
-    }
   }
 
   return BaseGame::mouseReleased(arg, id);
