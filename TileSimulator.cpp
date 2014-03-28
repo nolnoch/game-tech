@@ -22,6 +22,7 @@ bool TileSimulator::simulateStep(double delay) {
       activetile = tiles.back();
     } else if (!tiles.empty()) {
       tiles.pop_back();
+      activetile = NULL;
     } else
       activetile = NULL;
 

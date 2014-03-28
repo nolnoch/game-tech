@@ -76,7 +76,7 @@ class Ball {
     }
 
 
-    Uint16 host;
+    unsigned short int host;
 
   private:
     Ogre::SceneNode* node;

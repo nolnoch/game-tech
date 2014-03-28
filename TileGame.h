@@ -610,7 +610,7 @@ protected:
       z = ((ball & (mask << 48)) >> 48);
       */
 
-      field = &ball;
+      field = (Uint16 *) &ball;
       z = *field++ - 1500;
       y = *field++ - 1500;
       x = *field++ - 1500;

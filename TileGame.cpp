@@ -59,7 +59,7 @@ noteIndex(0)
   gameStart = true;
 
   mSpeed = score = shotsFired = tileCounter = winTimer = chargeShot =
-      slowdownval = currTile = nPlayers = ballsounddelay = 0;
+      slowdownval = currTile = nPlayers = ballsounddelay = wins = 0;
   currLevel = 1;
 
   mTimer = OGRE_NEW Ogre::Timer();
@@ -232,9 +232,9 @@ void TileGame::createFrameListener(void) {
 
   mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
   mTrayMgr->getTrayContainer(OgreBites::TL_BOTTOMRIGHT)->hide();
+  mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->hide();
 
   congratsPanel->hide();
-  winnerPanel->hide();
 
   Ogre::OverlayManager& overlayMgr = Ogre::OverlayManager::getSingleton();
   crosshairOverlay = overlayMgr.create("Crosshair");
@@ -260,30 +260,26 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
   if (paused)
     slowdownval += 1/1800.f;
   else {
-    if(server || !multiplayerStarted)
+    if (server || !multiplayerStarted)
       tileHit = sim->simulateStep(slowdownval);
 
     if (tileHit && !gameDone) {
-      tileHit = false;
-
+      // Sound and Graphic FX
       soundMgr->playSound(boing);
 
       if (!tileEntities.empty()) {
-        // Play the corresponding sound of that tile.
-        if(tileEntities.size() <= noteSequence.size()) {
-          soundMgr->playSound(noteSequence[tileEntities.size() - 1], tileEntities.back()->getParentNode()->_getDerivedPosition(), mCamera);
+        // Tile Sound
+        if (tileEntities.size() <= noteSequence.size()) {
+          soundMgr->playSound(noteSequence[tileEntities.size() - 1],
+              tileEntities.back()->getParentNode()->_getDerivedPosition(), mCamera);
         }
-        // update texture
+        // Tile Texture
         tileEntities.back()->setMaterialName("Examples/BumpyMetal");
         tileEntities.pop_back();
         tileSceneNodes.pop_back();
       }
 
-      if (tileEntities.empty()) {
-        gameDone = true;
-        winTimer = 0;
-      }
-
+      // Scoring
       if (server && multiplayerStarted) {
         Uint32 scoringHost = ballMgr->popScoringHost();
 
@@ -301,11 +297,22 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 
         netMgr->messageClients(PROTOCOL_TCP, STR_TLHIT.c_str());
       }
+      if (!multiplayerStarted) {
+        score++;
+      }
+
+      // End of Round
+      if (tileEntities.empty()) {
+        gameDone = true;
+        winTimer = 0;
+      }
+
+      tileHit = false;
     }
   }
 
   if (gameDone && !paused) {
-    if (winTimer == 0) {
+    if (winTimer++ == 0) {
       std::ostringstream win;
       int winner;
 
@@ -333,14 +340,14 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
           win << " !";
         }
         winnerPanel->setCaption(win.str());
-        winnerPanel->show();
+        mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->show();
       }
     } else if (winTimer++ > 320) {
       levelTearDown();
       levelSetup(currLevel);
       congratsPanel->hide();
       if (multiplayerStarted)
-        winnerPanel->hide();
+        mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->hide();
     }
   }
 
@@ -396,6 +403,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
       ballsounddelay = 5;
     }
   }
+
 
   /* ***********************************************************************
    * Multiplayer Code

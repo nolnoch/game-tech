@@ -31,13 +31,13 @@ void BallManager::initMultiplayer(int nPlayers) {
   playerBallsActive.assign(nPlayers, false);
 }
 
-void BallManager::setGlobalBall(Ball *ball, Uint32 host) {
+void BallManager::setGlobalBall(Ball *ball, unsigned int host) {
   ball->host = host & HOST_MASK;
   globalBall = ball;
   globalBallActive = true;
 }
 
-void BallManager::setPlayerBall(Ball *ball, int idx, Uint32 host) {
+void BallManager::setPlayerBall(Ball *ball, int idx, unsigned int host) {
   ball->host = host & HOST_MASK;
   playerBalls[idx] = ball;
   playerBallsActive[idx] = true;
@@ -169,8 +169,8 @@ TileSimulator* BallManager::getSimulator() {
   return sim;
 }
 
-Uint32 BallManager::popScoringHost() {
-  Uint32 ret = scoringHost;
+unsigned int BallManager::popScoringHost() {
+  unsigned int ret = scoringHost;
   scoringHost = 0;
 
   return ret;
@@ -196,8 +196,8 @@ bool BallManager::checkCollisions(btRigidBody *aTile, void *body0, void *body1) 
         if((*it2) != mball && (*it2)->checkRigidBody((btRigidBody*)body1)) {
           if (mball->host || (*it2)->host) {
             if (mball->host && (*it2)->host) {
-              if (mball->rigidBody->getLinearVelocity() >
-                  (*it2)->rigidBody->getLinearVelocity()) {
+              if (mball->getRigidBody()->getLinearVelocity() >
+                  (*it2)->getRigidBody()->getLinearVelocity()) {
                 (*it2)->host = mball->host;
               } else {
                 mball->host = (*it2)->host;

@@ -17,7 +17,7 @@ class TileSimulator;
 
 class BallManager {
 public:
-  static const Uint32 HOST_MASK = 0xFFFF;
+  static const unsigned int HOST_MASK = 0xFFFF;
 
   Ball *globalBall;
   std::vector<Ball *> playerBalls;
@@ -29,8 +29,8 @@ public:
 
   bool initBallManager();
   void initMultiplayer(int nPlayers);
-  void setGlobalBall(Ball *ball, Uint32 host);
-  void setPlayerBall(Ball *ball, int idx, Uint32 host);
+  void setGlobalBall(Ball *ball, unsigned int host);
+  void setPlayerBall(Ball *ball, int idx, unsigned int host);
   Ball* addBall(Ogre::SceneNode* n, int x, int y, int z, int r);
   Ball* addMainBall(Ogre::SceneNode* n, int x, int y, int z, int r);
   void enableGravity();
@@ -45,7 +45,7 @@ public:
   void moveOrAddPlayerBall(int id, Ogre::SceneNode* nodepc, Ogre::Entity* ballmeshpc, Ogre::Vector3 velocity);
 
   TileSimulator* getSimulator();
-  Uint32 popScoringHost();
+  unsigned int popScoringHost();
 
   bool checkCollisions(btRigidBody *aTile, void *body0, void *body1);
 
@@ -54,7 +54,7 @@ private:
   TileSimulator *sim;
   bool globalBallActive;
   int ballCollisions;
-  Uint32 scoringHost;
+  unsigned int scoringHost;
 };
 
 #endif /* BALLMANAGER_H_ */
