@@ -43,10 +43,10 @@ crosshairOverlay(0),
 boing(0),
 music(0),
 gong(0),
+hit2(0),
 noteSequence(5),
 noteIndex(0)
 {
-  hit2 = 0;
   gameDone = animDone = isCharging = paused = connected = server = netActive =
       invitePending = inviteAccepted = multiplayerStarted = tileHit = false;
   gameStart = true;
@@ -94,6 +94,7 @@ bool TileGame::configure() {
   boing = soundMgr->loadSound("hit.wav");
   gong = soundMgr->loadSound("gong.wav");
   music = soundMgr->loadMusic("ambient.wav");
+  hit2 = soundMgr->loadSound("hit2.wav");
 
   noteSequence[0] = soundMgr->loadSound("note5.wav");
   noteSequence[1] = soundMgr->loadSound("note4.wav");
@@ -101,7 +102,6 @@ bool TileGame::configure() {
   noteSequence[3] = soundMgr->loadSound("note2.wav");
   noteSequence[4] = soundMgr->loadSound("note1.wav");
 
-  hit2= soundMgr->loadSound("hit2.wav");
   soundMgr->playMusic();
   soundMgr->setVolume(.25);
 
@@ -114,9 +114,9 @@ void TileGame::createCamera(void) {
 }
 //-------------------------------------------------------------------------------------
 void TileGame::createScene(void) {
-//  std::string postFilter = "Gaussian Blur";
-//  Ogre::CompositorManager::getSingleton().addCompositor(mCamera->getViewport(), postFilter);
-//  Ogre::CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), postFilter, true);
+  //  std::string postFilter = "Gaussian Blur";
+  //  Ogre::CompositorManager::getSingleton().addCompositor(mCamera->getViewport(), postFilter);
+  //  Ogre::CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), postFilter, true);
 
   Ogre::Plane wallBack(Ogre::Vector3::NEGATIVE_UNIT_Z, 0);
   Ogre::Plane wallFront(Ogre::Vector3::UNIT_Z,0);
@@ -191,7 +191,7 @@ void TileGame::createScene(void) {
   // Set ambient light
   mSceneMgr->setAmbientLight(Ogre::ColourValue(0.40, 0.40, 0.40));
 
-   mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
+  mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
 
   // Create a light
   Ogre::Light* lSun = mSceneMgr->createLight("SunLight");
@@ -199,24 +199,24 @@ void TileGame::createScene(void) {
   lSun->setDiffuseColour(0.95, 0.95, 1.00);
   lSun->setPosition(-500,1600,-500);
   lSun->setSpecularColour(1.0,1.0,1.0);
-//  lSun->setAttenuation(3250, 1.0, 0.0000000001, 0.000001);
+  //  lSun->setAttenuation(3250, 1.0, 0.0000000001, 0.000001);
   lSun->setAttenuation(5250, 1.0, 0.00000001, 0.00000010);
 
-   // //   Directional light
-   // Ogre::Light* light = mSceneMgr->createLight("Light1");
-   // light->setType(Ogre::Light::LT_DIRECTIONAL);
-   // light->setDiffuseColour(Ogre::ColourValue(.6, .6, .6));
-   // light->setSpecularColour(Ogre::ColourValue(.7, .7, .7));
-   // light->setDirection(Ogre::Vector3(-1, -1, 1));
+  // //   Directional light
+  // Ogre::Light* light = mSceneMgr->createLight("Light1");
+  // light->setType(Ogre::Light::LT_DIRECTIONAL);
+  // light->setDiffuseColour(Ogre::ColourValue(.6, .6, .6));
+  // light->setSpecularColour(Ogre::ColourValue(.7, .7, .7));
+  // light->setDirection(Ogre::Vector3(-1, -1, 1));
 
-   // //   Spot light
-   // light = mSceneMgr->createLight("Light2");
-   // light->setType(Ogre::Light::LT_SPOTLIGHT);
-   // light->setDiffuseColour(Ogre::ColourValue(0.8, 0.8, 0.8));
-   // light->setSpecularColour(Ogre::ColourValue(1, 1, 1));
-   // light->setDirection(Ogre::Vector3(0, -1, 0));
-   // light->setPosition( Ogre::Vector3(0, 1000, 0) );
-   // light->setSpotlightRange( Ogre::Degree(35), Ogre::Degree(50) );
+  // //   Spot light
+  // light = mSceneMgr->createLight("Light2");
+  // light->setType(Ogre::Light::LT_SPOTLIGHT);
+  // light->setDiffuseColour(Ogre::ColourValue(0.8, 0.8, 0.8));
+  // light->setSpecularColour(Ogre::ColourValue(1, 1, 1));
+  // light->setDirection(Ogre::Vector3(0, -1, 0));
+  // light->setPosition( Ogre::Vector3(0, 1000, 0) );
+  // light->setSpotlightRange( Ogre::Degree(35), Ogre::Degree(50) );
 
 
 
@@ -419,8 +419,8 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
     int numCollisions = ballMgr->getNumberBallCollisions();
     if(numCollisions > 0)
     {
-        soundMgr->playSound(hit2, ballMgr->getCollisionPosition(), mCamera);
-        ballsounddelay = 5;
+      soundMgr->playSound(hit2, ballMgr->getCollisionPosition(), mCamera);
+      ballsounddelay = 5;
     }
   }
 

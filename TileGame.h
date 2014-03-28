@@ -411,8 +411,6 @@ protected:
       nodepc->attachObject(ballMeshpc);
       ballMgr->moveOrAddBall(i, nodepc, ballMeshpc, Ogre::Vector3(0, 0, 0));
     }
-
-    //movePlayerBalls();
   }
 
   void movePlayerBalls() {
