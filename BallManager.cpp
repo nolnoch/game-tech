@@ -204,10 +204,36 @@ bool BallManager::checkCollisions(btRigidBody *aTile, void *body0, void *body1) 
               mball->host = (*it2)->host;
             }
           }
-          ballCollisions++;
+          //ballCollisions++;
         }
       }
     }
+  }
+  if(!hit)
+  {
+    bool firstisball = false;
+    bool firstislocked = false;
+    for(int i = 0; i < ballList.size() && !firstisball; i++)
+      if(ballList[i]->checkRigidBody((btRigidBody*)body0))
+      {
+        firstisball = true;
+        firstislocked = ballList[i]->isLocked();
+      }
+    
+    bool soundplayed = false;
+    if(firstisball)
+      for(int i = 0; i < ballList.size() && !soundplayed; i++)
+        if(ballList[i]->checkRigidBody((btRigidBody*)body1))
+        {
+          std::cout << "play sound..." << firstislocked << " & " << ballList[i]->isLocked() << "\n";
+          if(!(firstislocked && ballList[i]->isLocked()))
+          {
+            ballCollisions++;
+          }
+          soundplayed = true;
+        }
+    //if(!soundplayed)
+      //ballCollisions++; //for wall collisions
   }
 
   return hit;

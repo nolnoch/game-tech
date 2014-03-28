@@ -59,10 +59,11 @@ void TileSimulator::clearTiles() {
 }
 
 bool TileSimulator::tileCallback(btManifoldPoint& cp, void *body0, void *body1) {
-  if (!activetile || targethit)
-    return true;
+  //if (!activetile || targethit)
+  //  return true;
 
   targethit = tileBallMgr->checkCollisions(activetile, body0, body1);
+  
 
   return targethit;
 }
