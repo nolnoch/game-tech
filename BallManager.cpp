@@ -164,6 +164,8 @@ void BallManager::clearBalls() {
   globalBallActive = false;
   ballList.clear();
   mainBalls.clear();
+  playerBalls.assign(playerBalls.size(), NULL);
+  playerBallsActive.assign(playerBallsActive.size(), false);
 }
 
 TileSimulator* BallManager::getSimulator() {

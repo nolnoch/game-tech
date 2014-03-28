@@ -478,11 +478,13 @@ protected:
       Uint64 y = ballMgr->mainBalls[i]->getSceneNode()->getPosition().y + 1500;
       Uint64 z = ballMgr->mainBalls[i]->getSceneNode()->getPosition().z + 1500;
 
+      /*
       std::cout << "Sending:\n";
       std::cout << "host: " << host << std::endl;
       std::cout << "  x: " << x << std::endl;
       std::cout << "  y: " << y << std::endl;
       std::cout << "  z: " << z << std::endl;
+      */
 
       x = x << 16;
       y = y << 32;
@@ -548,6 +550,7 @@ protected:
     scorelist.push_back("Current Level");
     multiScorePanel = mTrayMgr->createParamsPanel(OgreBites::TL_TOPLEFT,
           "MultiScorePanel", 200, scorelist);
+    mTrayMgr->destroyWidget(scorePanel);
 
     mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
 
@@ -593,7 +596,7 @@ protected:
   // Copies over the new positions.
   void modifyBalls(Uint32 *data) {
     int host, x, y, z, numBalls;
-    // Uint64 mask = 0x000000000000FFFF;
+    Uint64 mask = 0x000000000000FFFF;
 
     memcpy(&ballNetworkData, data, sizeof(BallNetworkData));
     numBalls = ballNetworkData.numBalls;
@@ -602,24 +605,30 @@ protected:
       Uint64 ball = ballNetworkData.ball[i];
       Uint16 *field;
       
-      /*
       host = ball & mask;
       x = ((ball & (mask << 16)) >> 16);
       y = ((ball & (mask << 32)) >> 32);
       z = ((ball & (mask << 48)) >> 48);
-      */
 
+      x -= 1500;
+      y -= 1500;
+      z -= 1500;
+
+      /*
       field = (Uint16 *) &ball;
       z = *field++ - 1500;
       y = *field++ - 1500;
       x = *field++ - 1500;
       host = *field;
+      */
 
+      /*
       std::cout << "Recieved:\n";
       std::cout << "host: " << host << std::endl;
       std::cout << "  x: " << x << std::endl;
       std::cout << "  y: " << y << std::endl;
       std::cout << "  z: " << z << std::endl;
+      */
 
       ballLocalData[i].newPos = Ogre::Vector3(x, y, z);
       ballLocalData[i].lastDistance = ballLocalData[i].newPos - ballLocalData[i].drawPos;

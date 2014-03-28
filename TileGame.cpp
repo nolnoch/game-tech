@@ -247,7 +247,7 @@ void TileGame::createFrameListener(void) {
       "ClientAcceptOptPanel", "(Y)es or (N)o", 160);
   playersWaitingPanel = mTrayMgr->createParamsPanel(OgreBites::TL_BOTTOMRIGHT,
       "PlayersWaitingPanel", 200, playerCountTag);
-  winnerPanel = mTrayMgr->createLabel(OgreBites::TL_CENTER,
+  winnerPanel = mTrayMgr->createLabel(OgreBites::TL_TOP,
       "WinnerPanel", "NULL", 300);
 
   mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
@@ -255,6 +255,7 @@ void TileGame::createFrameListener(void) {
   mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->hide();
 
   congratsPanel->hide();
+  winnerPanel->hide();
 
   Ogre::OverlayManager& overlayMgr = Ogre::OverlayManager::getSingleton();
   crosshairOverlay = overlayMgr.create("Crosshair");
@@ -315,7 +316,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
           score++;
         }
 
-        netMgr->messageClients(PROTOCOL_TCP, STR_TLHIT.c_str());
+        netMgr->messageClients(PROTOCOL_TCP, STR_TLHIT.c_str(), STR_TLHIT.length());
       }
       if (!multiplayerStarted) {
         score++;
@@ -323,6 +324,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 
       // End of Round
       if (tileEntities.empty()) {
+        std::cout << "game done!\n";
         gameDone = true;
         winTimer = 0;
       }
@@ -342,25 +344,29 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
       if (multiplayerStarted) {
         if (server) {
           updatePlayers();
-          netMgr->messageClients(PROTOCOL_TCP, STR_NXLVL.c_str());
+          //netMgr->messageClients(PROTOCOL_TCP, STR_NXLVL.c_str());
+          //Clients automatically move to next level when last tile is hit.
         }
 
-        if (-1 != (winner = findRoundWinner())) {
-          if (server)
-            playerData[winner]->wins++;
-
-          win << "Player ";
-          win << winner;
-          win << " wins round ";
-          win << currLevel;
-          win << " !";
-        } else {
-          win << "It's a tie for round ";
-          win << currLevel;
-          win << " !";
+        if (gameDone) {
+          winner = findRoundWinner();
+          if (winner != -1) {
+            if (server)
+              playerData[winner]->wins++; 
+            //TODO: make sure this doesn't make win count spiral
+            win << "Player ";
+            win << winner;
+            win << " wins round ";
+            win << currLevel;
+            win << " !";
+          } else {
+            win << "It's a tie for round ";
+            win << currLevel;
+            win << " !";
+          }
+          winnerPanel->setCaption(win.str());
+          winnerPanel->show();
         }
-        winnerPanel->setCaption(win.str());
-        mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->show();
       }
     } else if (winTimer++ > 320) {
       levelTearDown();
@@ -389,8 +395,8 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
       for (i = 0; i < nPlayers; i++) {
         multiScorePanel->setParamValue(i + 1, Ogre::StringConverter::toString(playerData[i]->score));
       }
-      scorePanel->setParamValue(nPlayers + 1, Ogre::StringConverter::toString(shotsFired));
-      scorePanel->setParamValue(nPlayers + 2, Ogre::StringConverter::toString(currLevel));
+      multiScorePanel->setParamValue(nPlayers + 1, Ogre::StringConverter::toString(shotsFired));
+      multiScorePanel->setParamValue(nPlayers + 2, Ogre::StringConverter::toString(currLevel));
     }
 
     // Level complete notification.
@@ -493,14 +499,17 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
           // Process TCP messages.
           if (netMgr->tcpServerData.updated) {
             cmd = std::string(netMgr->tcpServerData.output);
-
+            std::cout << "TCP - " << cmd << "\n";
             if (0 == cmd.find(STR_BEGIN)) {
               mTrayMgr->destroyWidget("ServerStartPanel");
               mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
               startMultiplayer();
             } else if (0 == cmd.find(STR_TLHIT)) {
+              std::cout << "TCP - Tile hit\n";
               tileHit = true;
             } else if (0 == cmd.find(STR_NXLVL)) {
+              std::cout << "TCP - Next level\n";
+              tileHit = true;
               gameDone = true;
             }
 
