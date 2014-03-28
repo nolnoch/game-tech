@@ -511,7 +511,7 @@ protected:
       playerBallNetworkData.ballsActive[i] = ballMgr->isPlayerBall(i);
       playerBallNetworkData.ballPositions[i] = ballMgr->playerBalls[i]->getSceneNode()->getPosition();
     }
-    playerBallNetworkData.ballsActive[i] = ballMgr->isGlobalBall;
+    playerBallNetworkData.ballsActive[i] = ballMgr->isGlobalBall();
     playerBallNetworkData.ballPositions[i] = ballMgr->globalBall->getSceneNode()->getPosition();
 
     memcpy((netMgr->udpServerData[nPlayers+1].input), &UINT_UPDPB, tagSize);
