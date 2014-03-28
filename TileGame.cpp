@@ -247,7 +247,7 @@ void TileGame::createFrameListener(void) {
       "ClientAcceptOptPanel", "(Y)es or (N)o", 160);
   playersWaitingPanel = mTrayMgr->createParamsPanel(OgreBites::TL_BOTTOMRIGHT,
       "PlayersWaitingPanel", 200, playerCountTag);
-  winnerPanel = mTrayMgr->createLabel(OgreBites::TL_TOP,
+  winnerPanel = mTrayMgr->createLabel(OgreBites::TL_CENTER,
       "WinnerPanel", "NULL", 300);
 
   mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
@@ -316,7 +316,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
           score++;
         }
 
-        netMgr->messageClients(PROTOCOL_TCP, STR_TLHIT.c_str(), STR_TLHIT.length());
+        netMgr->messageClients(PROTOCOL_TCP, STR_TLHIT.c_str());
       }
       if (!multiplayerStarted) {
         score++;
@@ -365,7 +365,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
             win << " !";
           }
           winnerPanel->setCaption(win.str());
-          winnerPanel->show();
+          mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->show();
         }
       }
     } else if (winTimer++ > 320) {
@@ -509,7 +509,6 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
               tileHit = true;
             } else if (0 == cmd.find(STR_NXLVL)) {
               std::cout << "TCP - Next level\n";
-              tileHit = true;
               gameDone = true;
             }
 
