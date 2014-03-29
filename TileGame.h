@@ -680,6 +680,8 @@ protected:
           ballMeshpc->setCastShadows(true);
           nodepc->attachObject(ballMeshpc);
           ballMgr->setPlayerBall(ballMgr->addBall(nodepc, x, y, z, 100), i, 0);
+
+          playerBallLocalData[i].active = true;
         }
 
         playerBallLocalData[i].newPos = playerBallNetworkData.ballPositions[i];
