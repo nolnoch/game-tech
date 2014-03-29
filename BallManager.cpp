@@ -111,11 +111,11 @@ void BallManager::moveOrAddBall(int id, Ogre::SceneNode* nodepc, Ogre::Entity* b
     removeBall(rmBall);
 
     mainBalls[id] = new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z);
-    ballList.push_back(mainBalls[id]);
   } else {
     std::cout << "add ball\n";
     mainBalls.push_back(new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z));
   }
+  ballList.push_back(mainBalls[id]);
 }
 
 bool BallManager::isGlobalBall() {
