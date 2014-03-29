@@ -44,6 +44,7 @@ boing(0),
 music(0),
 gong(0),
 hit2(0),
+
 noteSequence(5),
 noteIndex(0)
 {
@@ -117,6 +118,8 @@ void TileGame::createScene(void) {
   //  std::string postFilter = "Gaussian Blur";
   //  Ogre::CompositorManager::getSingleton().addCompositor(mCamera->getViewport(), postFilter);
   //  Ogre::CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), postFilter, true);
+  //  Ogre::ColourValue fadeColour(0.1, 0.1, 0.1);
+  //  mSceneMgr->setFog(Ogre::FOG_EXP, fadeColour, 0.0008);
 
   Ogre::Plane wallBack(Ogre::Vector3::NEGATIVE_UNIT_Z, 0);
   Ogre::Plane wallFront(Ogre::Vector3::UNIT_Z,0);
@@ -201,25 +204,6 @@ void TileGame::createScene(void) {
   lSun->setSpecularColour(1.0,1.0,1.0);
   //  lSun->setAttenuation(3250, 1.0, 0.0000000001, 0.000001);
   lSun->setAttenuation(5250, 1.0, 0.00000001, 0.00000010);
-
-  // //   Directional light
-  // Ogre::Light* light = mSceneMgr->createLight("Light1");
-  // light->setType(Ogre::Light::LT_DIRECTIONAL);
-  // light->setDiffuseColour(Ogre::ColourValue(.6, .6, .6));
-  // light->setSpecularColour(Ogre::ColourValue(.7, .7, .7));
-  // light->setDirection(Ogre::Vector3(-1, -1, 1));
-
-  // //   Spot light
-  // light = mSceneMgr->createLight("Light2");
-  // light->setType(Ogre::Light::LT_SPOTLIGHT);
-  // light->setDiffuseColour(Ogre::ColourValue(0.8, 0.8, 0.8));
-  // light->setSpecularColour(Ogre::ColourValue(1, 1, 1));
-  // light->setDirection(Ogre::Vector3(0, -1, 0));
-  // light->setPosition( Ogre::Vector3(0, 1000, 0) );
-  // light->setSpotlightRange( Ogre::Degree(35), Ogre::Degree(50) );
-
-
-
   sim->createBounds(PLANE_DIST);
 
   levelSetup(currLevel);
@@ -295,7 +279,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
               tileEntities.back()->getParentNode()->_getDerivedPosition(), mCamera);
         }
         // Tile Texture
-        tileEntities.back()->setMaterialName("Examples/BumpyMetal");
+        tileEntities.back()->setMaterialName("Examples/ancientTileOn"); //bumpy
         tileEntities.pop_back();
         tileSceneNodes.pop_back();
       }
@@ -693,7 +677,7 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
   }
   else if (arg.key == OIS::KC_Q) {
     if(currTile >= -1)
-      tileEntities[currTile+1]->setMaterialName("Examples/Chrome");
+      tileEntities[currTile+1]->setMaterialName("Examples/ancientTile"); //chrome
     currTile = tileEntities.size() - 1;
     timer.reset();
     animDone = false;

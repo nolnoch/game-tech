@@ -47,7 +47,7 @@ material Examples/shinyball2
 			specular 1.0 1.0 1.0 1 90
 			texture_unit
 			{
-				texture spheretexture2.jpg
+				texture shiny2.jpg
 				env_map spherical
 			}
 		}
@@ -583,7 +583,7 @@ material Examples/BumpyMetal
 
 			texture_unit
 			{
-				texture BumpyMetal.jpg
+				texture ancienttile.png
 			}
 		}
 	}
@@ -737,6 +737,47 @@ material Examples/SpaceSky
 		}
 	}
 }
+
+
+material Examples/ancientTileOn
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				scroll 1.75 1.25
+				scale 8 8
+				texture ancienttile.png
+			}
+		}
+	}
+}
+
+material Examples/ancientTile
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				//scroll 1.75 1.25
+				
+				
+				
+				scroll -.253 .243
+				
+				//
+				texture ancienttilelight.png
+				rotate_anim .08
+				scale 8 8
+			}
+		}
+	}
+}
+
 material Examples/Crosshair
 {
 	technique

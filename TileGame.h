@@ -85,7 +85,7 @@ class TileGame : public BaseGame
 public:
   TileGame(void);
   virtual ~TileGame(void);
-
+  std::string tileTextureOff;
   Ogre::RenderWindow * getWindow(void) { return mWindow; }
   Ogre::Timer * getTimer(void) { return mTimer; }
   OIS::Mouse * getMouse(void) { return mMouse; }
@@ -283,7 +283,7 @@ protected:
 
       node1->translate(x ,y, z); //1600 / 5 is our tilewidth
       node1->attachObject(tile);
-      tile->setMaterialName("Examples/Chrome");
+      tile->setMaterialName("Examples/ancientTile");
       tile->setCastShadows(false);
       sim->addTile(node1, xsize, ysize, zsize);
       tileEntities.push_back(tile);
@@ -299,9 +299,10 @@ protected:
       it++;
       numballs = it * it * it;
     }
-
-    if(server || !multiplayerStarted)
+    if(server || !multiplayerStarted) {
       ballSetup(it);
+      std::cout << " setting up balls \n";
+    }
 
     soundMgr->playSound(gong);
 
@@ -491,6 +492,44 @@ protected:
       z = z << 48;
       ballNetworkData.ball[i] = host | x | y | z;
     }
+
+    for(int i = 0; i < nPlayers + 1; i++)
+    {
+      Uint64 host, x, y, z;
+      if(ballMgr->isPlayerBall(i))
+      {
+       // std::cout << "Updating player ball " << i << "\n";
+        host = ballMgr->playerBalls[i]->host;
+        x = ballMgr->playerBalls[i]->getSceneNode()->getPosition().x;
+        y = ballMgr->playerBalls[i]->getSceneNode()->getPosition().y;
+        z = ballMgr->playerBalls[i]->getSceneNode()->getPosition().z;
+      }
+      else
+      {
+        host = 0;
+        x = 4000;
+        y = 4000;
+        z = 4000;
+      }
+
+      // std::cout << "Sending:\n";
+      // std::cout << "ball: " << i << std::endl;
+      // std::cout << "  x: " << x << std::endl;
+      // std::cout << "  y: " << y << std::endl;
+      // std::cout << "  z: " << z << std::endl;
+
+      x += 1500;
+      y += 1500;
+      z += 1500;
+      
+
+      x = x << 16;
+      y = y << 32;
+      z = z << 48;
+      ballNetworkData.playerBall[i] = host | x | y | z;
+    //  std::cout << "Raw: " << ballNetworkData.playerBall[i] << std::endl;
+    }
+>>>>>>> Stashed changes
     memcpy((netMgr->udpServerData[nPlayers+1].input), &UINT_UPDBL, tagSize);
     memcpy((netMgr->udpServerData[nPlayers+1].input + 4), &ballNetworkData, bdSize);
     netMgr->udpServerData[nPlayers+1].updated = true;
@@ -634,6 +673,35 @@ protected:
       ballLocalData[i].lastDistance = ballLocalData[i].newPos - ballLocalData[i].drawPos;
       // Move the ball to (x,y,z)
     }
+<<<<<<< Updated upstream
+=======
+    for(int i = 0; i < nPlayers + 1; i++) {
+    //  std::cout << "modifyBalls " << i << "\n";
+      Uint64 ball = ballNetworkData.playerBall[i];
+      Uint16 *field;
+      
+      host = ball & mask;
+      x = ((ball & (mask << 16)) >> 16);
+      y = ((ball & (mask << 32)) >> 32);
+      z = ((ball & (mask << 48)) >> 48);
+
+      x -= 1500;
+      y -= 1500;
+      z -= 1500;
+
+      // std::cout << "Recieved:\n";
+      // std::cout << "ball: " << i << std::endl;
+      // std::cout << "Raw: " << ball << "\n";
+      // std::cout << "  x: " << x << std::endl;
+      // std::cout << "  y: " << y << std::endl;
+      // std::cout << "  z: " << z << std::endl;
+
+      playerBallLocalData[i].newPos = Ogre::Vector3(x, y, z);
+      playerBallLocalData[i].lastDistance = playerBallLocalData[i].newPos - playerBallLocalData[i].drawPos;
+      // Move the ball to (x,y,z)
+      std::cout << "modifyBalls end\n";
+    }
+>>>>>>> Stashed changes
   }
 
   void notifyPlayers() {
@@ -736,11 +804,11 @@ protected:
         }
         // Revert previous tile to original texture
         if(currTile + 1 < tileEntities.size() && currTile >= -1) {
-          tileEntities[currTile + 1]->setMaterialName("Examples/Chrome");
+          tileEntities[currTile + 1]->setMaterialName("Examples/ancientTile"); //chrome
         }
 
         if(currTile >= 0) {
-          tileEntities[currTile]->setMaterialName("Examples/SpaceSky");
+          tileEntities[currTile]->setMaterialName("Examples/ancientTile"); //space
 
           if(panelLight != NULL)
             mSceneMgr->destroyLight(panelLight);
@@ -782,7 +850,7 @@ protected:
     }
     else if (!animDone) {
       if (tileEntities.size() > 0) {
-        tileEntities[0]->setMaterialName("Examples/Chrome");
+        tileEntities[0]->setMaterialName("Examples/ancientTile");
         animDone = true;
       }
     }
