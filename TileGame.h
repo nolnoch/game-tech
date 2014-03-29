@@ -664,7 +664,7 @@ protected:
   void modifyPlayerBalls(Uint32 *data) {
     memcpy(&playerBallNetworkData, data, sizeof(PlayerBallNetworkData));
 
-    for (int i = 0; i < nPlayers; i++) {
+    for (int i = 0; i <= nPlayers; i++) {
       if (playerBallNetworkData.ballsActive[i]) {
         if (!playerBallLocalData[i].active) {
           Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
