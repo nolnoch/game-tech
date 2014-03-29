@@ -56,6 +56,16 @@ noteIndex(0)
       slowdownval = currTile = nPlayers = ballsounddelay = wins = 0;
   currLevel = 1;
 
+  Ogre::Vector3 zero(Ogre::Vector3::ZERO);
+  for (int i = 0; i < 10; i++) {
+    playerBallNetworkData.ballsActive[i] = false;
+    playerBallNetworkData.ballPositions[i] = zero;
+    playerBallLocalData[i].active = false;
+    playerBallLocalData[i].drawPos = zero;
+    playerBallLocalData[i].lastDistance = zero;
+    playerBallLocalData[i].newPos = zero;
+  }
+
   mTimer = OGRE_NEW Ogre::Timer();
   mTimer->reset();
 
@@ -239,7 +249,6 @@ void TileGame::createFrameListener(void) {
   mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->hide();
 
   congratsPanel->hide();
-  winnerPanel->hide();
 
   Ogre::OverlayManager& overlayMgr = Ogre::OverlayManager::getSingleton();
   crosshairOverlay = overlayMgr.create("Crosshair");
@@ -331,7 +340,6 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
           //netMgr->messageClients(PROTOCOL_TCP, STR_NXLVL.c_str());
           //Clients automatically move to next level when last tile is hit.
         }
-
         if (gameDone) {
           winner = findRoundWinner();
           if (winner != -1) {
@@ -425,8 +433,10 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
   if (multiplayerStarted) {
     // Update players' positions locally.
     movePlayers();
-    if (!server)
+    if (!server) {
       moveBalls();
+      movePlayerBalls();
+    }
   }
 
   if (netActive && (netTimer->getMilliseconds() > SWEEP_MS)) {
@@ -476,6 +486,8 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
                 }
               } else if (data[0] == UINT_UPDBL) {
                 modifyBalls(++data);
+              } else if (data[0] == UINT_UPDPB) {
+                modifyPlayerBalls(++data);
               }
               netMgr->udpServerData[i].updated = false;
             }
@@ -704,12 +716,23 @@ bool TileGame::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 //-------------------------------------------------------------------------------------
 bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) {
   isCharging = false;
-  if(chargeShot >= 1000 && !gameDone) {
+  if (chargeShot >= 1000 && !gameDone) {
     Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
-    Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
     double force = chargeShot * 0.85f;
     chargeShot = 0;
+    shotsFired++;
+
+    if (multiplayerStarted && connected) {
+      if (!server) {
+        updateServer(force, direction);
+        return BaseGame::mouseReleased(arg, id);
+      } else {
+        updatePlayers(force, direction);
+      }
+    }
+
+    Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
 
     if (ballMgr->isGlobalBall())
       ballMgr->removeGlobalBall();
@@ -722,15 +745,9 @@ bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id 
 
     nodepc->attachObject(ballMeshpc);
     ballMgr->setGlobalBall(ballMgr->addBall(nodepc, x, y, z, 100), netMgr->getIPnbo());
+    ballMgr->globalBall->shot = true;
     ballMgr->globalBall->applyForce(force, direction);
     shotsFired++;
-
-    if (multiplayerStarted && connected) {
-      if (!server)
-        updateServer(force, direction);
-      else
-        updatePlayers(force, direction);
-    }
   }
 
   return BaseGame::mouseReleased(arg, id);

@@ -21,7 +21,8 @@ class Ball {
       rigidBody(rB),
       host(0),
       node(n),
-      mass(1)
+      mass(1),
+      shot(false)
   {
       rB->setAngularFactor(0.4f);
       rB->setRestitution(0.93);
@@ -77,6 +78,7 @@ class Ball {
 
 
     unsigned short int host;
+    bool shot;
 
   private:
     Ogre::SceneNode* node;

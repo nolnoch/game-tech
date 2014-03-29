@@ -42,7 +42,6 @@ struct PlayerData {
   Uint32 host;
   Ogre::Quaternion newDir;
   Ogre::Vector3 newPos;
-  Ogre::Vector3 newBallPos;
   Ogre::Vector3 shotDir;
   double shotForce;
   int score;
@@ -54,8 +53,6 @@ struct PlayerOldData {
   double delta;
   Ogre::Vector3 lastDistance;
   Ogre::Vector3 drawPos;
-  Ogre::Vector3 lastBallDistance;
-  Ogre::Vector3 drawBallPos;
 };
 
 /* Since we should not have the physics sim running on clients, the server needs
@@ -71,10 +68,23 @@ struct PlayerOldData {
  */
 struct BallNetworkData {
   int numBalls;
-  Uint64 ball[64];              //  64 bytes
+  Uint64 ball[27];              //  216 bytes
+};
+
+struct PlayerBallNetworkData {
+  bool ballsActive[10];
+  bool shotBall[10];
+  Ogre::Vector3 ballPositions[10];
 };
 
 struct BallLocalData {
+  Ogre::Vector3 lastDistance;
+  Ogre::Vector3 newPos;
+  Ogre::Vector3 drawPos;
+};
+
+struct PlayerBallLocalData {
+  bool active;
   Ogre::Vector3 lastDistance;
   Ogre::Vector3 newPos;
   Ogre::Vector3 drawPos;
@@ -117,7 +127,9 @@ protected:
   std::vector<PlayerData *> playerData;
   std::vector<PlayerOldData *> playerOldData;
   BallNetworkData ballNetworkData;
-  BallLocalData ballLocalData[64];
+  BallLocalData ballLocalData[27];
+  PlayerBallNetworkData playerBallNetworkData;
+  PlayerBallLocalData playerBallLocalData[10];
 
   OgreBites::ParamsPanel *scorePanel, *playersWaitingPanel, *multiScorePanel;
   OgreBites::Label *congratsPanel, *chargePanel, *clientAcceptDescPanel,
@@ -197,6 +209,8 @@ protected:
     for(int i = 0; i < 50; i++)
       randomnumbers.push_back(i);
 
+    std::cout << "a" << std::endl;
+
     for(int i = 0; i < num; i++) {
       std::stringstream ss;
       std::stringstream ssDebug;
@@ -221,6 +235,8 @@ protected:
       ssDebug << col;
 
       // std::cout << "Row/col " + ssDebug.str() << std::endl;
+
+      std::cout << "b" << std::endl;
 
       Ogre::SceneNode* node1; //= mSceneMgr->getRootSceneNode()->createChildSceneNode();
       int xsize = 240;
@@ -293,16 +309,22 @@ protected:
     }
     tileCounter += num;
 
+    std::cout << "c" << std::endl;
+
     int it, numballs;
     it = numballs = 1;
     while (numballs < num) {
       it++;
       numballs = it * it * it;
     }
+
     if(server || !multiplayerStarted) {
+
       ballSetup(it);
       std::cout << " setting up balls \n";
     }
+
+    std::cout << "d" << std::endl;
 
     soundMgr->playSound(gong);
 
@@ -326,11 +348,14 @@ protected:
   }
 
   void setLevel(int num) {
+    std::cout << "1" << std::endl;
     levelTearDown();
+    std::cout << "2" << std::endl;
     currLevel = num;
     score = 0;
     shotsFired = 0;
     levelSetup(num);
+    std::cout << "3" << std::endl;
   }
 
   void drawPlayers() {
@@ -357,7 +382,6 @@ protected:
   void movePlayers() {
     //Used by both client and server.
     //Purely graphical, interpolates player positions to draw them smoothly.
-    //TODO: make something else update balls.
     std::ostringstream playerName;
     Ogre::Vector3 newPos, drawPos;
     Ogre::Quaternion newDir, oldDir, drawDir;
@@ -398,28 +422,38 @@ protected:
     // Updating each ball's position.
     int numBalls = ballNetworkData.numBalls;
 
-    for(int i = 0; i < numBalls; i++) {
+    for (int i = 0; i < numBalls; i++) {
       Ogre::Vector3 drawPos = ballLocalData[i].drawPos;
       drawPos += (ballLocalData[i].lastDistance) / 10.0;
       ballLocalData[i].drawPos = drawPos;
 
-      Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-      nodepc->setPosition(drawPos.x, drawPos.y, drawPos.z);
-      Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
-      ballMeshpc->setMaterialName("Examples/SphereMappedRustySteel");
-      ballMeshpc->setCastShadows(true);
+      Ogre::SceneNode *ballNode;
+      if (ballMgr->mainBalls[i]) {
+        ballNode = ballMgr->mainBalls[i]->getSceneNode();
+        ballNode->setPosition(drawPos.x, drawPos.y, drawPos.z);
+      } else {
+        ballNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+        ballNode->setPosition(drawPos.x, drawPos.y, drawPos.z);
+        Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
+        ballMeshpc->setMaterialName("Examples/SphereMappedRustySteel");
+        ballMeshpc->setCastShadows(true);
 
-      nodepc->attachObject(ballMeshpc);
-      ballMgr->moveOrAddBall(i, nodepc, ballMeshpc, Ogre::Vector3(0, 0, 0));
+        ballNode->attachObject(ballMeshpc);
+        ballMgr->moveOrAddBall(i, ballNode, ballMeshpc);
+      }
     }
   }
 
   void movePlayerBalls() {
-    for(int i = 0; i < nPlayers; i++) {
-      Ogre::Vector3 drawPos = playerOldData[i]->drawBallPos;
-      drawPos += (playerOldData[i]->lastBallDistance) / 10.0;
-      playerOldData[i]->drawBallPos = drawPos;
+    for (int i = 0; i <= nPlayers; i++) {
+      if (playerBallLocalData[i].active) {
+        Ogre::Vector3 drawPos = playerBallLocalData[i].drawPos;
+        drawPos += (playerBallLocalData[i].lastDistance) / 10.0;
+        playerBallLocalData[i].drawPos = drawPos;
 
+        ballMgr->playerBalls[i]->getSceneNode()->setPosition(drawPos.x, drawPos.y, drawPos.z);
+      }
+      /*
       Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
       nodepc->setPosition(drawPos.x, drawPos.y, drawPos.z);
       Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
@@ -428,6 +462,7 @@ protected:
 
       nodepc->attachObject(ballMeshpc);
       ballMgr->moveOrAddPlayerBall(i, nodepc, ballMeshpc, Ogre::Vector3(0, 0, 0));
+       */
     }
   }
 
@@ -473,66 +508,40 @@ protected:
     // Balls
     int numBalls = ballMgr->mainBalls.size();
     ballNetworkData.numBalls = numBalls;
-    for(int i = 0; i < numBalls; i++) {
+    for (i = 0; i < numBalls; i++) {
       Uint64 host = ballMgr->mainBalls[i]->host;
       Uint64 x = ballMgr->mainBalls[i]->getSceneNode()->getPosition().x + 1500;
       Uint64 y = ballMgr->mainBalls[i]->getSceneNode()->getPosition().y + 1500;
       Uint64 z = ballMgr->mainBalls[i]->getSceneNode()->getPosition().z + 1500;
-
-      /*
-      std::cout << "Sending:\n";
-      std::cout << "host: " << host << std::endl;
-      std::cout << "  x: " << x << std::endl;
-      std::cout << "  y: " << y << std::endl;
-      std::cout << "  z: " << z << std::endl;
-      */
 
       x = x << 16;
       y = y << 32;
       z = z << 48;
       ballNetworkData.ball[i] = host | x | y | z;
     }
-
-    for(int i = 0; i < nPlayers + 1; i++)
-    {
-      Uint64 host, x, y, z;
-      if(ballMgr->isPlayerBall(i))
-      {
-       // std::cout << "Updating player ball " << i << "\n";
-        host = ballMgr->playerBalls[i]->host;
-        x = ballMgr->playerBalls[i]->getSceneNode()->getPosition().x;
-        y = ballMgr->playerBalls[i]->getSceneNode()->getPosition().y;
-        z = ballMgr->playerBalls[i]->getSceneNode()->getPosition().z;
-      }
-      else
-      {
-        host = 0;
-        x = 4000;
-        y = 4000;
-        z = 4000;
-      }
-
-      // std::cout << "Sending:\n";
-      // std::cout << "ball: " << i << std::endl;
-      // std::cout << "  x: " << x << std::endl;
-      // std::cout << "  y: " << y << std::endl;
-      // std::cout << "  z: " << z << std::endl;
-
-      x += 1500;
-      y += 1500;
-      z += 1500;
-      
-
-      x = x << 16;
-      y = y << 32;
-      z = z << 48;
-      ballNetworkData.playerBall[i] = host | x | y | z;
-    //  std::cout << "Raw: " << ballNetworkData.playerBall[i] << std::endl;
-    }
     memcpy((netMgr->udpServerData[nPlayers+1].input), &UINT_UPDBL, tagSize);
     memcpy((netMgr->udpServerData[nPlayers+1].input + 4), &ballNetworkData, bdSize);
     netMgr->udpServerData[nPlayers+1].updated = true;
+    netMgr->messageClients(PROTOCOL_UDP);
 
+    // Player Balls
+    bdSize = sizeof(PlayerBallNetworkData);
+    for (i = 0; i < nPlayers; i++) {
+      if ((playerBallNetworkData.ballsActive[i] = ballMgr->isPlayerBall(i))) {
+        playerBallNetworkData.shotBall[i] = ballMgr->playerBalls[i]->shot;
+        ballMgr->playerBalls[i]->shot = false;
+        playerBallNetworkData.ballPositions[i] = ballMgr->playerBalls[i]->getSceneNode()->getPosition();
+      }
+    }
+    if ((playerBallNetworkData.ballsActive[i] = ballMgr->isGlobalBall())) {
+      playerBallNetworkData.shotBall[i] = ballMgr->globalBall->shot;
+      ballMgr->globalBall->shot = false;
+      playerBallNetworkData.ballPositions[i] = ballMgr->globalBall->getSceneNode()->getPosition();
+    }
+
+    memcpy((netMgr->udpServerData[nPlayers+1].input), &UINT_UPDPB, tagSize);
+    memcpy((netMgr->udpServerData[nPlayers+1].input + 4), &playerBallNetworkData, bdSize);
+    netMgr->udpServerData[nPlayers+1].updated = true;
     netMgr->messageClients(PROTOCOL_UDP);
   }
 
@@ -587,10 +596,11 @@ protected:
     scorelist.push_back("Shots Fired");
     scorelist.push_back("Current Level");
     multiScorePanel = mTrayMgr->createParamsPanel(OgreBites::TL_TOPLEFT,
-          "MultiScorePanel", 200, scorelist);
+        "MultiScorePanel", 200, scorelist);
     mTrayMgr->destroyWidget(scorePanel);
 
     mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
+    mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->hide();
 
     multiplayerStarted = true;
   }
@@ -620,7 +630,7 @@ protected:
     memcpy(playerData[j], data, sizeof(PlayerData));
 
     // Did they launch a ball?  Trigger now before buffer overwritten!
-    if (playerData[j]->shotForce) {
+    if (server && playerData[j]->shotForce) {
       std::cout << "Shot fired." << std::endl;
       Ogre::Vector3 newPos = playerData[j]->newPos;
       shootBall(j, newPos.x, newPos.y, newPos.z, playerData[j]->shotForce);
@@ -642,7 +652,7 @@ protected:
     for (int i = 0; i < numBalls; i++) {
       Uint64 ball = ballNetworkData.ball[i];
       Uint16 *field;
-      
+
       host = ball & mask;
       x = ((ball & (mask << 16)) >> 16);
       y = ((ball & (mask << 32)) >> 32);
@@ -658,7 +668,7 @@ protected:
       y = *field++ - 1500;
       x = *field++ - 1500;
       host = *field;
-      */
+       */
 
       /*
       std::cout << "Recieved:\n";
@@ -666,40 +676,41 @@ protected:
       std::cout << "  x: " << x << std::endl;
       std::cout << "  y: " << y << std::endl;
       std::cout << "  z: " << z << std::endl;
-      */
+       */
 
       ballLocalData[i].newPos = Ogre::Vector3(x, y, z);
       ballLocalData[i].lastDistance = ballLocalData[i].newPos - ballLocalData[i].drawPos;
-      // Move the ball to (x,y,z)
     }
+  }
 
-    for(int i = 0; i < nPlayers + 1; i++) {
-    //  std::cout << "modifyBalls " << i << "\n";
-      Uint64 ball = ballNetworkData.playerBall[i];
-      Uint16 *field;
-      
-      host = ball & mask;
-      x = ((ball & (mask << 16)) >> 16);
-      y = ((ball & (mask << 32)) >> 32);
-      z = ((ball & (mask << 48)) >> 48);
+  void modifyPlayerBalls(Uint32 *data) {
+    memcpy(&playerBallNetworkData, data, sizeof(PlayerBallNetworkData));
 
-      x -= 1500;
-      y -= 1500;
-      z -= 1500;
+    for (int i = 0; i <= nPlayers; i++) {
+      if (playerBallNetworkData.ballsActive[i]) {
+        if (!playerBallLocalData[i].active) {
+          Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+          Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
 
-      // std::cout << "Recieved:\n";
-      // std::cout << "ball: " << i << std::endl;
-      // std::cout << "Raw: " << ball << "\n";
-      // std::cout << "  x: " << x << std::endl;
-      // std::cout << "  y: " << y << std::endl;
-      // std::cout << "  z: " << z << std::endl;
+          int x = playerBallNetworkData.ballPositions[i].x;
+          int y = playerBallNetworkData.ballPositions[i].y;
+          int z = playerBallNetworkData.ballPositions[i].z;
 
-      playerBallLocalData[i].newPos = Ogre::Vector3(x, y, z);
-      playerBallLocalData[i].lastDistance = playerBallLocalData[i].newPos - playerBallLocalData[i].drawPos;
-      // Move the ball to (x,y,z)
-      std::cout << "modifyBalls end\n";
+          ballMeshpc->setCastShadows(true);
+          nodepc->attachObject(ballMeshpc);
+          ballMgr->setPlayerBall(ballMgr->addBall(nodepc, x, y, z, 100), i, 0);
+
+          playerBallLocalData[i].active = true;
+        }
+
+        playerBallLocalData[i].newPos = playerBallNetworkData.ballPositions[i];
+        if (playerBallNetworkData.shotBall[i]) {
+          playerBallLocalData[i].drawPos = playerBallNetworkData.ballPositions[i];
+        }
+        playerBallLocalData[i].lastDistance = playerBallLocalData[i].newPos -
+            playerBallLocalData[i].drawPos;
+      }
     }
-
   }
 
   void notifyPlayers() {

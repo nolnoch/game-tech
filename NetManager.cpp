@@ -303,7 +303,7 @@ void NetManager::messageServer(Protocol protocol, const char *buf, int len) {
     return;
   }
 
-  if (buf && (0 < len) && (len < MESSAGE_LENGTH)) {
+  if (buf && (0 <= len) && (len < MESSAGE_LENGTH)) {
     length = len ? : strlen(buf);
 
     if (protocol & PROTOCOL_TCP) {

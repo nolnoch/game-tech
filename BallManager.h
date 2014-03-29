@@ -46,8 +46,7 @@ public:
   void clearBalls();
   int getNumberBallCollisions();
   Ogre::Vector3 getCollisionPosition();
-  void moveOrAddBall(int id, Ogre::SceneNode* nodepc, Ogre::Entity* ballmeshpc, Ogre::Vector3 velocity);
-  void moveOrAddPlayerBall(int id, Ogre::SceneNode* nodepc, Ogre::Entity* ballmeshpc, Ogre::Vector3 velocity);
+  void moveOrAddBall(int id, Ogre::SceneNode* nodepc, Ogre::Entity* ballmeshpc);
 
   TileSimulator* getSimulator();
   unsigned int popScoringHost();

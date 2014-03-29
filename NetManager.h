@@ -78,6 +78,7 @@ static const Uint32 UINT_ADDPL(0xFF000001);
 static const Uint32 UINT_UPDPL(0xFF000010);
 static const Uint32 UINT_UPDSV(0xFF000020);
 static const Uint32 UINT_UPDBL(0xFF000030);
+static const Uint32 UINT_UPDPB(0xFF000040);
 static const Uint32 UINT_BLSHT(0xFF0001FF);
 
 
@@ -196,7 +197,7 @@ private:
     SOCKET_ALL_MAX      = SOCKET_TCP_MAX + SOCKET_UDP_MAX,
     SOCKET_SELF         = SOCKET_ALL_MAX + 1,
     MESSAGE_COUNT       = 10,
-    MESSAGE_LENGTH      = 128,
+    MESSAGE_LENGTH      = 256,
     MASK_DEPTH          = 24
     ///@}
   };
