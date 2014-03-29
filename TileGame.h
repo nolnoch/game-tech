@@ -351,14 +351,11 @@ protected:
   }
 
   void setLevel(int num) {
-    std::cout << "1" << std::endl;
     levelTearDown();
-    std::cout << "2" << std::endl;
     currLevel = num;
     score = 0;
     shotsFired = 0;
     levelSetup(num);
-    std::cout << "3" << std::endl;
   }
 
   void drawPlayers() {

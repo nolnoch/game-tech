@@ -140,9 +140,6 @@ void BallManager::clearBalls() {
 
   globalBall = NULL;
   globalBallActive = false;
-  for (int i = 0; i < nBallList; i++) {
-    delete ballList[i];
-  }
   ballList.clear();
   mainBalls.clear();
   playerBalls.assign(playerBalls.size(), NULL);
