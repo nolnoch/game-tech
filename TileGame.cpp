@@ -738,15 +738,15 @@ bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id 
     Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
     double force = chargeShot * 0.85f;
     chargeShot = 0;
+    shotsFired++;
 
     if (multiplayerStarted && connected) {
-      if (!server)
+      if (!server) {
         updateServer(force, direction);
-      else
+        return BaseGame::mouseReleased(arg, id);
+      } else {
         updatePlayers(force, direction);
-      shotsFired++;
-
-      return BaseGame::mouseReleased(arg, id);
+      }
     }
 
     Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
