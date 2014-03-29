@@ -416,11 +416,15 @@ protected:
       drawPos += (ballLocalData[i].lastDistance) / 10.0;
       ballLocalData[i].drawPos = drawPos;
 
+      std::cout << "1" << std::endl;
+
       Ogre::SceneNode *ballNode;
       if (ballMgr->mainBalls[i]) {
+        std::cout << "2" << std::endl;
         ballNode = ballMgr->mainBalls[i]->getSceneNode();
         ballNode->setPosition(drawPos.x, drawPos.y, drawPos.z);
       } else {
+        std::cout << "3" << std::endl;
         ballNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
         ballNode->setPosition(drawPos.x, drawPos.y, drawPos.z);
         Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
@@ -434,8 +438,12 @@ protected:
   }
 
   void movePlayerBalls() {
+    std::cout << "4" << std::endl;
+
     for (int i = 0; i <= nPlayers; i++) {
+      std::cout << "5" << std::endl;
       if (playerBallLocalData[i].active) {
+        std::cout << "6" << std::endl;
         Ogre::Vector3 drawPos = playerBallLocalData[i].drawPos;
         drawPos += (playerBallLocalData[i].lastDistance) / 10.0;
         playerBallLocalData[i].drawPos = drawPos;
