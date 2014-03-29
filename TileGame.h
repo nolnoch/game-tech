@@ -518,8 +518,11 @@ protected:
         playerBallNetworkData.ballPositions[i] = ballMgr->playerBalls[i]->getSceneNode()->getPosition();
       }
     }
-    if ((playerBallNetworkData.ballsActive[i] = ballMgr->isGlobalBall()))
+    if ((playerBallNetworkData.ballsActive[i] = ballMgr->isGlobalBall())) {
+      playerBallNetworkData.shotBall[i] = ballMgr->playerBalls[i]->shot;
+      ballMgr->playerBalls[i]->shot = false;
       playerBallNetworkData.ballPositions[i] = ballMgr->globalBall->getSceneNode()->getPosition();
+    }
 
     memcpy((netMgr->udpServerData[nPlayers+1].input), &UINT_UPDPB, tagSize);
     memcpy((netMgr->udpServerData[nPlayers+1].input + 4), &playerBallNetworkData, bdSize);
