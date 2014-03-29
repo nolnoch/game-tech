@@ -56,15 +56,7 @@ noteIndex(0)
       slowdownval = currTile = nPlayers = ballsounddelay = wins = 0;
   currLevel = 1;
 
-  Ogre::Vector3 zero(Ogre::Vector3::ZERO);
-  for (int i = 0; i < 10; i++) {
-    playerBallNetworkData.ballsActive[i] = false;
-    playerBallNetworkData.ballPositions[i] = zero;
-    playerBallLocalData[i].active = false;
-    playerBallLocalData[i].drawPos = zero;
-    playerBallLocalData[i].lastDistance = zero;
-    playerBallLocalData[i].newPos = zero;
-  }
+  initLocalData();
 
   mTimer = OGRE_NEW Ogre::Timer();
   mTimer->reset();
@@ -410,13 +402,11 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
         Ogre::StringConverter::toString(nPlayers + 1));
   }
 
-  if(ballsounddelay > 0)
+  if (ballsounddelay > 0)
     ballsounddelay--;
-  else
-  {
+  else {
     int numCollisions = ballMgr->getNumberBallCollisions();
-    if(numCollisions > 0)
-    {
+    if (numCollisions > 0) {
       soundMgr->playSound(hit2, ballMgr->getCollisionPosition(), mCamera);
       ballsounddelay = 5;
     }
