@@ -209,6 +209,8 @@ protected:
     for(int i = 0; i < 50; i++)
       randomnumbers.push_back(i);
 
+    std::cout << "a" << std::endl;
+
     for(int i = 0; i < num; i++) {
       std::stringstream ss;
       std::stringstream ssDebug;
@@ -233,6 +235,8 @@ protected:
       ssDebug << col;
 
       // std::cout << "Row/col " + ssDebug.str() << std::endl;
+
+      std::cout << "b" << std::endl;
 
       Ogre::SceneNode* node1; //= mSceneMgr->getRootSceneNode()->createChildSceneNode();
       int xsize = 240;
@@ -305,6 +309,8 @@ protected:
     }
     tileCounter += num;
 
+    std::cout << "c" << std::endl;
+
     int it, numballs;
     it = numballs = 1;
     while (numballs < num) {
@@ -314,6 +320,8 @@ protected:
 
     if (server || !multiplayerStarted)
       ballSetup(it);
+
+    std::cout << "d" << std::endl;
 
     soundMgr->playSound(gong);
 
@@ -337,11 +345,14 @@ protected:
   }
 
   void setLevel(int num) {
+    std::cout << "1" << std::endl;
     levelTearDown();
+    std::cout << "2" << std::endl;
     currLevel = num;
     score = 0;
     shotsFired = 0;
     levelSetup(num);
+    std::cout << "3" << std::endl;
   }
 
   void drawPlayers() {
