@@ -429,6 +429,7 @@ protected:
   void movePlayerBalls() {
     for (int i = 0; i <= nPlayers; i++) {
       if (playerBallLocalData[i].active) {
+        std::cout << "Moving Player Ball" << std::endl;
         Ogre::Vector3 drawPos = playerBallLocalData[i].drawPos;
         drawPos += (playerBallLocalData[i].lastDistance) / 10.0;
         playerBallLocalData[i].drawPos = drawPos;
@@ -509,8 +510,10 @@ protected:
     // Player Balls
     bdSize = sizeof(PlayerBallNetworkData);
     for (i = 0; i < nPlayers; i++) {
-      if ((playerBallNetworkData.ballsActive[i] = ballMgr->isPlayerBall(i)))
+      if ((playerBallNetworkData.ballsActive[i] = ballMgr->isPlayerBall(i))) {
+        std::cout << "Sending player's ball data" << std::endl;
         playerBallNetworkData.ballPositions[i] = ballMgr->playerBalls[i]->getSceneNode()->getPosition();
+      }
     }
     if ((playerBallNetworkData.ballsActive[i] = ballMgr->isGlobalBall()))
       playerBallNetworkData.ballPositions[i] = ballMgr->globalBall->getSceneNode()->getPosition();
@@ -664,7 +667,9 @@ protected:
 
     for (int i = 0; i < nPlayers; i++) {
       if (playerBallNetworkData.ballsActive[i]) {
+        std::cout << "Modifying Player Ball" << std::endl;
         if (!playerBallLocalData[i].active) {
+          std::cout << "Creating new player ball" << std::endl;
           Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
           Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
 

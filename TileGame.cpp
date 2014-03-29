@@ -63,7 +63,6 @@ noteIndex(0)
     playerBallLocalData[i].drawPos = zero;
     playerBallLocalData[i].lastDistance = zero;
     playerBallLocalData[i].newPos = zero;
-    playerBallLocalData[i].oldPos = zero;
   }
 
   mTimer = OGRE_NEW Ogre::Timer();
