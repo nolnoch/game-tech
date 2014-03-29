@@ -31,7 +31,7 @@ const static int PLANE_DIST = WALL_SIZE / 2;                        // the initi
 const static int NUM_TILES_ROW = 5;                                 // number of tiles in each row of a wall.
 const static int NUM_TILES_WALL = NUM_TILES_ROW * NUM_TILES_ROW;    // number of total tiles on a wall.
 const static int TILE_WIDTH = WALL_SIZE / NUM_TILES_ROW;
-const static int SWEEP_MS = 150;
+const static int SWEEP_MS = 60;
 const static int BROAD_MS = 8000;
 
 int ticks = 0;
