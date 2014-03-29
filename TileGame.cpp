@@ -282,6 +282,8 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
   bool ret = BaseGame::frameRenderingQueued(evt);
   int i, j;
 
+  std::cout << "b" << std::endl;
+
   // update the sounds
   Ogre::Vector3 direction = mCamera->getOrientation() * Ogre::Vector3::NEGATIVE_UNIT_Z;
   //soundMgr->updateSounds(mCamera->getPosition(), direction);
@@ -308,6 +310,8 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
         tileEntities.pop_back();
         tileSceneNodes.pop_back();
       }
+
+      std::cout << "c" << std::endl;
 
       // Scoring
       if (server && multiplayerStarted) {
@@ -338,6 +342,8 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
         winTimer = 0;
       }
 
+      std::cout << "d" << std::endl;
+
       tileHit = false;
     }
   }
@@ -356,6 +362,8 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
           //netMgr->messageClients(PROTOCOL_TCP, STR_NXLVL.c_str());
           //Clients automatically move to next level when last tile is hit.
         }
+
+        std::cout << "e" << std::endl;
 
         if (gameDone) {
           winner = findRoundWinner();
@@ -385,6 +393,8 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
         mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->hide();
     }
   }
+
+  std::cout << "f" << std::endl;
 
   if (!animDone)
     simonSaysAnim();
@@ -427,6 +437,8 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
         Ogre::StringConverter::toString(nPlayers + 1));
   }
 
+  std::cout << "g" << std::endl;
+
   if(ballsounddelay > 0)
     ballsounddelay--;
   else
@@ -456,6 +468,8 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
     }
   }
 
+  std::cout << "h" << std::endl;
+
   if (netActive && (netTimer->getMilliseconds() > SWEEP_MS)) {
     std::string cmd, cmdArgs;
     std::ostringstream test;
@@ -464,6 +478,8 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 
     /*  Received an update!  */
     if ((nUp = netMgr->scanForActivity())) {
+
+      std::cout << "i" << std::endl;
 
       if (!server) {  /* **************      CLIENT      ******************* */
 
@@ -588,6 +604,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 
     /* Independent of TCP/UDP update, we do these constantly. */
 
+    std::cout << "j" << std::endl;
 
     if (multiplayerStarted) {                      /* In a multiplayer game. */
       // Message clients or server with global positions.
@@ -628,6 +645,8 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 
     netTimer->reset();
   }
+
+  std::cout << "k" << std::endl;
 
   return ret;
 }

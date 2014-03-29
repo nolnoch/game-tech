@@ -209,8 +209,6 @@ protected:
     for(int i = 0; i < 50; i++)
       randomnumbers.push_back(i);
 
-    std::cout << "a" << std::endl;
-
     for(int i = 0; i < num; i++) {
       std::stringstream ss;
       std::stringstream ssDebug;
@@ -233,10 +231,6 @@ protected:
       ssDebug << row;
       ssDebug << " ";
       ssDebug << col;
-
-      // std::cout << "Row/col " + ssDebug.str() << std::endl;
-
-      std::cout << "b" << std::endl;
 
       Ogre::SceneNode* node1; //= mSceneMgr->getRootSceneNode()->createChildSceneNode();
       int xsize = 240;
@@ -309,8 +303,6 @@ protected:
     }
     tileCounter += num;
 
-    std::cout << "c" << std::endl;
-
     int it, numballs;
     it = numballs = 1;
     while (numballs < num) {
@@ -321,9 +313,9 @@ protected:
     if (server || !multiplayerStarted)
       ballSetup(it);
 
-    std::cout << "d" << std::endl;
-
     soundMgr->playSound(gong);
+
+    std::cout << "a" << std::endl;
 
     gameDone = animDone = false;
     currTile = tileEntities.size() - 1;
