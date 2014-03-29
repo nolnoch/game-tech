@@ -762,6 +762,7 @@ bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id 
 
     nodepc->attachObject(ballMeshpc);
     ballMgr->setGlobalBall(ballMgr->addBall(nodepc, x, y, z, 100), netMgr->getIPnbo());
+    ballMgr->globalBall->shot = true;
     ballMgr->globalBall->applyForce(force, direction);
     shotsFired++;
   }

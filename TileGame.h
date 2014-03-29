@@ -519,8 +519,8 @@ protected:
       }
     }
     if ((playerBallNetworkData.ballsActive[i] = ballMgr->isGlobalBall())) {
-      playerBallNetworkData.shotBall[i] = ballMgr->playerBalls[i]->shot;
-      ballMgr->playerBalls[i]->shot = false;
+      playerBallNetworkData.shotBall[i] = ballMgr->globalBall->shot;
+      ballMgr->globalBall->shot = false;
       playerBallNetworkData.ballPositions[i] = ballMgr->globalBall->getSceneNode()->getPosition();
     }
 
