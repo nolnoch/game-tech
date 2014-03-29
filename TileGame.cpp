@@ -55,15 +55,7 @@ noteIndex(0)
       slowdownval = currTile = nPlayers = ballsounddelay = wins = 0;
   currLevel = 1;
 
-  Ogre::Vector3 zero(Ogre::Vector3::ZERO);
-  for (int i = 0; i < 10; i++) {
-    playerBallNetworkData.ballsActive[i] = false;
-    playerBallNetworkData.ballPositions[i] = zero;
-    playerBallLocalData[i].active = false;
-    playerBallLocalData[i].drawPos = zero;
-    playerBallLocalData[i].lastDistance = zero;
-    playerBallLocalData[i].newPos = zero;
-  }
+  initLocalData();
 
   mTimer = OGRE_NEW Ogre::Timer();
   mTimer->reset();

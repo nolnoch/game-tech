@@ -333,7 +333,21 @@ protected:
     tileList.clear();
     allTileEntities.clear();
 
+    initLocalData();
+
     currLevel++;
+  }
+
+  void initLocalData() {
+    Ogre::Vector3 zero(Ogre::Vector3::ZERO);
+    for (int i = 0; i < 10; i++) {
+      playerBallNetworkData.ballsActive[i] = false;
+      playerBallNetworkData.ballPositions[i] = zero;
+      playerBallLocalData[i].active = false;
+      playerBallLocalData[i].drawPos = zero;
+      playerBallLocalData[i].lastDistance = zero;
+      playerBallLocalData[i].newPos = zero;
+    }
   }
 
   void setLevel(int num) {
