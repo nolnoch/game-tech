@@ -667,8 +667,6 @@ protected:
     for (int i = 0; i < nPlayers; i++) {
       if (playerBallNetworkData.ballsActive[i]) {
         if (!playerBallLocalData[i].active) {
-          std::cout << "Creating new player ball at " << std::endl;
-          std::cout << playerBallNetworkData.ballPositions[i] << std::endl;
           Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
           Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
 
@@ -683,10 +681,9 @@ protected:
           playerBallLocalData[i].active = true;
         }
 
-        std::cout << "Modifying Player Ball" << std::endl;
-        std::cout << playerBallNetworkData.ballPositions[i] << std::endl;
         playerBallLocalData[i].newPos = playerBallNetworkData.ballPositions[i];
-        playerBallLocalData[i].lastDistance = ballLocalData[i].newPos - ballLocalData[i].drawPos;
+        playerBallLocalData[i].lastDistance = playerBallLocalData[i].newPos -
+            playerBallLocalData[i].drawPos;
       }
     }
   }
