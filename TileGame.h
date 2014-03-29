@@ -529,7 +529,6 @@ protected:
       ballNetworkData.playerBall[i] = host | x | y | z;
     //  std::cout << "Raw: " << ballNetworkData.playerBall[i] << std::endl;
     }
->>>>>>> Stashed changes
     memcpy((netMgr->udpServerData[nPlayers+1].input), &UINT_UPDBL, tagSize);
     memcpy((netMgr->udpServerData[nPlayers+1].input + 4), &ballNetworkData, bdSize);
     netMgr->udpServerData[nPlayers+1].updated = true;
@@ -673,8 +672,7 @@ protected:
       ballLocalData[i].lastDistance = ballLocalData[i].newPos - ballLocalData[i].drawPos;
       // Move the ball to (x,y,z)
     }
-<<<<<<< Updated upstream
-=======
+
     for(int i = 0; i < nPlayers + 1; i++) {
     //  std::cout << "modifyBalls " << i << "\n";
       Uint64 ball = ballNetworkData.playerBall[i];
@@ -701,7 +699,7 @@ protected:
       // Move the ball to (x,y,z)
       std::cout << "modifyBalls end\n";
     }
->>>>>>> Stashed changes
+
   }
 
   void notifyPlayers() {
