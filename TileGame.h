@@ -86,7 +86,6 @@ struct PlayerBallLocalData {
   bool active;
   Ogre::Vector3 lastDistance;
   Ogre::Vector3 newPos;
-  Ogre::Vector3 oldPos;
   Ogre::Vector3 drawPos;
 };
 
@@ -661,10 +660,6 @@ protected:
   }
 
   void modifyPlayerBalls(Uint32 *data) {
-    for (int i = 0; i < nPlayers; i++) {
-      playerBallLocalData[i].oldPos = playerBallLocalData[i].newPos;
-    }
-
     memcpy(&playerBallNetworkData, data, sizeof(PlayerBallNetworkData));
 
     for (int i = 0; i < nPlayers; i++) {
