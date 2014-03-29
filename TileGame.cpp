@@ -722,7 +722,7 @@ bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id 
     }
 
     Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
+    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("Sphere.mesh");
 
     if (ballMgr->isGlobalBall())
       ballMgr->removeGlobalBall();
@@ -730,11 +730,16 @@ bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id 
     int x = mCamera->getPosition().x;
     int y = mCamera->getPosition().y;
     int z = mCamera->getPosition().z;
-    ballMeshpc->setMaterialName("Examples/shinyball");
+    ballMeshpc->setMaterialName("blenderSphere");
     ballMeshpc->setCastShadows(true);
 
+    float ballSize = 120;                   //diameter
+    float meshSize =  ballSize / 1;       //1 is size of the mesh in diameter
+
     nodepc->attachObject(ballMeshpc);
-    ballMgr->setGlobalBall(ballMgr->addBall(nodepc, x, y, z, 100), netMgr->getIPnbo());
+    nodepc->setScale(Ogre::Vector3(meshSize, meshSize, meshSize));
+
+    ballMgr->setGlobalBall(ballMgr->addBall(nodepc, x, y, z, ballSize), netMgr->getIPnbo());
     ballMgr->globalBall->shot = true;
     ballMgr->globalBall->applyForce(force, direction);
     shotsFired++;
