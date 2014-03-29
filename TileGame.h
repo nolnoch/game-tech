@@ -73,6 +73,7 @@ struct BallNetworkData {
 
 struct PlayerBallNetworkData {
   bool ballsActive[10];
+  bool shotBall[10];
   Ogre::Vector3 ballPositions[10];
 };
 
@@ -311,7 +312,7 @@ protected:
       numballs = it * it * it;
     }
 
-    if(server || !multiplayerStarted)
+    if (server || !multiplayerStarted)
       ballSetup(it);
 
     soundMgr->playSound(gong);
@@ -412,17 +413,19 @@ protected:
       drawPos += (ballLocalData[i].lastDistance) / 10.0;
       ballLocalData[i].drawPos = drawPos;
 
-      ballMgr->mainBalls[i]->getSceneNode()->setPosition(drawPos.x, drawPos.y, drawPos.z);
-      /*
-      Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-      nodepc->setPosition(drawPos.x, drawPos.y, drawPos.z);
-      Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
-      ballMeshpc->setMaterialName("Examples/SphereMappedRustySteel");
-      ballMeshpc->setCastShadows(true);
+      Ogre::SceneNode *ballNode = ballMgr->mainBalls[i]->getSceneNode();
+      if (ballNode)
+        ballNode->setPosition(drawPos.x, drawPos.y, drawPos.z);
+      else {
+        ballNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+        ballNode->setPosition(drawPos.x, drawPos.y, drawPos.z);
+        Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
+        ballMeshpc->setMaterialName("Examples/SphereMappedRustySteel");
+        ballMeshpc->setCastShadows(true);
 
-      nodepc->attachObject(ballMeshpc);
-      ballMgr->moveOrAddBall(i, nodepc, ballMeshpc, Ogre::Vector3(0, 0, 0));
-       */
+        ballNode->attachObject(ballMeshpc);
+        ballMgr->moveOrAddBall(i, ballNode, ballMeshpc);
+      }
     }
   }
 
@@ -510,7 +513,8 @@ protected:
     bdSize = sizeof(PlayerBallNetworkData);
     for (i = 0; i < nPlayers; i++) {
       if ((playerBallNetworkData.ballsActive[i] = ballMgr->isPlayerBall(i))) {
-        std::cout << "Sending player's ball data" << std::endl;
+        playerBallNetworkData.shotBall[i] = ballMgr->playerBalls[i]->shot;
+        ballMgr->playerBalls[i]->shot = false;
         playerBallNetworkData.ballPositions[i] = ballMgr->playerBalls[i]->getSceneNode()->getPosition();
       }
     }
@@ -682,6 +686,9 @@ protected:
         }
 
         playerBallLocalData[i].newPos = playerBallNetworkData.ballPositions[i];
+        if (playerBallNetworkData.shotBall[i]) {
+          playerBallLocalData[i].drawPos = playerBallNetworkData.ballPositions[i];
+        }
         playerBallLocalData[i].lastDistance = playerBallLocalData[i].newPos -
             playerBallLocalData[i].drawPos;
       }

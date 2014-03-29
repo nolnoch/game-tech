@@ -39,6 +39,7 @@ void BallManager::setGlobalBall(Ball *ball, unsigned int host) {
 
 void BallManager::setPlayerBall(Ball *ball, int idx, unsigned int host) {
   ball->host = host & HOST_MASK;
+  ball->shot = true;
   playerBalls[idx] = ball;
   playerBallsActive[idx] = true;
 }
@@ -98,47 +99,22 @@ void BallManager::removePlayerBall(int idx) {
 }
 
 
-void BallManager::moveOrAddBall(int id, Ogre::SceneNode* nodepc, Ogre::Entity* ballmeshpc, Ogre::Vector3 velocity)
+void BallManager::moveOrAddBall(int id, Ogre::SceneNode* nodepc, Ogre::Entity* ballmeshpc)
 {
     double x = nodepc->getPosition().x;
     double y = nodepc->getPosition().y;
     double z = nodepc->getPosition().z;
 
-    if(id < mainBalls.size())
-    {
+    if (id < mainBalls.size()) {
       Ball* rmBall = mainBalls[id];
 
       removeBall(rmBall);
 
       mainBalls[id] = new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z);
       ballList.push_back(mainBalls[id]);
-    }
-    else
-    {
+    } else {
       std::cout << "add ball\n";
       mainBalls.push_back(new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z));
-    }
-}
-
-void BallManager::moveOrAddPlayerBall(int id, Ogre::SceneNode* nodepc, Ogre::Entity* ballmeshpc, Ogre::Vector3 velocity)
-{
-    double x = nodepc->getPosition().x;
-    double y = nodepc->getPosition().y;
-    double z = nodepc->getPosition().z;
-
-    if(id < mainBalls.size())
-    {
-      Ball* rmBall = mainBalls[id];
-
-      removeBall(rmBall);
-
-      playerBalls[id] = new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z);
-      ballList.push_back(mainBalls[id]);
-    }
-    else
-    {
-      std::cout << "add ball\n";
-      playerBalls.push_back(new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z));
     }
 }
 
