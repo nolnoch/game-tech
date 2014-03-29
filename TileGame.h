@@ -413,10 +413,11 @@ protected:
       drawPos += (ballLocalData[i].lastDistance) / 10.0;
       ballLocalData[i].drawPos = drawPos;
 
-      Ogre::SceneNode *ballNode = ballMgr->mainBalls[i]->getSceneNode();
-      if (ballNode)
+      Ogre::SceneNode *ballNode;
+      if (ballMgr->mainBalls[i]) {
+        ballNode = ballMgr->mainBalls[i]->getSceneNode();
         ballNode->setPosition(drawPos.x, drawPos.y, drawPos.z);
-      else {
+      } else {
         ballNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
         ballNode->setPosition(drawPos.x, drawPos.y, drawPos.z);
         Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
