@@ -101,21 +101,21 @@ void BallManager::removePlayerBall(int idx) {
 
 void BallManager::moveOrAddBall(int id, Ogre::SceneNode* nodepc, Ogre::Entity* ballmeshpc)
 {
-    double x = nodepc->getPosition().x;
-    double y = nodepc->getPosition().y;
-    double z = nodepc->getPosition().z;
+  double x = nodepc->getPosition().x;
+  double y = nodepc->getPosition().y;
+  double z = nodepc->getPosition().z;
 
-    if (id < mainBalls.size()) {
-      Ball* rmBall = mainBalls[id];
+  if (id < mainBalls.size()) {
+    Ball* rmBall = mainBalls[id];
 
-      removeBall(rmBall);
+    removeBall(rmBall);
 
-      mainBalls[id] = new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z);
-      ballList.push_back(mainBalls[id]);
-    } else {
-      std::cout << "add ball\n";
-      mainBalls.push_back(new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z));
-    }
+    mainBalls[id] = new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z);
+    ballList.push_back(mainBalls[id]);
+  } else {
+    std::cout << "add ball\n";
+    mainBalls.push_back(new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z));
+  }
 }
 
 bool BallManager::isGlobalBall() {
@@ -128,6 +128,8 @@ bool BallManager::isPlayerBall(int idx) {
 
 void BallManager::clearBalls() {
   std::vector<Ball *>::iterator it;
+  int nMainBalls = mainBalls.size();
+  int nBallList = ballList.size();
 
   for (it = ballList.begin(); it != ballList.end(); it++) {
     btRigidBody* ballBody = (*it)->getRigidBody();
@@ -138,7 +140,13 @@ void BallManager::clearBalls() {
 
   globalBall = NULL;
   globalBallActive = false;
+  for (int i = 0; i < nBallList; i++) {
+    delete ballList[i];
+  }
   ballList.clear();
+  for (int i = 0; i < nMainBalls; i++) {
+    delete mainBalls[i];
+  }
   mainBalls.clear();
   playerBalls.assign(playerBalls.size(), NULL);
   playerBallsActive.assign(playerBallsActive.size(), false);
@@ -177,7 +185,7 @@ bool BallManager::checkCollisions(btRigidBody *aTile, void *body0, void *body1) 
           if (mball->host || (*it2)->host) {
             if (mball->host && (*it2)->host) {
               if (mball->getRigidBody()->getLinearVelocity() >
-                  (*it2)->getRigidBody()->getLinearVelocity()) {
+              (*it2)->getRigidBody()->getLinearVelocity()) {
                 (*it2)->host = mball->host;
               } else {
                 mball->host = (*it2)->host;
@@ -204,7 +212,7 @@ int BallManager::getNumberBallCollisions() {
 }
 
 Ogre::Vector3 BallManager::getCollisionPosition() {
-	return collisionPosition;
+  return collisionPosition;
 }
 
 

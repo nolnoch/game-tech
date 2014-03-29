@@ -419,7 +419,7 @@ protected:
       std::cout << "1" << std::endl;
 
       Ogre::SceneNode *ballNode;
-      if (ballMgr->mainBalls[i]) {
+      if (i < ballMgr->mainBalls.size()) {
         std::cout << "2" << std::endl;
         ballNode = ballMgr->mainBalls[i]->getSceneNode();
         ballNode->setPosition(drawPos.x, drawPos.y, drawPos.z);
