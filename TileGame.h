@@ -429,10 +429,12 @@ protected:
   void movePlayerBalls() {
     for (int i = 0; i <= nPlayers; i++) {
       if (playerBallLocalData[i].active) {
-        std::cout << "Moving Player Ball" << std::endl;
         Ogre::Vector3 drawPos = playerBallLocalData[i].drawPos;
         drawPos += (playerBallLocalData[i].lastDistance) / 10.0;
         playerBallLocalData[i].drawPos = drawPos;
+
+        std::cout << "Moving Player Ball to ";
+        std::cout << drawPos << std::endl;
 
         ballMgr->playerBalls[i]->getSceneNode()->setPosition(drawPos.x, drawPos.y, drawPos.z);
       }
