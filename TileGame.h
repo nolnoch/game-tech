@@ -340,7 +340,9 @@ protected:
 
   void initLocalData() {
     Ogre::Vector3 zero(Ogre::Vector3::ZERO);
-    for (int i = 0; i < 10; i++) {
+    int i;
+
+    for (i = 0; i < 10; i++) {
       playerBallNetworkData.ballsActive[i] = false;
       playerBallNetworkData.ballPositions[i] = zero;
       playerBallLocalData[i].active = false;
@@ -348,6 +350,11 @@ protected:
       playerBallLocalData[i].lastDistance = zero;
       playerBallLocalData[i].newPos = zero;
     }
+
+    for (i = 0; i < nPlayers; i++) {
+      playerOldData[i]->score = 0;
+    }
+    score = 0;
   }
 
   void setLevel(int num) {
