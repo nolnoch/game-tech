@@ -312,6 +312,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
         if (server) {
           updatePlayers();
           netMgr->messageClients(PROTOCOL_TCP, STR_NXLVL.c_str());
+          std::cout << "Sent NXLVL." << std::endl;
         }
       }
 
@@ -333,7 +334,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
           if (winner != -1) {
             if (winner < nPlayers) {
               if (server)
-                playerData[winner]->wins += 1;
+                playerOldData[winner]->wins += 1;
 
               win << "Player ";
               win << winner;
@@ -506,6 +507,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
             } else if (0 == cmd.find(STR_TLHIT)) {
               tileHit = true;
             } else if (0 == cmd.find(STR_NXLVL)) {
+              std::cout << "Received NXLVL." << std::endl;
               gameDone = true;
               winTimer = 0;
             }
