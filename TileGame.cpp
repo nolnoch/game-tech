@@ -287,23 +287,15 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
       if (server && multiplayerStarted) {
         Uint32 scoringHost = ballMgr->popScoringHost();
 
-        std::cout << "Scoring host: " << scoringHost << std::endl;
-
         if (scoringHost != ((netMgr->getIPnbo() & BallManager::HOST_MASK) >> 16)) {
           bool found = false;
           for (i = 0; i < nPlayers && !found; i++) {
-
-            std::cout << "Player " << i << " host: " << ((playerData[i]->host & BallManager::HOST_MASK) >> 16) << std::endl;
-
             if (scoringHost == ((playerData[i]->host & BallManager::HOST_MASK) >> 16)) {
               playerOldData[i]->score += 1;
               found = true;
             }
           }
         } else {
-
-          std::cout << "Server host: " << ((netMgr->getIPnbo() & BallManager::HOST_MASK) >> 16) << std::endl;
-
           score++;
         }
 
@@ -313,9 +305,14 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
       }
 
       // End of Round
-      if (tileEntities.empty()) {
+      if ((server || !multiplayerStarted) && tileEntities.empty()) {
         gameDone = true;
         winTimer = 0;
+
+        if (server) {
+          updatePlayers();
+          netMgr->messageClients(PROTOCOL_TCP, STR_NXLVL.c_str());
+        }
       }
 
       tileHit = false;
@@ -340,18 +337,24 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
         if (gameDone) {
           winner = findRoundWinner();
           if (winner != -1) {
-            if (server)
-              playerData[winner]->wins++; 
-            //TODO: make sure this doesn't make win count spiral
-            win << "Player ";
-            win << winner;
-            win << " wins round ";
-            win << currLevel;
-            win << " !";
+            if (winner < nPlayers) {
+              if (server)
+                playerData[winner]->wins += 1;
+
+              win << "Player ";
+              win << winner;
+              win << " wins Round ";
+              win << currLevel;
+              win << "!";
+            } else {
+              win << "You win Round ";
+              win << currLevel;
+              win << "!";
+            }
           } else {
-            win << "It's a tie for round ";
+            win << "It's a tie for Round ";
             win << currLevel;
-            win << " !";
+            win << "!";
           }
           winnerPanel->setCaption(win.str());
           mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->show();
@@ -376,13 +379,16 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
   if (!mTrayMgr->isDialogVisible()) {
     // ScorePanel
     if (!multiplayerStarted) {
-      scorePanel->setParamValue(0, Ogre::StringConverter::toString(score));
+      scorePanel->setParamValue(0, Ogre::StringConverter::toString(Ogre::Vector2(score, wins)));
       scorePanel->setParamValue(1, Ogre::StringConverter::toString(shotsFired));
       scorePanel->setParamValue(2, Ogre::StringConverter::toString(currLevel));
     } else {
       multiScorePanel->setParamValue(0, Ogre::StringConverter::toString(score));
       for (i = 0; i < nPlayers; i++) {
-        multiScorePanel->setParamValue(i + 1, Ogre::StringConverter::toString(playerOldData[i]->score));
+        multiScorePanel->setParamValue(
+            i + 1,
+            Ogre::StringConverter::toString(Ogre::Vector2(playerOldData[i]->score, playerOldData[i]->wins))
+        );
       }
       multiScorePanel->setParamValue(nPlayers + 1, Ogre::StringConverter::toString(shotsFired));
       multiScorePanel->setParamValue(nPlayers + 2, Ogre::StringConverter::toString(currLevel));
@@ -504,6 +510,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
               tileHit = true;
             } else if (0 == cmd.find(STR_NXLVL)) {
               gameDone = true;
+              winTimer = 0;
             }
 
             netMgr->tcpServerData.updated = false;

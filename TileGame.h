@@ -721,6 +721,7 @@ protected:
   void modifyScore(Uint32 *data) {
     PlayerData *pdTemp = (PlayerData *) data;
     score = pdTemp->score;
+    wins = pdTemp->wins;
   }
 
   void notifyPlayers() {
@@ -778,7 +779,7 @@ protected:
     int i, winner, maxScore;
     bool tie = false;
     maxScore = score;
-    winner = 0;
+    winner = nPlayers + 1;
 
     for (i = 0; i < nPlayers; i++) {
       if (playerData[i]->score > maxScore) {
