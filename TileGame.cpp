@@ -437,7 +437,8 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
   if (multiplayerStarted) {
     // Update players' positions locally.
     movePlayers();
-    if (!server) {
+    if (!server)
+    {
       moveBalls();
       movePlayerBalls();
     }
@@ -766,6 +767,7 @@ bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id 
     ballMgr->globalBall->shot = true;
     ballMgr->globalBall->applyForce(force, direction);
     shotsFired++;
+
   }
 
   return BaseGame::mouseReleased(arg, id);
@@ -824,3 +826,4 @@ int main(int argc, char *argv[])
 #ifdef __cplusplus
 }
 #endif
+

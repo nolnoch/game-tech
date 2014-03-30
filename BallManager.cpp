@@ -27,8 +27,8 @@ bool BallManager::initBallManager() {
 }
 
 void BallManager::initMultiplayer(int nPlayers) {
-  playerBalls.assign(nPlayers, NULL);
-  playerBallsActive.assign(nPlayers, false);
+  playerBalls.assign(nPlayers + 1, NULL);
+  playerBallsActive.assign(nPlayers + 1, false);
 }
 
 void BallManager::setGlobalBall(Ball *ball, unsigned int host) {

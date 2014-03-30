@@ -22,7 +22,7 @@ class Ball {
       host(0),
       node(n),
       mass(1),
-      shot(false)
+      locked(false)
   {
       rB->setAngularFactor(0.4f);
       rB->setRestitution(0.93);
@@ -43,10 +43,16 @@ class Ball {
 
     void lockPosition() {
       rigidBody->setMassProps(0, btVector3(0, 0, 0));
+      locked = true;
     }
 
     void unlockPosition() {
       rigidBody->setMassProps(mass, btVector3(0, 0, 0));
+      locked = false;
+    }
+
+    bool isLocked() {
+      return locked;
     }
 
     void setPosition(int x, int y, int z) {
@@ -84,6 +90,7 @@ class Ball {
     Ogre::SceneNode* node;
     btScalar mass;
     btRigidBody* rigidBody;
+    bool locked;
   };
 
 #endif /* BALL_H_ */

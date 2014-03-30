@@ -465,6 +465,7 @@ protected:
       }
       /*
       Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+      //std::cout << "Moving player " << i << " ball to " << drawPos.x << " " << drawPos.y << " " << drawPos.z << "\n";
       nodepc->setPosition(drawPos.x, drawPos.y, drawPos.z);
       Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
       //ballMeshpc->setMaterialName("Examples/SphereMappedRustySteel");
@@ -592,6 +593,16 @@ protected:
     gameDone = true;
 
     ballNetworkData.numBalls = 1;
+    for(int i = 0; i < 8; i++)
+    {
+      ballLocalData[i].drawPos = Ogre::Vector3(0, 0, 0);
+      ballLocalData[i].lastDistance = Ogre::Vector3(0, 0, 0);
+    }
+    for(int i = 0; i < 10; i++)
+    {
+      playerBallLocalData[i].drawPos = Ogre::Vector3(0, 0, 0);
+      ballLocalData[i].lastDistance = Ogre::Vector3(0, 0, 0);
+    }
     setLevel(1);
     drawPlayers();
     ballMgr->initMultiplayer(nPlayers);
