@@ -238,13 +238,15 @@ void NetManager::messageClients(Protocol protocol, const char *buf, int len) {
     return;
   }
 
-  if (buf && (0 < len) && (len < MESSAGE_LENGTH)) {
+  if (buf && (0 <= len) && (len < MESSAGE_LENGTH)) {
+    length = len ? : strlen(buf);
+
     for (i = 0; i < netClients.size(); i++) {
       if (protocol & (netClients[i]->protocols & PROTOCOL_TCP)) {
-        sendTCP(tcpSockets[netClients[i]->tcpSocketIdx], buf, len);
+        sendTCP(tcpSockets[netClients[i]->tcpSocketIdx], buf, length);
       }
       if (protocol & netClients[i]->protocols & PROTOCOL_UDP) {
-        UDPpacket *pack = craftUDPpacket(buf, len);
+        UDPpacket *pack = craftUDPpacket(buf, length);
         if (pack) {
           sendUDP(udpSockets[netClients[i]->udpSocketIdx],
               netClients[i]->udpChannel, pack);
@@ -301,12 +303,14 @@ void NetManager::messageServer(Protocol protocol, const char *buf, int len) {
     return;
   }
 
-  if (buf && (0 < len) && (len < MESSAGE_LENGTH)) {
+  if (buf && (0 <= len) && (len < MESSAGE_LENGTH)) {
+    length = len ? : strlen(buf);
+
     if (protocol & PROTOCOL_TCP) {
-      sendTCP(tcpSockets[netServer.tcpSocketIdx], buf, len);
+      sendTCP(tcpSockets[netServer.tcpSocketIdx], buf, length);
     }
     if (protocol & PROTOCOL_UDP) {
-      UDPpacket *pack = craftUDPpacket(buf, len);
+      UDPpacket *pack = craftUDPpacket(buf, length);
       if (pack) {
         sendUDP(udpSockets[netServer.udpSocketIdx], netServer.udpChannel, pack);
       }

@@ -13,15 +13,22 @@
 #include "TileSimulator.h"
 #include "Ball.h"
 
+
+static unsigned int scoringHost;
+
 class TileSimulator;
 
 class BallManager {
 public:
+  static const unsigned int HOST_MASK = 0xFFFF0000;
+
   Ball *globalBall;
 
   Ogre::Vector3 collisionPosition;
 
   std::vector<Ball *> playerBalls;
+  std::vector<Ball *> ballList;
+  std::vector<Ball *> mainBalls;
 
 
   BallManager(TileSimulator *sim);
@@ -29,8 +36,8 @@ public:
 
   bool initBallManager();
   void initMultiplayer(int nPlayers);
-  void setGlobalBall(Ball *ball);
-  void setPlayerBall(Ball *ball, int idx);
+  void setGlobalBall(Ball *ball, unsigned int host);
+  void setPlayerBall(Ball *ball, int idx, unsigned int host);
   Ball* addBall(Ogre::SceneNode* n, int x, int y, int z, int r);
   Ball* addMainBall(Ogre::SceneNode* n, int x, int y, int z, int r);
   void enableGravity();
@@ -42,15 +49,14 @@ public:
   void clearBalls();
   int getNumberBallCollisions();
   Ogre::Vector3 getCollisionPosition();
-
+  void moveOrAddBall(int id, Ogre::SceneNode* nodepc, Ogre::Entity* ballmeshpc);
 
   TileSimulator* getSimulator();
+  unsigned int popScoringHost();
 
   bool checkCollisions(btRigidBody *aTile, void *body0, void *body1);
 
 private:
-  std::vector<Ball *> ballList;
-  std::vector<Ball *> mainBalls;
   std::vector<bool> playerBallsActive;
   TileSimulator *sim;
   bool globalBallActive;
