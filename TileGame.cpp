@@ -310,8 +310,6 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
           if (server) {
             netMgr->messageClients(PROTOCOL_TCP, STR_NXLVL.c_str());
           }
-      } else if (server) {
-        netMgr->messageClients(PROTOCOL_TCP, STR_TLHIT.c_str());
       }
 
       tileHit = false;
@@ -354,6 +352,8 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
           }
           winnerPanel->setCaption(win.str());
           mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->show();
+          updatePlayers();
+          netMgr->messageClients(PROTOCOL_TCP, STR_TLHIT.c_str());
         }
       }
 
