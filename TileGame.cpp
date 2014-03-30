@@ -298,22 +298,20 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
         } else {
           score++;
         }
-
-        netMgr->messageClients(PROTOCOL_TCP, STR_TLHIT.c_str());
       } else if (!multiplayerStarted) {
         score++;
       }
 
       // End of Round
-      if ((server || !multiplayerStarted) && tileEntities.empty()) {
-        gameDone = true;
-        winTimer = 0;
+      if (tileEntities.empty()) {
+          gameDone = true;
+          winTimer = 0;
 
-        if (server) {
-          updatePlayers();
-          netMgr->messageClients(PROTOCOL_TCP, STR_NXLVL.c_str());
-          std::cout << "Sent NXLVL." << std::endl;
-        }
+          if (server) {
+            netMgr->messageClients(PROTOCOL_TCP, STR_NXLVL.c_str());
+          }
+      } else if (server) {
+        netMgr->messageClients(PROTOCOL_TCP, STR_TLHIT.c_str());
       }
 
       tileHit = false;
@@ -508,8 +506,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
               tileHit = true;
             } else if (0 == cmd.find(STR_NXLVL)) {
               std::cout << "Received NXLVL." << std::endl;
-              gameDone = true;
-              winTimer = 0;
+              tileHit = true;
             }
 
             netMgr->tcpServerData.updated = false;
