@@ -328,12 +328,6 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
       ballMgr->enableGravity();
 
       if (multiplayerStarted) {
-        if (server) {
-          updatePlayers();
-          //netMgr->messageClients(PROTOCOL_TCP, STR_NXLVL.c_str());
-          //Clients automatically move to next level when last tile is hit.
-        }
-
         if (gameDone) {
           winner = findRoundWinner();
           if (winner != -1) {
@@ -363,6 +357,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
           mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->show();
         }
       }
+
     } else if (winTimer++ > 320) {
       levelTearDown();
       levelSetup(currLevel);
@@ -407,7 +402,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
     // Charge shot meter.
     std::stringstream scharge;
     scharge << "|";
-    for(int i = 1000; i < chargeShot; i += 160)
+    for (int i = 1000; i < chargeShot; i += 160)
       scharge << "|";
     chargePanel->setCaption(scharge.str());
 
@@ -509,7 +504,6 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
               mTrayMgr->getTrayContainer(OgreBites::TL_CENTER)->hide();
               startMultiplayer();
             } else if (0 == cmd.find(STR_TLHIT)) {
-              std::cout << "TCP - Tile hit\n";
               tileHit = true;
             } else if (0 == cmd.find(STR_NXLVL)) {
               gameDone = true;
