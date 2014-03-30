@@ -649,9 +649,14 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
   } else if (arg.key == OIS::KC_I) {
     std::cout << netMgr->getIPstring() << std::endl;
   } else if (arg.key == OIS::KC_U) {
+    int i;
+
     std::cout << "GlobalBall host: " << ballMgr->globalBall->host << std::endl;
-    for (int i = 0; i < nPlayers; i++) {
+    for (i = 0; i < nPlayers; i++) {
       std::cout << "PlayerBall " << i << " host: " << ballMgr->playerBalls[i]->host << std::endl;
+    }
+    for (i = 0; i < ballMgr->mainBalls.size(); i++) {
+      std::cout << "MainBall " << i << " host: " << ballMgr->mainBalls[i]->host << std::endl;
     }
   } else if (arg.key == OIS::KC_O) {
     if (netActive) {

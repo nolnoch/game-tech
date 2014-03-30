@@ -315,8 +315,6 @@ protected:
 
     soundMgr->playSound(gong);
 
-    std::cout << "a" << std::endl;
-
     gameDone = animDone = false;
     currTile = tileEntities.size() - 1;
     timer.reset();
