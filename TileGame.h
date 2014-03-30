@@ -53,6 +53,8 @@ struct PlayerOldData {
   double delta;
   Ogre::Vector3 lastDistance;
   Ogre::Vector3 drawPos;
+  int score;
+  int wins;
 };
 
 /* Since we should not have the physics sim running on clients, the server needs
@@ -487,7 +489,8 @@ protected:
 
     // Clients
     for (i = 0; i < playerData.size(); i++) {
-      //playerData[i]->newBallPos = ballMgr->playerBalls[i]->getSceneNode()->getPosition();
+      playerData[i]->score = playerOldData[i]->score;
+      playerData[i]->wins = playerOldData[i]->wins;
 
       memcpy(netMgr->udpServerData[i].input, &UINT_UPDPL, tagSize);
       memcpy((netMgr->udpServerData[i].input + 4), playerData[i], pdSize);
@@ -614,6 +617,8 @@ protected:
     newOldPlayer->drawPos = newPlayer->newPos;
     newOldPlayer->oldDir = newPlayer->newDir;
     newOldPlayer->delta = 0;
+    newOldPlayer->score = 0;
+    newOldPlayer->wins = 0;
 
     playerData.push_back(newPlayer);
     playerOldData.push_back(newOldPlayer);
@@ -634,6 +639,10 @@ protected:
       playerData[j]->shotForce = 0;
     }
 
+    if (!server) {
+      playerOldData[j]->score = playerData[j]->score;
+      playerOldData[j]->wins = playerData[j]->wins;
+    }
     playerOldData[j]->lastDistance = playerData[j]->newPos - playerOldData[j]->drawPos;
   }
 
@@ -707,6 +716,11 @@ protected:
             playerBallLocalData[i].drawPos;
       }
     }
+  }
+
+  void modifyScore(Uint32 *data) {
+    PlayerData *pdTemp = (PlayerData *) data;
+    score = pdTemp->score;
   }
 
   void notifyPlayers() {

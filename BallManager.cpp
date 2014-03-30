@@ -32,13 +32,13 @@ void BallManager::initMultiplayer(int nPlayers) {
 }
 
 void BallManager::setGlobalBall(Ball *ball, unsigned int host) {
-  ball->host = host & HOST_MASK;
+  ball->host = (host & HOST_MASK) >> 16;
   globalBall = ball;
   globalBallActive = true;
 }
 
 void BallManager::setPlayerBall(Ball *ball, int idx, unsigned int host) {
-  ball->host = host & HOST_MASK;
+  ball->host = (host & HOST_MASK) >> 16;
   ball->shot = true;
   playerBalls[idx] = ball;
   playerBallsActive[idx] = true;

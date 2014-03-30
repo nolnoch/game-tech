@@ -20,7 +20,7 @@ class TileSimulator;
 
 class BallManager {
 public:
-  static const unsigned int HOST_MASK = 0xFFFF;
+  static const unsigned int HOST_MASK = 0xFFFF0000;
 
   Ball *globalBall;
 

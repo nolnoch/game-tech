@@ -289,20 +289,20 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 
         std::cout << "Scoring host: " << scoringHost << std::endl;
 
-        if (scoringHost != (netMgr->getIPnbo() & BallManager::HOST_MASK)) {
+        if (scoringHost != ((netMgr->getIPnbo() & BallManager::HOST_MASK) >> 16)) {
           bool found = false;
           for (i = 0; i < nPlayers && !found; i++) {
 
-            std::cout << "Player " << i << " host: " << playerData[i]->host << std::endl;
+            std::cout << "Player " << i << " host: " << ((playerData[i]->host & BallManager::HOST_MASK) >> 16) << std::endl;
 
-            if (scoringHost == (playerData[i]->host & BallManager::HOST_MASK)) {
-              playerData[i]->score += 1;
+            if (scoringHost == ((playerData[i]->host & BallManager::HOST_MASK) >> 16)) {
+              playerOldData[i]->score += 1;
               found = true;
             }
           }
         } else {
 
-          std::cout << "Server host: " << netMgr->getIPnbo() << std::endl;
+          std::cout << "Server host: " << ((netMgr->getIPnbo() & BallManager::HOST_MASK) >> 16) << std::endl;
 
           score++;
         }
@@ -382,7 +382,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
     } else {
       multiScorePanel->setParamValue(0, Ogre::StringConverter::toString(score));
       for (i = 0; i < nPlayers; i++) {
-        multiScorePanel->setParamValue(i + 1, Ogre::StringConverter::toString(playerData[i]->score));
+        multiScorePanel->setParamValue(i + 1, Ogre::StringConverter::toString(playerOldData[i]->score));
       }
       multiScorePanel->setParamValue(nPlayers + 1, Ogre::StringConverter::toString(shotsFired));
       multiScorePanel->setParamValue(nPlayers + 2, Ogre::StringConverter::toString(currLevel));
@@ -473,11 +473,15 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
                   addPlayer(++data);
                   nPlayers = playerData.size();
                 }
-              } else if ((data[0] == UINT_UPDPL) && (data[1] != netMgr->getIPnbo())) {
-                for (j = 0; j < nPlayers; j++) {
-                  if (data[1] == playerData[j]->host) {
-                    modifyPlayer(j, ++data);
+              } else if (data[0] == UINT_UPDPL) {
+                if (data[1] != netMgr->getIPnbo()) {
+                  for (j = 0; j < nPlayers; j++) {
+                    if (data[1] == playerData[j]->host) {
+                      modifyPlayer(j, ++data);
+                    }
                   }
+                } else {
+                  modifyScore(++data);
                 }
               } else if (data[0] == UINT_UPDBL) {
                 modifyBalls(++data);
