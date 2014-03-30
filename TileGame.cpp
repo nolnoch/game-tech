@@ -119,6 +119,8 @@ void TileGame::createScene(void) {
   //  std::string postFilter = "Gaussian Blur";
   //  Ogre::CompositorManager::getSingleton().addCompositor(mCamera->getViewport(), postFilter);
   //  Ogre::CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), postFilter, true);
+  //  Ogre::ColourValue fadeColour(0.1, 0.1, 0.1);
+  //  mSceneMgr->setFog(Ogre::FOG_EXP, fadeColour, 0.0008);
 
   Ogre::Plane wallBack(Ogre::Vector3::NEGATIVE_UNIT_Z, 0);
   Ogre::Plane wallFront(Ogre::Vector3::UNIT_Z,0);
@@ -193,7 +195,7 @@ void TileGame::createScene(void) {
   // Set ambient light
   mSceneMgr->setAmbientLight(Ogre::ColourValue(0.40, 0.40, 0.40));
 
-  // mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
+  mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
 
   // Create a light
   Ogre::Light* lSun = mSceneMgr->createLight("SunLight");
@@ -278,7 +280,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
               tileEntities.back()->getParentNode()->_getDerivedPosition(), mCamera);
         }
         // Tile Texture
-        tileEntities.back()->setMaterialName("Examples/BumpyMetal");
+        tileEntities.back()->setMaterialName("Examples/ancientTileOn"); //bumpy
         tileEntities.pop_back();
         tileSceneNodes.pop_back();
       }
@@ -588,7 +590,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
     } else {                               /* Not yet in a multiplayer game. */
       // Server will broadcast game invitation every 8 seconds until launch.
       if (server && !connected && (ticks++ > broad_ticks)) {
-        if (!netMgr->broadcastUDPInvitation())
+        if (!netMgr->broadcastUDPInvitation(16))
           std::cout << "Failed to send broadcast." << std::endl;
         ticks = 0;
       }
@@ -670,7 +672,7 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
   } else if (arg.key == OIS::KC_O) {
     if (netActive) {
       if (!server) {
-        if ((server = netMgr->multiPlayerInit())) {
+        if ((server = netMgr->multiPlayerInit(16))) {
           serverStartPanel = mTrayMgr->createLabel(OgreBites::TL_TOP,
               "ServerStartPanel", "Waiting for clients...", 300);
           mTrayMgr->getTrayContainer(OgreBites::TL_BOTTOMRIGHT)->show();
@@ -698,7 +700,7 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
   }
   else if (arg.key == OIS::KC_Q) {
     if(currTile >= -1)
-      tileEntities[currTile+1]->setMaterialName("Examples/Chrome");
+      tileEntities[currTile+1]->setMaterialName("Examples/ancientTile"); //chrome
     currTile = tileEntities.size() - 1;
     timer.reset();
     animDone = false;
@@ -741,7 +743,7 @@ bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id 
     }
 
     Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
+    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("Sphere.mesh");
 
     if (ballMgr->isGlobalBall())
       ballMgr->removeGlobalBall();
@@ -749,11 +751,16 @@ bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id 
     int x = mCamera->getPosition().x;
     int y = mCamera->getPosition().y;
     int z = mCamera->getPosition().z;
-    ballMeshpc->setMaterialName("Examples/shinyball");
+    ballMeshpc->setMaterialName("blenderSphere");
     ballMeshpc->setCastShadows(true);
 
+    float ballSize = 120;                   //diameter
+    float meshSize =  ballSize / 1;       //1 is size of the mesh in diameter
+
     nodepc->attachObject(ballMeshpc);
-    ballMgr->setGlobalBall(ballMgr->addBall(nodepc, x, y, z, 100), netMgr->getIPnbo());
+    nodepc->setScale(Ogre::Vector3(meshSize, meshSize, meshSize));
+
+    ballMgr->setGlobalBall(ballMgr->addBall(nodepc, x, y, z, ballSize), netMgr->getIPnbo());
     ballMgr->globalBall->shot = true;
     ballMgr->globalBall->applyForce(force, direction);
     shotsFired++;

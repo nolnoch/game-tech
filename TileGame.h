@@ -97,7 +97,7 @@ class TileGame : public BaseGame
 public:
   TileGame(void);
   virtual ~TileGame(void);
-
+  std::string tileTextureOff;
   Ogre::RenderWindow * getWindow(void) { return mWindow; }
   Ogre::Timer * getTimer(void) { return mTimer; }
   OIS::Mouse * getMouse(void) { return mMouse; }
@@ -158,7 +158,7 @@ protected:
   void shootBall(int idx, int x, int y, int z, double force) {
     Ogre::Vector3 direction = playerData[idx]->shotDir;
     Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
+    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("Sphere.mesh");
 
     if (ballMgr->isPlayerBall(idx))
       ballMgr->removePlayerBall(idx);
@@ -171,20 +171,20 @@ protected:
 
   void ballSetup (int cubeSize) {
     float ballSize = 200;                   //diameter
-    float meshSize =  ballSize / 200;       //200 is size of the mesh.
+    float meshSize =  ballSize / .80;       //.90 is size of the mesh in diameter
 
     for (int x = 0; x < cubeSize; x++) {
       for (int y = 0; y < cubeSize; y++) {
         for (int z = 0; z < cubeSize; z++) {
-          Ogre::Entity* ballMesh = mSceneMgr->createEntity("sphere.mesh");
-          ballMesh->setMaterialName("Examples/SphereMappedRustySteel");
+          Ogre::Entity* ballMesh = mSceneMgr->createEntity("Sphere.mesh");
+          ballMesh->setMaterialName("blenderSphere3");
           ballMesh->setCastShadows(true);
 
           // Attach the node.
           Ogre::SceneNode* headNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
           headNode->attachObject(ballMesh);
           headNode->setScale(Ogre::Vector3(meshSize, meshSize, meshSize));
-          ballMgr->addMainBall(headNode, x * ballSize, y * ballSize, z * ballSize, ballSize/2);
+          ballMgr->addMainBall(headNode, x * ballSize, y * ballSize, z * ballSize, ballSize);
         }
       }
     }
@@ -295,7 +295,7 @@ protected:
 
       node1->translate(x ,y, z); //1600 / 5 is our tilewidth
       node1->attachObject(tile);
-      tile->setMaterialName("Examples/Chrome");
+      tile->setMaterialName("Examples/ancientTile");
       tile->setCastShadows(false);
       sim->addTile(node1, xsize, ysize, zsize);
       tileEntities.push_back(tile);
@@ -312,8 +312,11 @@ protected:
       numballs = it * it * it;
     }
 
-    if (server || !multiplayerStarted)
+    if(server || !multiplayerStarted) {
+
       ballSetup(it);
+      std::cout << " setting up balls \n";
+    }
 
     soundMgr->playSound(gong);
 
@@ -441,8 +444,8 @@ protected:
       } else {
         ballNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
         ballNode->setPosition(drawPos.x, drawPos.y, drawPos.z);
-        Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
-        ballMeshpc->setMaterialName("Examples/SphereMappedRustySteel");
+        Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("Sphere.mesh");
+        ballMeshpc->setMaterialName("blenderSphere3");
         ballMeshpc->setCastShadows(true);
 
         ballNode->attachObject(ballMeshpc);
@@ -702,7 +705,7 @@ protected:
       if (playerBallNetworkData.ballsActive[i]) {
         if (!playerBallLocalData[i].active) {
           Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-          Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
+          Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("Sphere.mesh");
 
           int x = playerBallNetworkData.ballPositions[i].x;
           int y = playerBallNetworkData.ballPositions[i].y;
@@ -831,11 +834,11 @@ protected:
         }
         // Revert previous tile to original texture
         if(currTile + 1 < tileEntities.size() && currTile >= -1) {
-          tileEntities[currTile + 1]->setMaterialName("Examples/Chrome");
+          tileEntities[currTile + 1]->setMaterialName("Examples/ancientTile"); //chrome
         }
 
         if(currTile >= 0) {
-          tileEntities[currTile]->setMaterialName("Examples/SpaceSky");
+          tileEntities[currTile]->setMaterialName("Examples/ancientTile"); //space
 
           if(panelLight != NULL)
             mSceneMgr->destroyLight(panelLight);
@@ -877,7 +880,7 @@ protected:
     }
     else if (!animDone) {
       if (tileEntities.size() > 0) {
-        tileEntities[0]->setMaterialName("Examples/Chrome");
+        tileEntities[0]->setMaterialName("Examples/ancientTile");
         animDone = true;
       }
     }
