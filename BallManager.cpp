@@ -10,10 +10,10 @@
 BallManager::BallManager(TileSimulator *sim):
 sim(sim),
 globalBall(0),
-scoringHost(0),
 ballCollisions(0),
 globalBallActive(false)
 {
+  scoringHost = 0;
 }
 
 BallManager::~BallManager() {
