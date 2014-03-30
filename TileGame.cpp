@@ -347,6 +347,9 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
               win << currLevel;
               win << "!";
             } else {
+              if (server)
+                wins++;
+
               win << "You win Round ";
               win << currLevel;
               win << "!";
@@ -379,11 +382,11 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
   if (!mTrayMgr->isDialogVisible()) {
     // ScorePanel
     if (!multiplayerStarted) {
-      scorePanel->setParamValue(0, Ogre::StringConverter::toString(Ogre::Vector2(score, wins)));
+      scorePanel->setParamValue(0, Ogre::StringConverter::toString(score));
       scorePanel->setParamValue(1, Ogre::StringConverter::toString(shotsFired));
       scorePanel->setParamValue(2, Ogre::StringConverter::toString(currLevel));
     } else {
-      multiScorePanel->setParamValue(0, Ogre::StringConverter::toString(score));
+      multiScorePanel->setParamValue(0, Ogre::StringConverter::toString(Ogre::Vector2(score, wins)));
       for (i = 0; i < nPlayers; i++) {
         multiScorePanel->setParamValue(
             i + 1,
