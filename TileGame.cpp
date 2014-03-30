@@ -193,7 +193,7 @@ void TileGame::createScene(void) {
   // Set ambient light
   mSceneMgr->setAmbientLight(Ogre::ColourValue(0.40, 0.40, 0.40));
 
-  mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
+  // mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
 
   // Create a light
   Ogre::Light* lSun = mSceneMgr->createLight("SunLight");
@@ -203,24 +203,6 @@ void TileGame::createScene(void) {
   lSun->setSpecularColour(1.0,1.0,1.0);
   //  lSun->setAttenuation(3250, 1.0, 0.0000000001, 0.000001);
   lSun->setAttenuation(5250, 1.0, 0.00000001, 0.00000010);
-
-  // //   Directional light
-  // Ogre::Light* light = mSceneMgr->createLight("Light1");
-  // light->setType(Ogre::Light::LT_DIRECTIONAL);
-  // light->setDiffuseColour(Ogre::ColourValue(.6, .6, .6));
-  // light->setSpecularColour(Ogre::ColourValue(.7, .7, .7));
-  // light->setDirection(Ogre::Vector3(-1, -1, 1));
-
-  // //   Spot light
-  // light = mSceneMgr->createLight("Light2");
-  // light->setType(Ogre::Light::LT_SPOTLIGHT);
-  // light->setDiffuseColour(Ogre::ColourValue(0.8, 0.8, 0.8));
-  // light->setSpecularColour(Ogre::ColourValue(1, 1, 1));
-  // light->setDirection(Ogre::Vector3(0, -1, 0));
-  // light->setPosition( Ogre::Vector3(0, 1000, 0) );
-  // light->setSpotlightRange( Ogre::Degree(35), Ogre::Degree(50) );
-
-
 
   sim->createBounds(PLANE_DIST);
 
@@ -305,21 +287,28 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
       if (server && multiplayerStarted) {
         Uint32 scoringHost = ballMgr->popScoringHost();
 
+        std::cout << "Scoring host: " << scoringHost << std::endl;
+
         if (scoringHost != (netMgr->getIPnbo() & BallManager::HOST_MASK)) {
           bool found;
           for (i = 0; i < nPlayers && !found; i++) {
+
+            std::cout << "Player " << i << " host: " << playerData[i]->host << std::endl;
+
             if (scoringHost == (playerData[i]->host & BallManager::HOST_MASK)) {
-              playerData[i]->score++;
+              playerData[i]->score += 1;
               found = true;
             }
           }
         } else {
+
+          std::cout << "Server host: " << netMgr->getIPnbo() << std::endl;
+
           score++;
         }
 
         netMgr->messageClients(PROTOCOL_TCP, STR_TLHIT.c_str());
-      }
-      if (!multiplayerStarted) {
+      } else if (!multiplayerStarted) {
         score++;
       }
 
