@@ -31,7 +31,7 @@ const static int PLANE_DIST = WALL_SIZE / 2;                        // the initi
 const static int NUM_TILES_ROW = 5;                                 // number of tiles in each row of a wall.
 const static int NUM_TILES_WALL = NUM_TILES_ROW * NUM_TILES_ROW;    // number of total tiles on a wall.
 const static int TILE_WIDTH = WALL_SIZE / NUM_TILES_ROW;
-const static int SWEEP_MS = 60;
+const static int SWEEP_MS = 100;
 const static int BROAD_MS = 8000;
 
 int ticks = 0;
@@ -53,6 +53,8 @@ struct PlayerOldData {
   double delta;
   Ogre::Vector3 lastDistance;
   Ogre::Vector3 drawPos;
+  int score;
+  int wins;
 };
 
 /* Since we should not have the physics sim running on clients, the server needs
@@ -156,7 +158,7 @@ protected:
   void shootBall(int idx, int x, int y, int z, double force) {
     Ogre::Vector3 direction = playerData[idx]->shotDir;
     Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
+    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("Sphere.mesh");
 
     if (ballMgr->isPlayerBall(idx))
       ballMgr->removePlayerBall(idx);
@@ -169,20 +171,20 @@ protected:
 
   void ballSetup (int cubeSize) {
     float ballSize = 200;                   //diameter
-    float meshSize =  ballSize / 200;       //200 is size of the mesh.
+    float meshSize =  ballSize / .80;       //.90 is size of the mesh in diameter
 
     for (int x = 0; x < cubeSize; x++) {
       for (int y = 0; y < cubeSize; y++) {
         for (int z = 0; z < cubeSize; z++) {
-          Ogre::Entity* ballMesh = mSceneMgr->createEntity("sphere.mesh");
-          ballMesh->setMaterialName("Examples/SphereMappedRustySteel");
+          Ogre::Entity* ballMesh = mSceneMgr->createEntity("Sphere.mesh");
+          ballMesh->setMaterialName("blenderSphere3");
           ballMesh->setCastShadows(true);
 
           // Attach the node.
           Ogre::SceneNode* headNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
           headNode->attachObject(ballMesh);
           headNode->setScale(Ogre::Vector3(meshSize, meshSize, meshSize));
-          ballMgr->addMainBall(headNode, x * ballSize, y * ballSize, z * ballSize, ballSize/2);
+          ballMgr->addMainBall(headNode, x * ballSize, y * ballSize, z * ballSize, ballSize);
         }
       }
     }
@@ -318,8 +320,6 @@ protected:
 
     soundMgr->playSound(gong);
 
-    std::cout << "a" << std::endl;
-
     gameDone = animDone = false;
     currTile = tileEntities.size() - 1;
     timer.reset();
@@ -343,7 +343,9 @@ protected:
 
   void initLocalData() {
     Ogre::Vector3 zero(Ogre::Vector3::ZERO);
-    for (int i = 0; i < 10; i++) {
+    int i;
+
+    for (i = 0; i < 10; i++) {
       playerBallNetworkData.ballsActive[i] = false;
       playerBallNetworkData.ballPositions[i] = zero;
       playerBallLocalData[i].active = false;
@@ -351,6 +353,11 @@ protected:
       playerBallLocalData[i].lastDistance = zero;
       playerBallLocalData[i].newPos = zero;
     }
+
+    for (i = 0; i < nPlayers; i++) {
+      playerOldData[i]->score = 0;
+    }
+    score = 0;
   }
 
   void setLevel(int num) {
@@ -437,8 +444,8 @@ protected:
       } else {
         ballNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
         ballNode->setPosition(drawPos.x, drawPos.y, drawPos.z);
-        Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
-        ballMeshpc->setMaterialName("Examples/SphereMappedRustySteel");
+        Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("Sphere.mesh");
+        ballMeshpc->setMaterialName("blenderSphere3");
         ballMeshpc->setCastShadows(true);
 
         ballNode->attachObject(ballMeshpc);
@@ -492,7 +499,8 @@ protected:
 
     // Clients
     for (i = 0; i < playerData.size(); i++) {
-      //playerData[i]->newBallPos = ballMgr->playerBalls[i]->getSceneNode()->getPosition();
+      playerData[i]->score = playerOldData[i]->score;
+      playerData[i]->wins = playerOldData[i]->wins;
 
       memcpy(netMgr->udpServerData[i].input, &UINT_UPDPL, tagSize);
       memcpy((netMgr->udpServerData[i].input + 4), playerData[i], pdSize);
@@ -619,6 +627,8 @@ protected:
     newOldPlayer->drawPos = newPlayer->newPos;
     newOldPlayer->oldDir = newPlayer->newDir;
     newOldPlayer->delta = 0;
+    newOldPlayer->score = 0;
+    newOldPlayer->wins = 0;
 
     playerData.push_back(newPlayer);
     playerOldData.push_back(newOldPlayer);
@@ -634,13 +644,15 @@ protected:
 
     // Did they launch a ball?  Trigger now before buffer overwritten!
     if (server && playerData[j]->shotForce) {
-      std::cout << "Shot fired." << std::endl;
       Ogre::Vector3 newPos = playerData[j]->newPos;
       shootBall(j, newPos.x, newPos.y, newPos.z, playerData[j]->shotForce);
       playerData[j]->shotForce = 0;
-      std::cout << "Shot fired done." << std::endl;
     }
 
+    if (!server) {
+      playerOldData[j]->score = playerData[j]->score;
+      playerOldData[j]->wins = playerData[j]->wins;
+    }
     playerOldData[j]->lastDistance = playerData[j]->newPos - playerOldData[j]->drawPos;
   }
 
@@ -693,7 +705,7 @@ protected:
       if (playerBallNetworkData.ballsActive[i]) {
         if (!playerBallLocalData[i].active) {
           Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-          Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
+          Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("Sphere.mesh");
 
           int x = playerBallNetworkData.ballPositions[i].x;
           int y = playerBallNetworkData.ballPositions[i].y;
@@ -714,6 +726,12 @@ protected:
             playerBallLocalData[i].drawPos;
       }
     }
+  }
+
+  void modifyScore(Uint32 *data) {
+    PlayerData *pdTemp = (PlayerData *) data;
+    score = pdTemp->score;
+    wins = pdTemp->wins;
   }
 
   void notifyPlayers() {
@@ -771,7 +789,7 @@ protected:
     int i, winner, maxScore;
     bool tie = false;
     maxScore = score;
-    winner = 0;
+    winner = nPlayers + 1;
 
     for (i = 0; i < nPlayers; i++) {
       if (playerData[i]->score > maxScore) {

@@ -13,11 +13,14 @@
 #include "TileSimulator.h"
 #include "Ball.h"
 
+
+static unsigned int scoringHost;
+
 class TileSimulator;
 
 class BallManager {
 public:
-  static const unsigned int HOST_MASK = 0xFFFF;
+  static const unsigned int HOST_MASK = 0xFFFF0000;
 
   Ball *globalBall;
 
@@ -58,7 +61,6 @@ private:
   TileSimulator *sim;
   bool globalBallActive;
   int ballCollisions;
-  unsigned int scoringHost;
 };
 
 #endif /* BALLMANAGER_H_ */
