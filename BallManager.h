@@ -13,6 +13,9 @@
 #include "TileSimulator.h"
 #include "Ball.h"
 
+
+static unsigned int scoringHost;
+
 class TileSimulator;
 
 class BallManager {
@@ -58,7 +61,6 @@ private:
   TileSimulator *sim;
   bool globalBallActive;
   int ballCollisions;
-  unsigned int scoringHost;
 };
 
 #endif /* BALLMANAGER_H_ */

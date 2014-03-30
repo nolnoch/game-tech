@@ -112,7 +112,6 @@ void BallManager::moveOrAddBall(int id, Ogre::SceneNode* nodepc, Ogre::Entity* b
 
     mainBalls[id] = new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z);
   } else {
-    std::cout << "add ball\n";
     mainBalls.push_back(new Ball(sim->addBallShape(nodepc, 100), nodepc, x, y, z));
   }
   ballList.push_back(mainBalls[id]);
@@ -170,9 +169,9 @@ bool BallManager::checkCollisions(btRigidBody *aTile, void *body0, void *body1) 
       mball->lockPosition();
       hit = true;
       collisionPosition = (mball->getSceneNode())->_getDerivedPosition();
-    }
-    if (mball->checkRigidBody((btRigidBody*)body0)) {
+    } else if (mball->checkRigidBody((btRigidBody*)body0)) {
       std::vector<Ball *>::iterator it2;
+
       for(it2 = mainBalls.begin(); it2 != mainBalls.end(); it2++) {
 
         if((*it2) != mball && (*it2)->checkRigidBody((btRigidBody*)body1)) {

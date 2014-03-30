@@ -631,11 +631,9 @@ protected:
 
     // Did they launch a ball?  Trigger now before buffer overwritten!
     if (server && playerData[j]->shotForce) {
-      std::cout << "Shot fired." << std::endl;
       Ogre::Vector3 newPos = playerData[j]->newPos;
       shootBall(j, newPos.x, newPos.y, newPos.z, playerData[j]->shotForce);
       playerData[j]->shotForce = 0;
-      std::cout << "Shot fired done." << std::endl;
     }
 
     playerOldData[j]->lastDistance = playerData[j]->newPos - playerOldData[j]->drawPos;

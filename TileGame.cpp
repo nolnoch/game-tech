@@ -290,7 +290,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
         std::cout << "Scoring host: " << scoringHost << std::endl;
 
         if (scoringHost != (netMgr->getIPnbo() & BallManager::HOST_MASK)) {
-          bool found;
+          bool found = false;
           for (i = 0; i < nPlayers && !found; i++) {
 
             std::cout << "Player " << i << " host: " << playerData[i]->host << std::endl;
@@ -314,7 +314,6 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 
       // End of Round
       if (tileEntities.empty()) {
-        std::cout << "game done!\n";
         gameDone = true;
         winTimer = 0;
       }
@@ -491,7 +490,6 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
           // Process TCP messages.
           if (netMgr->tcpServerData.updated) {
             cmd = std::string(netMgr->tcpServerData.output);
-            std::cout << "TCP - " << cmd << "\n";
             if (0 == cmd.find(STR_BEGIN)) {
               mTrayMgr->destroyWidget("ServerStartPanel");
               mTrayMgr->getTrayContainer(OgreBites::TL_TOPRIGHT)->hide();
@@ -501,7 +499,6 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
               std::cout << "TCP - Tile hit\n";
               tileHit = true;
             } else if (0 == cmd.find(STR_NXLVL)) {
-              std::cout << "TCP - Next level\n";
               gameDone = true;
             }
 
@@ -582,7 +579,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
     } else {                               /* Not yet in a multiplayer game. */
       // Server will broadcast game invitation every 8 seconds until launch.
       if (server && !connected && (ticks++ > broad_ticks)) {
-        if (!netMgr->broadcastUDPInvitation(16))
+        if (!netMgr->broadcastUDPInvitation())
           std::cout << "Failed to send broadcast." << std::endl;
         ticks = 0;
       }
@@ -647,17 +644,19 @@ bool TileGame::keyPressed( const OIS::KeyEvent &arg ) {
     slowdownval = 0.0;
 
     soundMgr->toggleSound();
-  }
-  else if (arg.key == OIS::KC_M) {
+  } else if (arg.key == OIS::KC_M) {
     soundMgr->toggleSound();
-  }
-  else if (arg.key == OIS::KC_I) {
+  } else if (arg.key == OIS::KC_I) {
     std::cout << netMgr->getIPstring() << std::endl;
-  }
-  else if (arg.key == OIS::KC_O) {
+  } else if (arg.key == OIS::KC_U) {
+    std::cout << "GlobalBall host: " << ballMgr->globalBall->host << std::endl;
+    for (int i = 0; i < nPlayers; i++) {
+      std::cout << "PlayerBall " << i << " host: " << ballMgr->playerBalls[i]->host << std::endl;
+    }
+  } else if (arg.key == OIS::KC_O) {
     if (netActive) {
       if (!server) {
-        if ((server = netMgr->multiPlayerInit(16))) {
+        if ((server = netMgr->multiPlayerInit())) {
           serverStartPanel = mTrayMgr->createLabel(OgreBites::TL_TOP,
               "ServerStartPanel", "Waiting for clients...", 300);
           mTrayMgr->getTrayContainer(OgreBites::TL_BOTTOMRIGHT)->show();
