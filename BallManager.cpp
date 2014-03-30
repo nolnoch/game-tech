@@ -172,7 +172,7 @@ bool BallManager::checkCollisions(btRigidBody *aTile, void *body0, void *body1) 
     } else if (mball->checkRigidBody((btRigidBody*)body0)) {
       std::vector<Ball *>::iterator it2;
 
-      for(it2 = mainBalls.begin(); it2 != mainBalls.end(); it2++) {
+      for (it2 = ballList.begin(); it2 != ballList.end(); it2++) {
 
         if((*it2) != mball && (*it2)->checkRigidBody((btRigidBody*)body1)) {
           if (mball->host || (*it2)->host) {
