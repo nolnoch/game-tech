@@ -176,16 +176,27 @@ bool BallManager::checkCollisions(btRigidBody *aTile, void *body0, void *body1) 
 
         if((*it2) != mball && (*it2)->checkRigidBody((btRigidBody*)body1)) {
           if (mball->host || (*it2)->host) {
-            if (mball->host && (*it2)->host) {
-              if (mball->getRigidBody()->getLinearVelocity() >
-              (*it2)->getRigidBody()->getLinearVelocity()) {
+            if(mball->host == (*it2)->host)
+            {
+              std::cout << "hosts are same\n";
+            }
+            else if (mball->host && (*it2)->host)
+            {
+              std::cout << "hosts not same\n";
+              if (mball->getRigidBody()->getLinearVelocity().length() >
+              (*it2)->getRigidBody()->getLinearVelocity().length()) {
                 (*it2)->host = mball->host;
               } else {
                 mball->host = (*it2)->host;
               }
-            } else if (mball->host) {
+            }
+            else if (mball->host)
+            {
+              std::cout << "one ball missing host\n";
               (*it2)->host = mball->host;
-            } else {
+            }
+            else {
+              std::cout << "one ball missing host\n";
               mball->host = (*it2)->host;
             }
           }

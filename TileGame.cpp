@@ -208,7 +208,9 @@ void TileGame::createScene(void) {
 
   sim->createBounds(PLANE_DIST);
 
+  std::cout << "aaaa\n";
   levelSetup(currLevel);
+  std::cout << "bbbb\n";
 }
 //-------------------------------------------------------------------------------------
 void TileGame::createFrameListener(void) {
@@ -339,7 +341,7 @@ bool TileGame::frameRenderingQueued(const Ogre::FrameEvent& evt) {
                 playerOldData[winner]->wins += 1;
 
               win << "Player ";
-              win << winner;
+              win << (winner + 2);
               win << " wins Round ";
               win << currLevel;
               win << "!";
@@ -743,7 +745,7 @@ bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id 
     }
 
     Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("Sphere.mesh");
+    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("oldsphere.mesh");
 
     if (ballMgr->isGlobalBall())
       ballMgr->removeGlobalBall();
@@ -751,16 +753,16 @@ bool TileGame::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id 
     int x = mCamera->getPosition().x;
     int y = mCamera->getPosition().y;
     int z = mCamera->getPosition().z;
-    ballMeshpc->setMaterialName("blenderSphere");
+    //ballMeshpc->setMaterialName("blenderSphere");
     ballMeshpc->setCastShadows(true);
 
     float ballSize = 120;                   //diameter
     float meshSize =  ballSize / 1;       //1 is size of the mesh in diameter
 
     nodepc->attachObject(ballMeshpc);
-    nodepc->setScale(Ogre::Vector3(meshSize, meshSize, meshSize));
+    //nodepc->setScale(Ogre::Vector3(meshSize, meshSize, meshSize));
 
-    ballMgr->setGlobalBall(ballMgr->addBall(nodepc, x, y, z, ballSize), netMgr->getIPnbo());
+    ballMgr->setGlobalBall(ballMgr->addBall(nodepc, x, y, z, 100), netMgr->getIPnbo());
     ballMgr->globalBall->shot = true;
     ballMgr->globalBall->applyForce(force, direction);
     shotsFired++;

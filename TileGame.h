@@ -158,7 +158,7 @@ protected:
   void shootBall(int idx, int x, int y, int z, double force) {
     Ogre::Vector3 direction = playerData[idx]->shotDir;
     Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("Sphere.mesh");
+    Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("oldsphere.mesh");
 
     if (ballMgr->isPlayerBall(idx))
       ballMgr->removePlayerBall(idx);
@@ -176,15 +176,15 @@ protected:
     for (int x = 0; x < cubeSize; x++) {
       for (int y = 0; y < cubeSize; y++) {
         for (int z = 0; z < cubeSize; z++) {
-          Ogre::Entity* ballMesh = mSceneMgr->createEntity("Sphere.mesh");
-          ballMesh->setMaterialName("blenderSphere3");
+          Ogre::Entity* ballMesh = mSceneMgr->createEntity("oldsphere.mesh");
+          ballMesh->setMaterialName("Examples/SphereMappedRustySteel");
           ballMesh->setCastShadows(true);
 
           // Attach the node.
           Ogre::SceneNode* headNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
           headNode->attachObject(ballMesh);
-          headNode->setScale(Ogre::Vector3(meshSize, meshSize, meshSize));
-          ballMgr->addMainBall(headNode, x * ballSize, y * ballSize, z * ballSize, ballSize);
+          //headNode->setScale(Ogre::Vector3(meshSize, meshSize, meshSize));
+          ballMgr->addMainBall(headNode, x * ballSize, y * ballSize, z * ballSize, 100);
         }
       }
     }
@@ -444,8 +444,8 @@ protected:
       } else {
         ballNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
         ballNode->setPosition(drawPos.x, drawPos.y, drawPos.z);
-        Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("Sphere.mesh");
-        ballMeshpc->setMaterialName("blenderSphere3");
+        Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("oldsphere.mesh");
+        ballMeshpc->setMaterialName("Examples/SphereMappedRustySteel");
         ballMeshpc->setCastShadows(true);
 
         ballNode->attachObject(ballMeshpc);
@@ -596,6 +596,12 @@ protected:
     drawPlayers();
     ballMgr->initMultiplayer(nPlayers);
 
+    for(int i = 0; i < 27; i++)
+    {
+      ballLocalData[i].drawPos = Ogre::Vector3(0, 0, 0);
+      ballLocalData[i].lastDistance = Ogre::Vector3(0, 0, 0);
+    }
+
     Ogre::StringVector scorelist;
     scorelist.push_back("Your Score");
     for (int i = 0; i < nPlayers; i++) {
@@ -705,7 +711,7 @@ protected:
       if (playerBallNetworkData.ballsActive[i]) {
         if (!playerBallLocalData[i].active) {
           Ogre::SceneNode* nodepc = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-          Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("Sphere.mesh");
+          Ogre::Entity* ballMeshpc = mSceneMgr->createEntity("sphere.mesh");
 
           int x = playerBallNetworkData.ballPositions[i].x;
           int y = playerBallNetworkData.ballPositions[i].y;
@@ -791,16 +797,20 @@ protected:
     maxScore = score;
     winner = nPlayers + 1;
 
+    std::cout << "Scores[Self] = " << score << "\n";
+
     for (i = 0; i < nPlayers; i++) {
+      std::cout << "Scores[ " << i << "] = " << playerData[i]->score << "\n";
       if (playerData[i]->score > maxScore) {
         maxScore = playerData[i]->score;
         tie = false;
         winner = i;
       }
-      if (playerData[i]->score == maxScore)
+      else if (playerData[i]->score == maxScore)
         tie = true;
     }
 
+    std::cout << "Tie = " << tie << ", winner = " << winner << "\n";
     return tie ? -1 : winner;
   }
 
